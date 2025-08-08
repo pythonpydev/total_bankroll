@@ -440,38 +440,76 @@ def withdrawal():
     return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
 
 
-@app.route("/add_withdrawal", methods=["POST"])
+@app.route("/add_withdrawal", methods=["GET", "POST"])
 def add_withdrawal():
     """Add a withdrawal transaction."""
-    date = request.form.get("date", "")
-    amount_str = request.form.get("amount", "")
-    withdrawn_at_str = request.form.get("withdrawn_at", "")
-    currency_name = request.form.get("currency", "USD")
-
-    if not date or not amount_str or not withdrawn_at_str:
-        return "Date, amount, and withdrawn_at are required", 400
-
-    try:
-        amount = float(amount_str)
-        withdrawn_at = float(withdrawn_at_str)
-        if amount <= 0:
-            return "Amount must be positive", 400
-    except ValueError:
-        return "Invalid amount or withdrawn_at format", 400
-
     db = get_db()
-    # Get the exchange rate for the selected currency
-    currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
-    if currency_rate_row:
-        exchange_rate = currency_rate_row['rate']
-        amount_usd = amount / exchange_rate  # Convert to USD
-    else:
-        amount_usd = amount # Default to no conversion if currency not found
+    if request.method == "POST":
+        date = request.form.get("date", "")
+        amount_str = request.form.get("amount", "")
+        withdrawn_at_str = request.form.get("withdrawn_at", "")
+        currency_name = request.form.get("currency", "USD")
 
-    last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    db.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, withdrawn_at, last_updated, currency_name))
-    db.commit()
-    return redirect(url_for("withdrawal"))
+        if not date or not amount_str or not withdrawn_at_str:
+            return "Date, amount, and withdrawn_at are required", 400
+
+        try:
+            amount = float(amount_str)
+            withdrawn_at = float(withdrawn_at_str)
+            if amount <= 0:
+                return "Amount must be positive", 400
+        except ValueError:
+            return "Invalid amount or withdrawn_at format", 400
+
+        # Get the exchange rate for the selected currency
+        currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
+        if currency_rate_row:
+            exchange_rate = currency_rate_row['rate']
+            amount_usd = amount / exchange_rate  # Convert to USD
+        else:
+            amount_usd = amount # Default to no conversion if currency not found
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, withdrawn_at, last_updated, currency_name))
+        db.commit()
+        return redirect(url_for("withdrawal"))
+    else:
+        today = datetime.now().strftime("%Y-%m-%d")
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
+        # Recalculate total_net_worth for the form
+        poker_sites_data = db.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM sites
+            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
+        """).fetchone()
+        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
+
+        assets_data = db.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM assets
+            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
+        """).fetchone()
+        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
+
+        total_withdrawals = db.execute("SELECT SUM(amount) FROM drawings").fetchone()[0]
+        if total_withdrawals is None:
+            total_withdrawals = 0
+
+        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
+
+        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_net_worth=total_net_worth)
 
 
 @app.route("/deposit")
@@ -520,38 +558,76 @@ def deposit():
     return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
 
 
-@app.route("/add_deposit", methods=["POST"])
+@app.route("/add_deposit", methods=["GET", "POST"])
 def add_deposit():
     """Add a deposit transaction."""
-    date = request.form.get("date", "")
-    amount_str = request.form.get("amount", "")
-    deposited_at_str = request.form.get("deposited_at", "")
-    currency_name = request.form.get("currency", "USD")
-
-    if not date or not amount_str or not deposited_at_str:
-        return "Date, amount, and deposited_at are required", 400
-
-    try:
-        amount = float(amount_str)
-        deposited_at = float(deposited_at_str)
-        if amount <= 0 or deposited_at < 0:
-            return "Amount must be positive and deposited_at non-negative", 400
-    except ValueError:
-        return "Invalid amount or deposited_at format", 400
-
     db = get_db()
-    # Get the exchange rate for the selected currency
-    currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
-    if currency_rate_row:
-        exchange_rate = currency_rate_row['rate']
-        amount_usd = amount / exchange_rate  # Convert to USD
-    else:
-        amount_usd = amount # Default to no conversion if currency not found
+    if request.method == "POST":
+        date = request.form.get("date", "")
+        amount_str = request.form.get("amount", "")
+        deposited_at_str = request.form.get("deposited_at", "")
+        currency_name = request.form.get("currency", "USD")
 
-    last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    db.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, deposited_at, last_updated, currency_name))
-    db.commit()
-    return redirect(url_for("deposit"))
+        if not date or not amount_str or not deposited_at_str:
+            return "Date, amount, and deposited_at are required", 400
+
+        try:
+            amount = float(amount_str)
+            deposited_at = float(deposited_at_str)
+            if amount <= 0 or deposited_at < 0:
+                return "Amount must be positive and deposited_at non-negative", 400
+        except ValueError:
+            return "Invalid amount or deposited_at format", 400
+
+        # Get the exchange rate for the selected currency
+        currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
+        if currency_rate_row:
+            exchange_rate = currency_rate_row['rate']
+            amount_usd = amount / exchange_rate  # Convert to USD
+        else:
+            amount_usd = amount # Default to no conversion if currency not found
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, deposited_at, last_updated, currency_name))
+        db.commit()
+        return redirect(url_for("deposit"))
+    else:
+        today = datetime.now().strftime("%Y-%m-%d")
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
+        # Recalculate total_net_worth for the form
+        poker_sites_data = db.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM sites
+            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
+        """).fetchone()
+        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
+
+        assets_data = db.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM assets
+            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
+        """).fetchone()
+        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
+
+        total_withdrawals = db.execute("SELECT SUM(amount) FROM drawings").fetchone()[0]
+        if total_withdrawals is None:
+            total_withdrawals = 0
+
+        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
+
+        return render_template("add_deposit.html", today=today, currencies=currencies, total_net_worth=total_net_worth)
 
 
 @app.route("/update_deposit/<int:deposit_id>", methods=["GET", "POST"])
@@ -585,7 +661,7 @@ def update_deposit(deposit_id):
             amount_usd = amount # Default to no conversion if currency not found
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        db.execute("UPDATE deposits SET date = ?, amount = ?, deposited_at = ?, last_updated = ?, currency = ? WHERE id = ?", (date, amount_usd, deposited_at, last_updated, currency_name, deposit_id))
+        db.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, deposited_at, last_updated, currency_name))
         db.commit()
         return redirect(url_for("deposit"))
     else:
@@ -637,7 +713,7 @@ def update_withdrawal(withdrawal_id):
             amount_usd = amount # Default to no conversion if currency not found
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        db.execute("UPDATE drawings SET date = ?, amount = ?, withdrawn_at = ?, last_updated = ?, currency = ? WHERE id = ?", (date, amount_usd, withdrawn_at, last_updated, currency_name, withdrawal_id))
+        db.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (?, ?, ?, ?, ?)", (date, amount_usd, withdrawn_at, last_updated, currency_name))
         db.commit()
         return redirect(url_for("withdrawal"))
     else:

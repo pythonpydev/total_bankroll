@@ -7,21 +7,33 @@
             <div class="col-lg-8 text-center">
                 <h2 class="text-white mt-0">Assets</h2>
                 <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Manage your other assets (e.g. cash, gold, silver, cryto etc.)</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-                <h3 class="text-white mt-0">Current Assets</h3>
-                <div class="col-lg-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-header-dark">
-                                <tr>
-                                    <th scope="col">Asset Name</th>
-                                    <th scope="col">Previous</th>
-                                    <th scope="col">Current (USD)</th>
-                                    <th scope="col">Change</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+<section class="page-section" id="portfolio">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mt-0">Your Assets</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5">
+            <div class="col-lg-12 text-end mb-3">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_asset') }}">Add New Asset</button>
+            </div>
+            <div class="col-lg-12">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-header-dark">
+                            <tr>
+                                <th scope="col">Asset Name</th>
+                                <th scope="col">Previous</th>
+                                <th scope="col">Current (USD)</th>
+                                <th scope="col">Change</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                                 {% for asset in assets %}
                                     <tr>
                                         <td>{{ asset.name }}</td>
@@ -61,12 +73,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <div class="text-end mb-3">
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_asset') }}">Add New Asset</button>
-                    </div>
-                </div>
-                
             </div>
         </div>
     </div>
