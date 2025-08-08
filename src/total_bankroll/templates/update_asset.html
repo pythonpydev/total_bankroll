@@ -1,0 +1,20 @@
+<form action="/update_asset/{{ asset.id }}" method="post">
+    <div class="mb-3">
+        <label for="name" class="text-white">Asset Name:</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ asset.name }}">
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="text-white">Amount:</label>
+        <input type="text" class="form-control" id="amount" name="amount" value="{{ asset.amount }}">
+    </div>
+    <div class="mb-3">
+        <label for="currency" class="text-white">Currency:</label>
+        <select class="form-control" id="currency" name="currency" required>
+            {% for currency in currencies %}
+                <option value="{{ currency.name }}" {% if currency.name == asset.currency %}selected{% endif %}>{{ currency.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Asset</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+</form>

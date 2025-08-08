@@ -1,0 +1,5 @@
+<div class="text-center">
+    <p class="text-white">Are you sure you want to delete this record?</p>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+    <a href="{{ url_for('perform_delete', item_type=item_type, item_id=item_id) }}" class="btn btn-danger">Yes, Delete</a>
+</div>

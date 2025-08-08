@@ -1,0 +1,24 @@
+<form action="/update_withdrawal/{{ withdrawal_item.id }}" method="post">
+    <div class="mb-3">
+        <label for="date" class="text-white">Date:</label>
+        <input type="date" class="form-control" id="date" name="date" value="{{ withdrawal_item.date }}">
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="text-white">Amount:</label>
+        <input type="text" class="form-control" id="amount" name="amount" value="{{ withdrawal_item.amount }}">
+    </div>
+    <div class="mb-3">
+        <label for="currency" class="text-white">Currency:</label>
+        <select class="form-control" id="currency" name="currency" required>
+            {% for currency in currencies %}
+                <option value="{{ currency.name }}" {% if currency.name == withdrawal_item.currency %}selected{% endif %}>{{ currency.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="withdrawn_at" class="text-white">Withdrawn At:</label>
+        <input type="text" class="form-control" id="withdrawn_at" name="withdrawn_at" value="{{ withdrawal_item.withdrawn_at }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Update Withdrawal</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+</form>

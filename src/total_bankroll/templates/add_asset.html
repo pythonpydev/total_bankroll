@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white">
+                <div class="card-header">
+                    <h5 class="card-title">Add New Asset</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_asset') }}" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Asset Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount:</label>
+                            <input type="number" class="form-control" id="amount" name="amount" step="any" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="currency" class="form-label">Currency:</label>
+                            <select class="form-control" id="currency" name="currency" required>
+                                {% for currency in currencies %}
+                                    <option value="{{ currency.name }}" {% if currency.name == 'US Dollar' %}selected{% endif %}>{{ currency.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Asset</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

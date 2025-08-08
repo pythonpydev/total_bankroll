@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="home">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Total Bankroll Overview</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">A quick summary of your financial standing.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="portfolio">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mt-0">Your Financial Summary</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5">
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-currency-dollar fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Poker Sites Total</h3>
+                    <p class="text-muted mb-0">Current: ${{ "%.2f" | format(current_poker_total) }}</p>
+                    <p class="text-muted mb-0">Previous: ${{ "%.2f" | format(previous_poker_total) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-cash-coin fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Assets Total</h3>
+                    <p class="text-muted mb-0">Current: ${{ "%.2f" | format(current_asset_total) }}</p>
+                    <p class="text-muted mb-0">Previous: ${{ "%.2f" | format(previous_asset_total) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-arrow-down-circle fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Total Withdrawals</h3>
+                    <p class="text-muted mb-0">Total: ${{ "%.2f" | format(total_withdrawals) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-arrow-up-circle fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Total Deposits</h3>
+                    <p class="text-muted mb-0">Total: ${{ "%.2f" | format(total_deposits) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-wallet2 fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Total Net Worth</h3>
+                    <p class="text-muted mb-0">Overall: ${{ "%.2f" | format(total_net_worth) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-briefcase-fill fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Total Bankroll</h3>
+                    <p class="text-muted mb-0">Overall: ${{ "%.2f" | format(total_bankroll) }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-graph-up-arrow fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Total Profit</h3>
+                    <p class="text-muted mb-0">Overall: ${{ "%.2f" | format(total_profit) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
