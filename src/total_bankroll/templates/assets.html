@@ -29,7 +29,7 @@
                                         <td>${{ "%.2f" | format(asset.current_amount) }}</td>
                                         <td class="{% if (asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) > 0 %}change-positive{% elif (asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-sm btn-info update-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_asset', asset_id=asset.id) }}">Update</a>
+                                            <a href="#" class="btn btn-sm btn-info update-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_asset', asset_name=asset.name) }}">Update</a>
                                             <a href="#" class="btn btn-sm btn-danger delete-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='asset', item_id=asset.id) }}">Delete</a>
                                         </td>
                                     </tr>
@@ -47,8 +47,16 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Total Assets:</td>
-                                    <td>${{ "%.2f" | format(assets | sum(attribute='current_amount')) }}</td>
+                                    <td>Total Current:</td>
+                                    <td>${{ "%.2f" | format(total_current) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Previous:</td>
+                                    <td>${{ "%.2f" | format(total_previous) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Change:</td>
+                                    <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
                                 </tr>
                             </tbody>
                         </table>

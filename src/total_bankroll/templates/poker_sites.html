@@ -41,7 +41,7 @@
                                 <td>${{ "%.2f" | format(site.current_amount) }}</td>
                                 <td class="{% if (site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) > 0 %}change-positive{% elif (site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_site', site_id=site.id) }}">Update</button>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_site', site_name=site.name) }}">Update</button>
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
                                 </td>
                             </tr>
@@ -49,6 +49,30 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="table-responsive mt-4">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-header-dark">
+                                <tr>
+                                    <th scope="col" colspan="2" class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Total Current:</td>
+                                    <td>${{ "%.2f" | format(total_current) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Previous:</td>
+                                    <td>${{ "%.2f" | format(total_previous) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Change:</td>
+                                    <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
             </div>
         </div>
     </div>

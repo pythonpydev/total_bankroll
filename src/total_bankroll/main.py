@@ -163,7 +163,11 @@ def poker_sites_page():
         WHERE s1.rn = 1
         ORDER BY s1.name
     """).fetchall()
-    return render_template("poker_sites.html", poker_sites=poker_sites_data)
+
+    total_current = sum(site['current_amount'] for site in poker_sites_data)
+    total_previous = sum(site['previous_amount'] if site['previous_amount'] is not None else 0 for site in poker_sites_data)
+
+    return render_template("poker_sites.html", poker_sites=poker_sites_data, total_current=total_current, total_previous=total_previous)
 
 
 @app.route("/assets")
@@ -195,8 +199,22 @@ def assets_page():
         WHERE a1.rn = 1
         ORDER BY a1.name
     """).fetchall()
-    currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
-    return render_template("assets.html", assets=assets_data, currencies=currencies)
+
+    total_current = sum(asset['current_amount'] for asset in assets_data)
+    total_previous = sum(asset['previous_amount'] if asset['previous_amount'] is not None else 0 for asset in assets_data)
+
+    currencies = db.execute("""
+        SELECT name FROM currency
+        ORDER BY
+            CASE name
+                WHEN 'US Dollar' THEN 1
+                WHEN 'British Pound' THEN 2
+                WHEN 'Euro' THEN 3
+                ELSE 4
+            END,
+            name
+    """).fetchall()
+    return render_template("assets.html", assets=assets_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
 
 
 @app.route("/add_asset", methods=["GET", "POST"])
@@ -283,8 +301,8 @@ def add_site():
         return render_template("add_site.html", currencies=currencies)
 
 
-@app.route("/update_asset/<int:asset_id>", methods=["GET", "POST"])
-def update_asset(asset_id):
+@app.route("/update_asset/<string:asset_name>", methods=["GET", "POST"])
+def update_asset(asset_name):
     """Update an asset."""
     db = get_db()
     if request.method == "POST":
@@ -308,11 +326,11 @@ def update_asset(asset_id):
             amount_usd = amount # Default to no conversion if currency not found
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        db.execute("UPDATE assets SET name = ?, amount = ?, last_updated = ?, currency = ? WHERE id = ?", (name, amount_usd, last_updated, currency_name, asset_id))
+        db.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount_usd, last_updated, currency_name))
         db.commit()
         return redirect(url_for("assets_page"))
     else:
-        asset = db.execute("SELECT * FROM assets WHERE id = ?", (asset_id,)).fetchone()
+        asset = db.execute("SELECT * FROM assets WHERE name = ? ORDER BY last_updated DESC", (asset_name,)).fetchone()
         if asset is None:
             return "Asset not found", 404
         currencies = db.execute("""
@@ -329,8 +347,8 @@ def update_asset(asset_id):
         return render_template("update_asset.html", asset=asset, currencies=currencies)
 
 
-@app.route("/update_site/<int:site_id>", methods=["GET", "POST"])
-def update_site(site_id):
+@app.route("/update_site/<string:site_name>", methods=["GET", "POST"])
+def update_site(site_name):
     """Update a poker site."""
     db = get_db()
     if request.method == "POST":
@@ -357,11 +375,11 @@ def update_site(site_id):
             amount_usd = amount # Default to no conversion if currency not found
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        db.execute("UPDATE sites SET name = ?, amount = ?, last_updated = ?, currency = ? WHERE id = ?", (name, amount_usd, last_updated, currency_name, site_id))
+        db.execute("INSERT INTO sites (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount_usd, last_updated, currency_name))
         db.commit()
         return redirect(url_for("poker_sites_page"))
     else:
-        site = db.execute("SELECT * FROM sites WHERE id = ?", (site_id,)).fetchone()
+        site = db.execute("SELECT * FROM sites WHERE name = ? ORDER BY last_updated DESC", (site_name,)).fetchone()
         if site is None:
             return "Site not found", 404
         currencies = db.execute("""
@@ -410,7 +428,17 @@ def withdrawal():
 
     withdrawal_data = db.execute("SELECT id, date, CAST(amount AS REAL) as amount, CAST(withdrawn_at AS REAL) as withdrawn_at, last_updated, currency FROM drawings").fetchall()
     today = datetime.now().strftime("%Y-%m-%d")
-    currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+    currencies = db.execute("""
+        SELECT name FROM currency
+        ORDER BY
+            CASE name
+                WHEN 'US Dollar' THEN 1
+                WHEN 'British Pound' THEN 2
+                WHEN 'Euro' THEN 3
+                ELSE 4
+            END,
+            name
+    """).fetchall()
     return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
 
 
@@ -480,7 +508,17 @@ def deposit():
 
     deposit_data = db.execute("SELECT id, date, CAST(amount AS REAL) as amount, CAST(deposited_at AS REAL) as deposited_at, last_updated, currency FROM deposits").fetchall()
     today = datetime.now().strftime("%Y-%m-%d")
-    currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+    currencies = db.execute("""
+        SELECT name FROM currency
+        ORDER BY
+            CASE name
+                WHEN 'US Dollar' THEN 1
+                WHEN 'British Pound' THEN 2
+                WHEN 'Euro' THEN 3
+                ELSE 4
+            END,
+            name
+    """).fetchall()
     return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
 
 
