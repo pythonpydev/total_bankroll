@@ -790,6 +790,18 @@ def perform_delete(item_type, item_id):
         return "Invalid item type", 400
 
 
+@app.route("/settings")
+def settings_page():
+    """Settings page."""
+    return render_template("settings.html")
+
+
+@app.route("/about")
+def about_page():
+    """About page."""
+    return render_template("about.html")
+
+
 if __name__ == "__main__":
     init_db()
     insert_initial_currency_data()

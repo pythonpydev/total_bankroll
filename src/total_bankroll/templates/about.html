@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="about_intro">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">About Total Bankroll</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Total Bankroll is a web application designed to help you manage your poker bankroll and other assets efficiently.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="about_details">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mt-0">Key Features & Functionality</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5">
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-wallet2 fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Comprehensive Tracking</h3>
+                    <p class="text-muted mb-0">Track funds across various poker sites and manage diverse asset types like cash, gold, silver, and cryptocurrencies.</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-calculator fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Automated Calculations</h3>
+                    <p class="text-muted mb-0">Automatically calculates your total bankroll (poker funds + assets) and overall profit (total bankroll - deposits + withdrawals).</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-clock-history fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Historical Data & Trends</h3>
+                    <p class="text-muted mb-0">Maintains a complete history of all financial values, allowing you to review past performance and track changes over time.</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-currency-exchange fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Multi-Currency Support</h3>
+                    <p class="text-muted mb-0">Supports multiple currencies with all financial values converted and stored in US Dollars for consistency.</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-eye fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Visual Insights</h3>
+                    <p class="text-muted mb-0">Displays latest changes in poker site funds and assets, highlighting positive changes in green and negative changes in red.</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-center">
+                <div class="mt-5">
+                    <div class="mb-2"><i class="bi-shield-check fs-1 text-primary"></i></div>
+                    <h3 class="h4 mb-2">Financial Safeguards</h3>
+                    <p class="text-muted mb-0">Prevents withdrawals that would exceed your current net worth, ensuring responsible financial management.</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-center mt-5">User Interface</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <p class="text-muted mb-0">Total Bankroll is built as a Python Flask web application, providing an intuitive and responsive user experience through HTML forms and Bootstrap styling.</p>
+                <p class="text-muted mb-0">Key interface features include a clear navigation bar with links to all major sections, currency selection dropdowns with intelligent ordering, and numeric input fields for improved data validation.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
