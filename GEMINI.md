@@ -42,6 +42,9 @@ US dollars $.
 - Use numeric up down boxes to obtain numeric values to improve validation.
 - Display positive changes in poker site funds and assets as light green, and 
 negative amounts as light red.
+- When displaying a list of currencies in a drop down box, the default should 
+US dollars, the second highest option the UK pound and the third highest option
+the Euro.  After that, display the currencies in alphabetical order.
 
 ## Database
 

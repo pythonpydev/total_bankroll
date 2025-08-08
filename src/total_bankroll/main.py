@@ -199,62 +199,88 @@ def assets_page():
     return render_template("assets.html", assets=assets_data, currencies=currencies)
 
 
-@app.route("/add_asset", methods=["POST"])
+@app.route("/add_asset", methods=["GET", "POST"])
 def add_asset():
     """Add an asset."""
-    name = request.form.get("name", "").title()
-    amount_str = request.form.get("amount", "")
-    currency_name = request.form.get("currency", "USD")
-
-    if not name or not amount_str:
-        return "Name and amount are required", 400
-
-    try:
-        amount = float(amount_str)
-        if amount <= 0:
-            return "Amount must be positive", 400
-    except ValueError:
-        return "Invalid amount format", 400
-
     db = get_db()
-    # Get the exchange rate for the selected currency
-    currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
-    if currency_rate_row:
-        exchange_rate = currency_rate_row['rate']
-        amount_usd = amount / exchange_rate  # Convert to USD
+    if request.method == "POST":
+        name = request.form.get("name", "").title()
+        amount_str = request.form.get("amount", "")
+        currency_name = request.form.get("currency", "USD")
+
+        if not name or not amount_str:
+            return "Name and amount are required", 400
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                return "Amount must be positive", 400
+        except ValueError:
+            return "Invalid amount format", 400
+
+        # Get the exchange rate for the selected currency
+        currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
+        if currency_rate_row:
+            exchange_rate = currency_rate_row['rate']
+            amount_usd = amount / exchange_rate  # Convert to USD
+        else:
+            amount_usd = amount # Default to no conversion if currency not found
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount_usd, last_updated, currency_name))
+        db.commit()
+        return redirect(url_for("assets_page"))
     else:
-        amount_usd = amount # Default to no conversion if currency not found
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
+        return render_template("add_asset.html", currencies=currencies)
 
-    last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    db.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount_usd, last_updated, currency_name))
-    db.commit()
-    return redirect(url_for("assets_page"))
 
-
-@app.route("/add_site", methods=["POST"])
+@app.route("/add_site", methods=["GET", "POST"])
 def add_site():
     """Add a poker site."""
-    name = request.form.get("site_name", "").title()
-    amount_str = request.form.get("amount", "")
-    currency_name = request.form.get("currency", "USD")
-
-    if not name or not amount_str:
-        return "Name and amount are required", 400
-
-    try:
-        amount = float(amount_str)
-        if amount <= 0:
-            return "Amount must be positive", 400
-    except ValueError:
-        return "Invalid amount format", 400
-
     db = get_db()
-    last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"Attempting to insert site: name={name}, amount={amount}, last_updated={last_updated}, currency={currency_name}")
-    db.execute("INSERT INTO sites (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount, last_updated, currency_name))
-    db.commit()
-    print(f"Inserted site: {name}, {amount}, {last_updated}, {currency_name}")
-    return redirect(url_for("poker_sites_page"))
+    if request.method == "POST":
+        name = request.form.get("name", "").title()
+        amount_str = request.form.get("amount", "")
+        currency_name = request.form.get("currency", "USD")
+
+        if not name or not amount_str:
+            return "Name and amount are required", 400
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                return "Amount must be positive", 400
+        except ValueError:
+            return "Invalid amount format", 400
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute("INSERT INTO sites (name, amount, last_updated, currency) VALUES (?, ?, ?, ?)", (name, amount, last_updated, currency_name))
+        db.commit()
+        return redirect(url_for("poker_sites_page"))
+    else:
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
+        return render_template("add_site.html", currencies=currencies)
 
 
 @app.route("/update_asset/<int:asset_id>", methods=["GET", "POST"])
@@ -289,7 +315,17 @@ def update_asset(asset_id):
         asset = db.execute("SELECT * FROM assets WHERE id = ?", (asset_id,)).fetchone()
         if asset is None:
             return "Asset not found", 404
-        currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
         return render_template("update_asset.html", asset=asset, currencies=currencies)
 
 
@@ -312,15 +348,33 @@ def update_site(site_id):
         except ValueError:
             return redirect(url_for("poker_sites_page"))
 
+        # Get the exchange rate for the selected currency
+        currency_rate_row = db.execute("SELECT rate FROM currency WHERE name = ?", (currency_name,)).fetchone()
+        if currency_rate_row:
+            exchange_rate = currency_rate_row['rate']
+            amount_usd = amount / exchange_rate  # Convert to USD
+        else:
+            amount_usd = amount # Default to no conversion if currency not found
+
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        db.execute("UPDATE sites SET name = ?, amount = ?, last_updated = ?, currency = ? WHERE id = ?", (name, amount, last_updated, currency_name, site_id))
+        db.execute("UPDATE sites SET name = ?, amount = ?, last_updated = ?, currency = ? WHERE id = ?", (name, amount_usd, last_updated, currency_name, site_id))
         db.commit()
         return redirect(url_for("poker_sites_page"))
     else:
         site = db.execute("SELECT * FROM sites WHERE id = ?", (site_id,)).fetchone()
         if site is None:
             return "Site not found", 404
-        currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
         return render_template("update_site.html", site=site, currencies=currencies)
 
 
@@ -502,7 +556,17 @@ def update_deposit(deposit_id):
         deposit_item = db.execute("SELECT * FROM deposits WHERE id = ?", (deposit_id,)).fetchone()
         if deposit_item is None:
             return "Deposit record not found", 404
-        currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
         return render_template("update_deposit.html", deposit_item=deposit_item, currencies=currencies)
 
 
@@ -544,7 +608,17 @@ def update_withdrawal(withdrawal_id):
         withdrawal_item = db.execute("SELECT * FROM drawings WHERE id = ?", (withdrawal_id,)).fetchone()
         if withdrawal_item is None:
             return "Withdrawal record not found", 404
-        currencies = db.execute("SELECT name FROM currency ORDER BY name").fetchall()
+        currencies = db.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """).fetchall()
         return render_template("update_withdrawal.html", withdrawal_item=withdrawal_item, currencies=currencies)
 
 
