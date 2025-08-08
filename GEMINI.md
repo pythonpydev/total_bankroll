@@ -17,12 +17,10 @@ Keeps a track of total poker bankroll, including funds on each site, cash and ot
 - Add up total amount of deposits.
 - When withdrawals are made, as well as the date and time of the transaction,
 the current net worth also needs to be recorded.
-- Calculate total net worth
-- Total net worth = money on poker sites + assets
 - Calculate total bankroll
-- Total bankroll = total net worth + deposits - withdrawals
+- Total bankroll = money on poker sites + assets
 - Calculate total profit 
-- Total profit = total net worth - deposits + withdrawals
+- Total profit = total bankroll - deposits + withdrawals
 - Users cannot withdraw more money than their net worth
 - Keep a history of all values saved over time
 - Display latest changes in poker site funds, assets (current value - previous)

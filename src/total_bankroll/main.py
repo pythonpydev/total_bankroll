@@ -122,9 +122,8 @@ def index():
     if total_deposits is None:
         total_deposits = 0
 
-    total_net_worth = current_poker_total + current_asset_total
-    total_bankroll = total_net_worth + total_deposits - total_withdrawals
-    total_profit = total_net_worth - total_deposits + total_withdrawals
+    total_bankroll = current_poker_total + current_asset_total
+    total_profit = total_bankroll - total_deposits + total_withdrawals
 
     return render_template("index.html",
                            current_poker_total=current_poker_total,
@@ -133,7 +132,6 @@ def index():
                            previous_asset_total=previous_asset_total,
                            total_withdrawals=total_withdrawals,
                            total_deposits=total_deposits,
-                           total_net_worth=total_net_worth,
                            total_bankroll=total_bankroll,
                            total_profit=total_profit)
 
