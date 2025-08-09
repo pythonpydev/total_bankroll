@@ -3,7 +3,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <form id="updateAssetForm" action="{{ url_for('update_asset', asset_name=asset.name) }}" method="post">
+    <form id="updateAssetForm" action="{{ url_for('update_asset.update_asset', asset_name=asset.name) }}" method="post">
         <div class="mb-3">
             <label for="name" class="form-label">Asset Name</label>
             <input type="text" class="form-control" id="name" name="name" value="{{ asset.name }}" required autofocus>

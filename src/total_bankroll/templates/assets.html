@@ -19,7 +19,7 @@
         <hr class="divider" />
         <div class="row gx-4 gx-lg-5">
             <div class="col-lg-12 text-end mb-3">
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_asset') }}">Add New Asset</button>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_asset.add_asset') }}">Add New Asset</button>
             </div>
             <div class="col-lg-12">
                 <div class="table-responsive">
@@ -41,7 +41,7 @@
                                         <td>${{ "%.2f" | format(asset.current_amount) }}</td>
                                         <td class="{% if (asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) > 0 %}change-positive{% elif (asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(asset.current_amount - (asset.previous_amount if asset.previous_amount is not none else 0)) }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-sm btn-primary update-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_asset', asset_name=asset.name) }}">Update</a>
+                                            <a href="#" class="btn btn-sm btn-primary update-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_asset.update_asset', asset_name=asset.name) }}">Update</a>
                                             <a href="#" class="btn btn-sm btn-danger delete-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='asset', item_id=asset.id) }}">Delete</a>
                                         </td>
                                     </tr>
