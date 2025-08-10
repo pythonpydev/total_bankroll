@@ -112,17 +112,8 @@ def add_withdrawal():
             conn.close()
             return "Invalid amount or withdrawn_at format", 400
 
-        # Get the exchange rate for the selected currency
-        cur.execute("SELECT rate FROM currency WHERE name = %s", (currency_name,))
-        currency_rate_row = cur.fetchone()
-        if currency_rate_row:
-            exchange_rate = currency_rate_row['rate']
-            amount_usd = amount / exchange_rate  # Convert to USD
-        else:
-            amount_usd = amount # Default to no conversion if currency not found
-
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount_usd, withdrawn_at, last_updated, currency_name))
+        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, withdrawn_at, last_updated, currency_name))
         conn.commit()
         cur.close()
         conn.close()
@@ -254,17 +245,8 @@ def add_deposit():
             conn.close()
             return "Invalid amount or deposited_at format", 400
 
-        # Get the exchange rate for the selected currency
-        cur.execute("SELECT rate FROM currency WHERE name = %s", (currency_name,))
-        currency_rate_row = cur.fetchone()
-        if currency_rate_row:
-            exchange_rate = currency_rate_row['rate']
-            amount_usd = amount / exchange_rate  # Convert to USD
-        else:
-            amount_usd = amount # Default to no conversion if currency not found
-
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount_usd, deposited_at, last_updated, currency_name))
+        cur.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, deposited_at, last_updated, currency_name))
         conn.commit()
         cur.close()
         conn.close()
