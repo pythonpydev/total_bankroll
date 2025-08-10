@@ -470,31 +470,48 @@ def currencies():
 def perform_delete(item_type, item_id):
     """Perform the actual deletion based on item_type and item_id."""
     conn = get_db()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
     if item_type == "site":
-        cur.execute("DELETE FROM sites WHERE id = %s", (item_id,))
-        conn.commit()
+        # First, get the site name for the given ID
+        cur.execute("SELECT name FROM sites WHERE id = %s", (item_id,))
+        site_record = cur.fetchone()
+        if site_record:
+            site_name = site_record['name']
+            # Delete all sites with the same name
+            cur.execute("DELETE FROM sites WHERE name = %s", (site_name,))
+            conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("poker_sites.poker_sites_page"))
+        
     elif item_type == "asset":
-        cur.execute("DELETE FROM assets WHERE id = %s", (item_id,))
-        conn.commit()
+        # First, get the asset name for the given ID
+        cur.execute("SELECT name FROM assets WHERE id = %s", (item_id,))
+        asset_record = cur.fetchone()
+        if asset_record:
+            asset_name = asset_record['name']
+            # Delete all assets with the same name
+            cur.execute("DELETE FROM assets WHERE name = %s", (asset_name,))
+            conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("assets.assets_page"))
+        
     elif item_type == "withdrawal":
         cur.execute("DELETE FROM drawings WHERE id = %s", (item_id,))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("withdrawal"))
+        
     elif item_type == "deposit":
         cur.execute("DELETE FROM deposits WHERE id = %s", (item_id,))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("deposit"))
+        
     else:
         cur.close()
         conn.close()
