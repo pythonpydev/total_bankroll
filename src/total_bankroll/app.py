@@ -169,52 +169,82 @@ def deposit():
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Get current poker site totals
-    cur.execute("""
-        SELECT
-            SUM(amount) AS current_total
-        FROM sites
-        WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
-    """)
-    poker_sites_data = cur.fetchone()
-    current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
+    try:
+        # Get current poker site totals
+        cur.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM sites
+            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
+        """)
+        poker_sites_data = cur.fetchone()
+        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
 
-    # Get current asset totals
-    cur.execute("""
-        SELECT
-            SUM(amount) AS current_total
-        FROM assets
-        WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
-    """)
-    assets_data = cur.fetchone()
-    current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
+        # Get current asset totals
+        cur.execute("""
+            SELECT
+                SUM(amount) AS current_total
+            FROM assets
+            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
+        """)
+        assets_data = cur.fetchone()
+        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
 
-    # Get current total of all withdrawals
-    cur.execute("SELECT SUM(amount) FROM drawings")
-    total_withdrawals = cur.fetchone()[0]
-    if total_withdrawals is None:
-        total_withdrawals = 0
+        # Get current total of all withdrawals
+        cur.execute("SELECT SUM(amount) FROM drawings")
+        total_withdrawals = cur.fetchone()[0]
+        if total_withdrawals is None:
+            total_withdrawals = 0
 
-    total_net_worth = current_poker_total + current_asset_total - total_withdrawals
+        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
 
-    cur.execute("SELECT id, date, CAST(amount AS REAL) as amount, CAST(deposited_at AS REAL) as deposited_at, last_updated, currency FROM deposits")
-    deposit_data = cur.fetchall()
-    today = datetime.now().strftime("%Y-%m-%d")
-    cur.execute("""
-        SELECT name FROM currency
-        ORDER BY
-            CASE name
-                WHEN 'US Dollar' THEN 1
-                WHEN 'British Pound' THEN 2
-                WHEN 'Euro' THEN 3
-                ELSE 4
-            END,
-            name
-    """)
-    currencies = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
+        # Get deposits with currency conversion to USD
+        cur.execute("""
+            SELECT 
+                d.id, 
+                d.date, 
+                CAST(d.amount AS REAL) as original_amount,
+                CAST(d.deposited_at AS REAL) as original_deposited_at,
+                d.last_updated, 
+                COALESCE(d.currency, 'US Dollar') as currency,
+                COALESCE(c.rate, 1.0) as exchange_rate
+            FROM deposits d
+            LEFT JOIN currency c ON d.currency = c.name
+            ORDER BY d.date DESC
+        """)
+        deposits_raw = cur.fetchall()
+        
+        # Process deposits to add USD calculations
+        deposit_data = []
+        for deposit in deposits_raw:
+            deposit_dict = dict(deposit)
+            deposit_dict['amount_usd'] = deposit['original_amount'] * deposit['exchange_rate']
+            deposit_dict['deposited_at_usd'] = deposit['original_deposited_at'] * deposit['exchange_rate']
+            deposit_data.append(deposit_dict)
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        cur.execute("""
+            SELECT name FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """)
+        currencies = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
+        
+    except Exception as e:
+        cur.close()
+        conn.close()
+        # For debugging - in production you'd want better error handling
+        return f"Error loading deposits: {str(e)}", 500
 
 
 @app.route("/add_deposit", methods=["GET", "POST"])
@@ -226,7 +256,7 @@ def add_deposit():
         date = request.form.get("date", "")
         amount_str = request.form.get("amount", "")
         deposited_at_str = request.form.get("deposited_at", "")
-        currency_name = request.form.get("currency", "USD")
+        currency_name = request.form.get("currency", "US Dollar")
 
         if not date or not amount_str or not deposited_at_str:
             cur.close()
@@ -245,6 +275,7 @@ def add_deposit():
             conn.close()
             return "Invalid amount or deposited_at format", 400
 
+        # Store the amount in original currency - conversion will happen on display
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, deposited_at, last_updated, currency_name))
         conn.commit()
@@ -324,17 +355,9 @@ def update_deposit(deposit_id):
             conn.close()
             return redirect(url_for("deposit"))
 
-        # Get the exchange rate for the selected currency
-        cur.execute("SELECT rate FROM currency WHERE name = %s", (currency_name,))
-        currency_rate_row = cur.fetchone()
-        if currency_rate_row:
-            exchange_rate = currency_rate_row['rate']
-            amount_usd = amount / exchange_rate  # Convert to USD
-        else:
-            amount_usd = amount # Default to no conversion if currency not found
-
+        # Store the amount in original currency - conversion will happen on display
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount_usd, deposited_at, last_updated, currency_name))
+        cur.execute("UPDATE deposits SET date = %s, amount = %s, deposited_at = %s, last_updated = %s, currency = %s WHERE id = %s", (date, amount, deposited_at, last_updated, currency_name, deposit_id))
         conn.commit()
         cur.close()
         conn.close()
