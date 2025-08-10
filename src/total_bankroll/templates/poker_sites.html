@@ -37,9 +37,9 @@
                             {% for site in poker_sites %}
                             <tr>
                                 <td>{{ site.name }}</td>
-                                <td>${{ "%.2f" | format(site.previous_amount) if site.previous_amount is not none else "N/A" }}</td>
-                                <td>${{ "%.2f" | format(site.current_amount) }}</td>
-                                <td class="{% if (site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) > 0 %}change-positive{% elif (site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount - (site.previous_amount if site.previous_amount is not none else 0)) }}</td>
+                                <td>${{ "%.2f" | format(site.previous_amount_usd) if site.previous_amount_usd is not none else "N/A" }}</td>
+                                <td>${{ "%.2f" | format(site.current_amount_usd) }}</td>
+                                <td class="{% if (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_site.update_site', site_name=site.name) }}">Update</button>
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
