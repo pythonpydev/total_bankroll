@@ -9,9 +9,11 @@ add_asset_bp = Blueprint("add_asset", __name__)
 @add_asset_bp.route("/add_asset", methods=["GET", "POST"])
 def add_asset():
     """Add an asset."""
+    print("add_asset function called")
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if request.method == "POST":
+        print("add_asset: POST request")
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
         currency_name = request.form.get("currency", "US Dollar") # Store currency name directly from form
@@ -19,6 +21,7 @@ def add_asset():
         if not name or not amount_str:
             cur.close()
             conn.close()
+            print("add_asset: Name or amount missing")
             return "Name and amount are required", 400
 
         try:
@@ -26,10 +29,12 @@ def add_asset():
             if amount <= 0:
                 cur.close()
                 conn.close()
+                print("add_asset: Amount not positive")
                 return "Amount must be positive", 400
         except ValueError:
             cur.close()
             conn.close()
+            print("add_asset: Invalid amount format")
             return "Invalid amount format", 400
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -37,8 +42,10 @@ def add_asset():
         conn.commit()
         cur.close()
         conn.close()
+        print("add_asset: Asset added, redirecting")
         return redirect(url_for("assets.assets_page"))
     else:
+        print("add_asset: GET request")
         cur.execute("""
             SELECT name, code FROM currency
             ORDER BY
@@ -53,4 +60,5 @@ def add_asset():
         currencies = cur.fetchall()
         cur.close()
         conn.close()
+        print("add_asset: Rendering add_asset.html")
         return render_template("add_asset.html", currencies=currencies)
