@@ -14,30 +14,35 @@ def update_asset(asset_name):
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
-        currency_name = request.form.get("currency", "USD")
 
         try:
             amount = float(amount_str)
             if amount <= 0:
                 cur.close()
                 conn.close()
-                return redirect(url_for("assets_page"))
+                return redirect(url_for("assets.assets_page"))
         except ValueError:
             cur.close()
             conn.close()
-            return redirect(url_for("assets_page"))
+            return redirect(url_for("assets.assets_page"))
 
-        # Get the exchange rate for the selected currency
-        cur.execute("SELECT rate FROM currency WHERE name = %s", (currency_name,))
-        currency_rate_row = cur.fetchone()
-        if currency_rate_row:
-            exchange_rate = currency_rate_row['rate']
-            amount_usd = amount / exchange_rate  # Convert to USD
+        currency_input = request.form.get("currency", "US Dollar") # This can be name or code
+
+        # Determine the currency name to store
+        cur.execute("SELECT name FROM currency WHERE name = %s", (currency_input,))
+        currency_row = cur.fetchone()
+        if currency_row:
+            currency_name = currency_row['name']
         else:
-            amount_usd = amount # Default to no conversion if currency not found
+            cur.execute("SELECT name FROM currency WHERE code = %s", (currency_input,))
+            currency_row = cur.fetchone()
+            if currency_row:
+                currency_name = currency_row['name']
+            else:
+                currency_name = "US Dollar" # Default to US Dollar if not found by name or code
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount_usd, last_updated, currency_name))
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
         conn.commit()
         cur.close()
         conn.close()
@@ -50,7 +55,7 @@ def update_asset(asset_name):
             conn.close()
             return "Asset not found", 404
         cur.execute("""
-            SELECT name FROM currency
+            SELECT name, code FROM currency
             ORDER BY
                 CASE name
                     WHEN 'US Dollar' THEN 1

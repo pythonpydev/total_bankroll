@@ -14,7 +14,7 @@ def add_asset():
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
-        currency_name = request.form.get("currency", "USD")
+        currency_name = request.form.get("currency", "US Dollar") # Store currency name directly from form
 
         if not name or not amount_str:
             cur.close()
@@ -32,24 +32,15 @@ def add_asset():
             conn.close()
             return "Invalid amount format", 400
 
-        # Get the exchange rate for the selected currency
-        cur.execute("SELECT rate FROM currency WHERE name = %s", (currency_name,))
-        currency_rate_row = cur.fetchone()
-        if currency_rate_row:
-            exchange_rate = currency_rate_row['rate']
-            amount_usd = amount / exchange_rate  # Convert to USD
-        else:
-            amount_usd = amount # Default to no conversion if currency not found
-
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount_usd, last_updated, currency_name))
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("assets.assets_page"))
     else:
         cur.execute("""
-            SELECT name FROM currency
+            SELECT name, code FROM currency
             ORDER BY
                 CASE name
                     WHEN 'US Dollar' THEN 1

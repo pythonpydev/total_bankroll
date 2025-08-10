@@ -12,6 +12,9 @@ def assets_page():
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+    cur.execute("SELECT name, rate FROM currency")
+    currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
     # Get current and previous asset totals
     cur.execute("""
         WITH RankedAssets AS (
@@ -27,8 +30,8 @@ def assets_page():
         SELECT
             a1.id,
             a1.name,
-            CAST(a1.amount AS REAL) AS current_amount,
-            CAST(a2.amount AS REAL) AS previous_amount,
+            a1.amount AS current_amount,
+            a2.amount AS previous_amount,
             a1.currency
         FROM RankedAssets a1
         LEFT JOIN RankedAssets a2
@@ -36,13 +39,26 @@ def assets_page():
         WHERE a1.rn = 1
         ORDER BY a1.name
     """)
-    assets_data = cur.fetchall()
+    assets_data_raw = cur.fetchall()
 
-    total_current = sum(asset['current_amount'] for asset in assets_data)
-    total_previous = sum(asset['previous_amount'] if asset['previous_amount'] is not None else 0 for asset in assets_data)
+    assets_data = []
+    for asset in assets_data_raw:
+        converted_asset = dict(asset) # Create a mutable dictionary from the DictRow
+        original_amount = converted_asset['current_amount']
+        original_previous_amount = converted_asset['previous_amount']
+        currency = converted_asset['currency']
+
+        rate = currency_rates.get(currency, 1.0) # Default to 1.0 if rate not found
+
+        converted_asset['current_amount_usd'] = original_amount / rate
+        converted_asset['previous_amount_usd'] = original_previous_amount / rate if original_previous_amount is not None else 0.0
+        assets_data.append(converted_asset)
+
+    total_current = sum(asset['current_amount_usd'] for asset in assets_data)
+    total_previous = sum(asset['previous_amount_usd'] if asset['previous_amount_usd'] is not None else 0 for asset in assets_data)
 
     cur.execute("""
-        SELECT name FROM currency
+        SELECT name, code FROM currency
         ORDER BY
             CASE name
                 WHEN 'US Dollar' THEN 1
