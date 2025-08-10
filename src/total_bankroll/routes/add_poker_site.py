@@ -14,7 +14,7 @@ def add_site():
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
-        currency_name = request.form.get("currency", "USD")
+        currency_name = request.form.get("currency", "US Dollar")
 
         if not name or not amount_str:
             cur.close()

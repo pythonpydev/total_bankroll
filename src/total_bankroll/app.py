@@ -1,7 +1,8 @@
 """Web entry point for total_bankroll."""
 
 from flask import Flask, Blueprint, render_template, request, redirect, url_for
-
+import psycopg2
+import psycopg2.extras
 from datetime import datetime
 # import os # No longer needed for PostgreSQL
 

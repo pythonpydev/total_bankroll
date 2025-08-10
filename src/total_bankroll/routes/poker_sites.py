@@ -11,6 +11,11 @@ def poker_sites_page():
     """Poker Sites page."""
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("SELECT name, rate FROM currency")
+    currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
+    # Get current and previous asset totals
     cur.execute("""
         WITH RankedSites AS (
             SELECT
@@ -18,25 +23,53 @@ def poker_sites_page():
                 name,
                 amount,
                 last_updated,
+                currency,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
             FROM sites
         )
         SELECT
             s1.id,
             s1.name,
-            CAST(s1.amount AS REAL) AS current_amount,
-            CAST(s2.amount AS REAL) AS previous_amount
+            s1.amount AS current_amount,
+            s2.amount AS previous_amount,
+            s1.currency
         FROM RankedSites s1
         LEFT JOIN RankedSites s2
             ON s1.name = s2.name AND s2.rn = 2
         WHERE s1.rn = 1
         ORDER BY s1.name
     """)
-    poker_sites_data = cur.fetchall()
 
-    total_current = sum(site['current_amount'] for site in poker_sites_data)
-    total_previous = sum(site['previous_amount'] if site['previous_amount'] is not None else 0 for site in poker_sites_data)
+    poker_sites_data_raw = cur.fetchall()
 
+    poker_sites_data = []
+    for site in poker_sites_data_raw:
+        converted_site = dict(site)
+        original_amount = converted_site['current_amount']
+        original_previous_amount = converted_site['previous_amount']        
+        currency = converted_site['currency']
+
+        rate = currency_rates.get(currency, 1.0)
+        
+        converted_site['current_amount_usd'] = original_amount / rate
+        converted_site['previous_amount_usd'] = original_previous_amount / rate if original_previous_amount is not None else 0.0
+        poker_sites_data.append(converted_site)
+
+    total_current = sum(site['current_amount_usd'] for site in poker_sites_data)
+    total_previous = sum(site['previous_amount_usd'] if site['previous_amount_usd'] is not None else 0 for site in poker_sites_data)
+
+    cur.execute("""
+        SELECT name, code FROM currency
+        ORDER BY
+            CASE name
+                WHEN 'US Dollar' THEN 1
+                WHEN 'British Pound' THEN 2
+                WHEN 'Euro' THEN 3
+                ELSE 4
+            END,
+            name
+    """)
+    currencies = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("poker_sites.html", poker_sites=poker_sites_data, total_current=total_current, total_previous=total_previous)
+    return render_template("poker_sites.html", poker_sites=poker_sites_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
