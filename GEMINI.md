@@ -46,7 +46,7 @@ the Euro.  After that, display the currencies in alphabetical order.
 
 ## Database
 
-- Use SQLite to implement the database
+- Use PostgreSQL to implement the database
 
 ### Database Schema
 
