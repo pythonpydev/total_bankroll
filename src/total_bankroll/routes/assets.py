@@ -12,8 +12,10 @@ def assets_page():
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    cur.execute("SELECT name, rate FROM currency")
-    currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+    cur.execute("SELECT name, rate, symbol FROM currency")
+    currency_data = cur.fetchall()
+    currency_rates = {row['name']: row['rate'] for row in currency_data}
+    currency_symbols = {row['name']: row['symbol'] for row in currency_data}
 
     # Get current and previous asset totals
     cur.execute("""
@@ -55,6 +57,11 @@ def assets_page():
 
         converted_asset['current_amount_usd'] = original_amount / rate
         converted_asset['previous_amount_usd'] = original_previous_amount / previous_rate if original_previous_amount is not None else 0.0
+        
+        # Add currency symbols to the asset data
+        converted_asset['currency_symbol'] = currency_symbols.get(currency, currency)
+        converted_asset['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
+        
         assets_data.append(converted_asset)
 
     total_current = sum(asset['current_amount_usd'] for asset in assets_data)
@@ -75,4 +82,3 @@ def assets_page():
     cur.close()
     conn.close()
     return render_template("assets.html", assets=assets_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
-
