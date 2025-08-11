@@ -32,7 +32,8 @@ def assets_page():
             a1.name,
             a1.amount AS current_amount,
             a2.amount AS previous_amount,
-            a1.currency
+            a1.currency,
+            a2.currency AS previous_currency
         FROM RankedAssets a1
         LEFT JOIN RankedAssets a2
             ON a1.name = a2.name AND a2.rn = 2
@@ -47,11 +48,13 @@ def assets_page():
         original_amount = converted_asset['current_amount']
         original_previous_amount = converted_asset['previous_amount']
         currency = converted_asset['currency']
+        previous_currency = converted_asset['previous_currency']
 
         rate = currency_rates.get(currency, 1.0) # Default to 1.0 if rate not found
+        previous_rate = currency_rates.get(previous_currency, 1.0)
 
         converted_asset['current_amount_usd'] = original_amount / rate
-        converted_asset['previous_amount_usd'] = original_previous_amount / rate if original_previous_amount is not None else 0.0
+        converted_asset['previous_amount_usd'] = original_previous_amount / previous_rate if original_previous_amount is not None else 0.0
         assets_data.append(converted_asset)
 
     total_current = sum(asset['current_amount_usd'] for asset in assets_data)

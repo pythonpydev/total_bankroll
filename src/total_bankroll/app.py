@@ -84,8 +84,8 @@ def withdrawal():
     withdrawal_data = []
     for withdrawal in withdrawals_raw:
         withdrawal_dict = dict(withdrawal)
-        withdrawal_dict['amount_usd'] = withdrawal['original_amount'] * withdrawal['exchange_rate']
-        withdrawal_dict['withdrawn_at_usd'] = withdrawal['original_withdrawn_at'] * withdrawal['exchange_rate']
+        withdrawal_dict['amount_usd'] = withdrawal['original_amount'] / withdrawal['exchange_rate']
+        withdrawal_dict['withdrawn_at_usd'] = withdrawal['original_withdrawn_at'] / withdrawal['exchange_rate']
         withdrawal_data.append(withdrawal_dict)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -241,8 +241,8 @@ def deposit():
         deposit_data = []
         for deposit in deposits_raw:
             deposit_dict = dict(deposit)
-            deposit_dict['amount_usd'] = deposit['original_amount'] * deposit['exchange_rate']
-            deposit_dict['deposited_at_usd'] = deposit['original_deposited_at'] * deposit['exchange_rate']
+            deposit_dict['amount_usd'] = deposit['original_amount'] / deposit['exchange_rate']
+            deposit_dict['deposited_at_usd'] = deposit['original_deposited_at'] / deposit['exchange_rate']
             deposit_data.append(deposit_dict)
 
         today = datetime.now().strftime("%Y-%m-%d")

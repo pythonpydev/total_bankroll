@@ -45,6 +45,11 @@ def update_site(site_name):
             cur.close()
             conn.close()
             return "Site not found", 404
+
+        cur.execute("SELECT amount FROM sites WHERE name = %s ORDER BY last_updated DESC OFFSET 1 LIMIT 1", (site_name,))
+        previous_amount_row = cur.fetchone()
+        previous_amount = previous_amount_row[0] if previous_amount_row else None
+
         cur.execute("""
             SELECT name FROM currency
             ORDER BY
@@ -59,4 +64,4 @@ def update_site(site_name):
         currencies = cur.fetchall()
         cur.close()
         conn.close()
-        return render_template("update_site.html", site=site, currencies=currencies)
+        return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount)

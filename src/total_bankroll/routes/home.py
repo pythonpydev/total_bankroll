@@ -22,12 +22,19 @@ def home():
                 currency,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
             FROM sites
+        ),
+        ConvertedSites AS (
+            SELECT
+                rs.name,
+                rs.amount / c.rate AS amount_usd,
+                rs.rn
+            FROM RankedSites rs
+            JOIN currency c ON rs.currency = c.name
         )
         SELECT
-            SUM(CASE WHEN rs.rn = 1 THEN rs.amount / c.rate ELSE 0 END) AS current_total,
-            SUM(CASE WHEN rs.rn = 2 THEN rs.amount / c.rate ELSE 0 END) AS previous_total
-        FROM RankedSites rs
-        JOIN currency c ON rs.currency = c.name;
+            SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total,
+            SUM(CASE WHEN rn = 2 THEN amount_usd ELSE 0 END) AS previous_total
+        FROM ConvertedSites;
     """)
     poker_sites_data = cur.fetchone()
 
@@ -38,39 +45,39 @@ def home():
     cur.execute("""
         WITH RankedAssets AS (
             SELECT
-                id,
                 name,
                 amount,
                 last_updated,
                 currency,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
             FROM assets
+        ),
+        ConvertedAssets AS (
+            SELECT
+                ra.name,
+                ra.amount / c.rate AS amount_usd,
+                ra.rn
+            FROM RankedAssets ra
+            JOIN currency c ON ra.currency = c.name
         )
         SELECT
-            a1.id,
-            a1.name,
-            CAST(a1.amount AS REAL) AS current_amount,
-            CAST(a2.amount AS REAL) AS previous_amount,
-            a1.currency
-        FROM RankedAssets a1
-        LEFT JOIN RankedAssets a2
-            ON a1.name = a2.name AND a2.rn = 2
-        WHERE a1.rn = 1
-        ORDER BY a1.name
+            SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total,
+            SUM(CASE WHEN rn = 2 THEN amount_usd ELSE 0 END) AS previous_total
+        FROM ConvertedAssets;
     """)
-    assets_data = cur.fetchall()
+    assets_data = cur.fetchone()
 
-    current_asset_total = sum([asset['current_amount'] for asset in assets_data])
-    previous_asset_total = sum([asset['previous_amount'] if asset['previous_amount'] is not None else 0.0 for asset in assets_data])
+    current_asset_total = float(assets_data['current_total']) if assets_data and assets_data['current_total'] is not None else 0.0
+    previous_asset_total = float(assets_data['previous_total']) if assets_data and assets_data['previous_total'] is not None else 0.0
 
     # Get current total of all withdrawals
-    cur.execute("SELECT SUM(amount) FROM drawings")
+    cur.execute("SELECT SUM(d.amount / c.rate) FROM drawings d JOIN currency c ON d.currency = c.name")
     total_withdrawals = cur.fetchone()[0]
     if total_withdrawals is None:
         total_withdrawals = 0
 
     # Get current total of all deposits
-    cur.execute("SELECT SUM(amount) FROM deposits")
+    cur.execute("SELECT SUM(d.amount / c.rate) FROM deposits d JOIN currency c ON d.currency = c.name")
     total_deposits = cur.fetchone()[0]
     if total_deposits is None:
         total_deposits = 0

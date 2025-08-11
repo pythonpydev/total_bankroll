@@ -32,7 +32,8 @@ def poker_sites_page():
             s1.name,
             s1.amount AS current_amount,
             s2.amount AS previous_amount,
-            s1.currency
+            s1.currency,
+            s2.currency AS previous_currency
         FROM RankedSites s1
         LEFT JOIN RankedSites s2
             ON s1.name = s2.name AND s2.rn = 2
@@ -46,13 +47,15 @@ def poker_sites_page():
     for site in poker_sites_data_raw:
         converted_site = dict(site)
         original_amount = converted_site['current_amount']
-        original_previous_amount = converted_site['previous_amount']        
+        original_previous_amount = converted_site['previous_amount']
         currency = converted_site['currency']
+        previous_currency = converted_site['previous_currency']
 
         rate = currency_rates.get(currency, 1.0)
-        
+        previous_rate = currency_rates.get(previous_currency, 1.0)
+
         converted_site['current_amount_usd'] = original_amount / rate
-        converted_site['previous_amount_usd'] = original_previous_amount / rate if original_previous_amount is not None else 0.0
+        converted_site['previous_amount_usd'] = original_previous_amount / previous_rate if original_previous_amount is not None else 0.0
         poker_sites_data.append(converted_site)
 
     total_current = sum(site['current_amount_usd'] for site in poker_sites_data)
