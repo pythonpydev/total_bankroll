@@ -12,8 +12,10 @@ def poker_sites_page():
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    cur.execute("SELECT name, rate FROM currency")
-    currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+    cur.execute("SELECT name, rate, symbol FROM currency")
+    currency_data = cur.fetchall()
+    currency_rates = {row['name']: row['rate'] for row in currency_data}
+    currency_symbols = {row['name']: row['symbol'] for row in currency_data}
 
     # Get current and previous asset totals
     cur.execute("""
@@ -56,6 +58,11 @@ def poker_sites_page():
 
         converted_site['current_amount_usd'] = original_amount / rate
         converted_site['previous_amount_usd'] = original_previous_amount / previous_rate if original_previous_amount is not None else 0.0
+        
+        # Add currency symbols to the site data
+        converted_site['currency_symbol'] = currency_symbols.get(currency, currency)
+        converted_site['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
+        
         poker_sites_data.append(converted_site)
 
     total_current = sum(site['current_amount_usd'] for site in poker_sites_data)

@@ -42,7 +42,7 @@
                                 <td>${{ "%.2f" | format(site.previous_amount_usd) if site.previous_amount_usd is not none else "N/A" }}</td>
                                 <td>${{ "%.2f" | format(site.current_amount_usd) }}</td>
                                 <td>{{ site.currency }}</td>
-                                <td>{{ "%.2f" | format(site.current_amount) }} ({{ site.currency }})</td>
+                                <td>{{ site.currency_symbol }}{{ "%.2f" | format(site.current_amount) }}</td>
                                 <td class="{% if (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_site.update_site', site_name=site.name) }}">Update</button>
