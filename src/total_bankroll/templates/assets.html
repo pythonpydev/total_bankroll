@@ -29,6 +29,8 @@
                                 <th scope="col">Asset Name</th>
                                 <th scope="col">Previous</th>
                                 <th scope="col">Current (USD)</th>
+                                <th scope="col">Original Currency</th>
+                                <th scope="col">Original Amount</th>
                                 <th scope="col">Change</th>
                                 <th scope="col">Actions</th>
                             </tr>
@@ -39,6 +41,8 @@
                                         <td>{{ asset.name }}</td>
                                         <td>${{ "%.2f" | format(asset.previous_amount_usd) if asset.previous_amount_usd is not none else "N/A" }}</td>
                                         <td>${{ "%.2f" | format(asset.current_amount_usd) }}</td>
+                                        <td>{{ asset.currency }}</td>
+                                        <td>{{ "%.2f" | format(asset.current_amount) }} ({{ asset.currency }})</td>
                                         <td class="{% if (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) }}</td>
                                         <td>
                                             <a href="#" class="btn btn-sm btn-primary update-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('update_asset.update_asset', asset_name=asset.name) }}">Update</a>
