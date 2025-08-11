@@ -17,6 +17,8 @@ from routes.add_poker_site import add_site_bp
 from routes.update_poker_site import update_site_bp
 from routes.withdrawal import withdrawal_bp
 from routes.deposit import deposit_bp   
+from routes.add_deposit import add_deposit_bp
+from routes.add_withdrawal import add_withdrawal_bp
 
 app = Flask(__name__)
 
@@ -33,169 +35,8 @@ app.register_blueprint(add_site_bp)
 app.register_blueprint(update_site_bp)
 app.register_blueprint(withdrawal_bp)
 app.register_blueprint(deposit_bp)
-
-
-
-@app.route("/add_withdrawal", methods=["GET", "POST"])
-def add_withdrawal():
-    """Add a withdrawal transaction."""
-    conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if request.method == "POST":
-        date = request.form.get("date", "")
-        amount_str = request.form.get("amount", "")
-        withdrawn_at_str = request.form.get("withdrawn_at", "")
-        currency_name = request.form.get("currency", "USD")
-
-        if not date or not amount_str or not withdrawn_at_str:
-            cur.close()
-            conn.close()
-            return "Date, amount, and withdrawn_at are required", 400
-
-        try:
-            amount = float(amount_str)
-            withdrawn_at = float(withdrawn_at_str)
-            if amount <= 0:
-                cur.close()
-                conn.close()
-                return "Amount must be positive", 400
-        except ValueError:
-            cur.close()
-            conn.close()
-            return "Invalid amount or withdrawn_at format", 400
-
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, withdrawn_at, last_updated, currency_name))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return redirect(url_for("withdrawal"))
-    else:
-        today = datetime.now().strftime("%Y-%m-%d")
-        cur.execute("""
-            SELECT name FROM currency
-            ORDER BY
-                CASE name
-                    WHEN 'US Dollar' THEN 1
-                    WHEN 'British Pound' THEN 2
-                    WHEN 'Euro' THEN 3
-                    ELSE 4
-                END,
-                name
-        """)
-        currencies = cur.fetchall()
-        # Recalculate total_net_worth for the form
-        cur.execute("""
-            SELECT
-                SUM(amount) AS current_total
-            FROM sites
-            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
-        """)
-        poker_sites_data = cur.fetchone()
-        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
-
-        cur.execute("""
-            SELECT
-                SUM(amount) AS current_total
-            FROM assets
-            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
-        """)
-        assets_data = cur.fetchone()
-        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
-
-        cur.execute("SELECT SUM(amount) FROM drawings")
-        total_withdrawals = cur.fetchone()[0]
-        if total_withdrawals is None:
-            total_withdrawals = 0
-
-        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
-
-        cur.close()
-        conn.close()
-        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_net_worth=total_net_worth)
-
-
-
-
-@app.route("/add_deposit", methods=["GET", "POST"])
-def add_deposit():
-    """Add a deposit transaction."""
-    conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if request.method == "POST":
-        date = request.form.get("date", "")
-        amount_str = request.form.get("amount", "")
-        deposited_at_str = request.form.get("deposited_at", "")
-        currency_name = request.form.get("currency", "US Dollar")
-
-        if not date or not amount_str or not deposited_at_str:
-            cur.close()
-            conn.close()
-            return "Date, amount, and deposited_at are required", 400
-
-        try:
-            amount = float(amount_str)
-            deposited_at = float(deposited_at_str)
-            if amount <= 0 or deposited_at < 0:
-                cur.close()
-                conn.close()
-                return "Amount must be positive and deposited_at non-negative", 400
-        except ValueError:
-            cur.close()
-            conn.close()
-            return "Invalid amount or deposited_at format", 400
-
-        # Store the amount in original currency - conversion will happen on display
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO deposits (date, amount, deposited_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, deposited_at, last_updated, currency_name))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return redirect(url_for("deposit"))
-    else:
-        today = datetime.now().strftime("%Y-%m-%d")
-        cur.execute("""
-            SELECT name FROM currency
-            ORDER BY
-                CASE name
-                    WHEN 'US Dollar' THEN 1
-                    WHEN 'British Pound' THEN 2
-                    WHEN 'Euro' THEN 3
-                    ELSE 4
-                END,
-                name
-        """)
-        currencies = cur.fetchall()
-        # Recalculate total_net_worth for the form
-        cur.execute("""
-            SELECT
-                SUM(amount) AS current_total
-            FROM sites
-            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
-        """)
-        poker_sites_data = cur.fetchone()
-        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
-
-        cur.execute("""
-            SELECT
-                SUM(amount) AS current_total
-            FROM assets
-            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
-        """)
-        assets_data = cur.fetchone()
-        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
-
-        cur.execute("SELECT SUM(amount) FROM drawings")
-        total_withdrawals = cur.fetchone()[0]
-        if total_withdrawals is None:
-            total_withdrawals = 0
-
-        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
-
-        cur.close()
-        conn.close()
-        return render_template("add_deposit.html", today=today, currencies=currencies, total_net_worth=total_net_worth)
-
+app.register_blueprint(add_deposit_bp)
+app.register_blueprint(add_withdrawal_bp)
 
 @app.route("/update_deposit/<int:deposit_id>", methods=["GET", "POST"])
 def update_deposit(deposit_id):
@@ -254,7 +95,6 @@ def update_deposit(deposit_id):
         cur.close()
         conn.close()
         return render_template("update_deposit.html", deposit_item=deposit_item, currencies=currencies)
-
 
 @app.route("/update_withdrawal/<int:withdrawal_id>", methods=["GET", "POST"])
 def update_withdrawal(withdrawal_id):
@@ -396,14 +236,14 @@ def perform_delete(item_type, item_id):
         conn.commit()
         cur.close()
         conn.close()
-        return redirect(url_for("withdrawal"))
+        return redirect(url_for("withdrawal.withdrawal"))
         
     elif item_type == "deposit":
         cur.execute("DELETE FROM deposits WHERE id = %s", (item_id,))
         conn.commit()
         cur.close()
         conn.close()
-        return redirect(url_for("deposit"))
+        return redirect(url_for("deposit.deposit"))
         
     else:
         cur.close()

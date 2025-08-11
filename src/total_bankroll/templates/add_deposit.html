@@ -3,7 +3,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <form id="addDepositForm" action="{{ url_for('add_deposit') }}" method="post">
+    <form id="addDepositForm" action="{{ url_for('add_deposit.add_deposit') }}" method="post">
         <div class="mb-3">
             <label for="date" class="form-label">Date:</label>
             <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required autofocus>
