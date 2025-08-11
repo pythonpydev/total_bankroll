@@ -64,8 +64,30 @@ def withdrawal():
 
     total_net_worth = current_poker_total + current_asset_total - total_withdrawals
 
-    cur.execute("SELECT id, date, CAST(amount AS REAL) as amount, CAST(withdrawn_at AS REAL) as withdrawn_at, last_updated, currency FROM drawings")
-    withdrawal_data = cur.fetchall()
+    # Get deposits with currency conversion to USD
+    cur.execute("""
+        SELECT 
+            d.id, 
+            d.date, 
+            CAST(d.amount AS REAL) as original_amount,
+            CAST(d.withdrawn_at AS REAL) as original_withdrawn_at,
+            d.last_updated, 
+            COALESCE(d.currency, 'US Dollar') as currency,
+            COALESCE(c.rate, 1.0) as exchange_rate
+        FROM drawings d
+        LEFT JOIN currency c ON d.currency = c.name
+        ORDER BY d.date DESC
+    """)
+    withdrawals_raw = cur.fetchall()
+
+    # Process withdrawals to add USD calculations
+    withdrawal_data = []
+    for withdrawal in withdrawals_raw:
+        withdrawal_dict = dict(withdrawal)
+        withdrawal_dict['amount_usd'] = withdrawal['original_amount'] * withdrawal['exchange_rate']
+        withdrawal_dict['withdrawn_at_usd'] = withdrawal['original_withdrawn_at'] * withdrawal['exchange_rate']
+        withdrawal_data.append(withdrawal_dict)
+
     today = datetime.now().strftime("%Y-%m-%d")
     cur.execute("""
         SELECT name FROM currency
@@ -79,6 +101,7 @@ def withdrawal():
             name
     """)
     currencies = cur.fetchall()
+
     cur.close()
     conn.close()
     return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
