@@ -36,6 +36,10 @@ def withdrawal():
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+    # Get currency symbols
+    cur.execute("SELECT name, symbol FROM currency")
+    currency_symbols = {row['name']: row['symbol'] for row in cur.fetchall()}
+
     # Get current poker site totals
     cur.execute("""
         SELECT
@@ -80,12 +84,13 @@ def withdrawal():
     """)
     withdrawals_raw = cur.fetchall()
 
-    # Process withdrawals to add USD calculations
+    # Process withdrawals to add USD calculations and currency symbols
     withdrawal_data = []
     for withdrawal in withdrawals_raw:
         withdrawal_dict = dict(withdrawal)
         withdrawal_dict['amount_usd'] = withdrawal['original_amount'] / withdrawal['exchange_rate']
         withdrawal_dict['withdrawn_at_usd'] = withdrawal['original_withdrawn_at'] / withdrawal['exchange_rate']
+        withdrawal_dict['currency_symbol'] = currency_symbols.get(withdrawal['currency'], withdrawal['currency'])
         withdrawal_data.append(withdrawal_dict)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -193,6 +198,10 @@ def deposit():
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     try:
+        # Get currency symbols
+        cur.execute("SELECT name, symbol FROM currency")
+        currency_symbols = {row['name']: row['symbol'] for row in cur.fetchall()}
+
         # Get current poker site totals
         cur.execute("""
             SELECT
@@ -237,12 +246,13 @@ def deposit():
         """)
         deposits_raw = cur.fetchall()
         
-        # Process deposits to add USD calculations
+        # Process deposits to add USD calculations and currency symbols
         deposit_data = []
         for deposit in deposits_raw:
             deposit_dict = dict(deposit)
             deposit_dict['amount_usd'] = deposit['original_amount'] / deposit['exchange_rate']
             deposit_dict['deposited_at_usd'] = deposit['original_deposited_at'] / deposit['exchange_rate']
+            deposit_dict['currency_symbol'] = currency_symbols.get(deposit['currency'], deposit['currency'])
             deposit_data.append(deposit_dict)
 
         today = datetime.now().strftime("%Y-%m-%d")
