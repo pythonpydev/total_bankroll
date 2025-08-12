@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Database Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+        .warning-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .warning-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>⚠️ Database Reset Confirmation</h2>
+        </div>
+        <div class="content">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text">Are you sure you want to reset the database?</div>
+            <div class="description">
+                This action will permanently delete ALL data including:
+                <br><br>
+                • All poker sites<br>
+                • All assets<br>
+                • All deposits<br>
+                • All withdrawals<br>
+                • All exchange rates<br>
+                <br>
+                <strong>This action cannot be undone!</strong>
+            </div>
+            <div class="button-group">
+                <form method="POST" action="{{ url_for('delete_db.reset_database') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        Yes, Reset Database
+                    </button>
+                </form>
+                <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

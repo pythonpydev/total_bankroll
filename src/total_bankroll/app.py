@@ -1,6 +1,7 @@
 """Web entry point for total_bankroll."""
 
 from flask import Flask, Blueprint, render_template, request, redirect, url_for
+import os
 import psycopg2
 import psycopg2.extras
 from datetime import datetime
@@ -20,8 +21,12 @@ from routes.deposit import deposit_bp
 from routes.add_deposit import add_deposit_bp
 from routes.add_withdrawal import add_withdrawal_bp
 from routes.settings import settings_bp
+from routes.settings import reset_db_bp
+
+import os
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 # Close db after each request
 app.teardown_appcontext(close_db)
@@ -39,6 +44,7 @@ app.register_blueprint(deposit_bp)
 app.register_blueprint(add_deposit_bp)
 app.register_blueprint(add_withdrawal_bp)
 app.register_blueprint(settings_bp)
+app.register_blueprint(reset_db_bp)
 
 @app.route("/update_exchange_rates", methods=["POST"])
 def update_exchange_rates():
@@ -128,9 +134,6 @@ def perform_delete(item_type, item_id):
         return "Invalid item type", 400
 
 
-
-
-
 @app.route("/about")
 def about_page():
     """About page."""
@@ -139,4 +142,4 @@ def about_page():
 
 if __name__ == "__main__":
     currency.insert_initial_currency_data(app)
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

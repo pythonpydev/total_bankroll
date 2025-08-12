@@ -22,9 +22,13 @@
                 <p class="text-muted mb-4">Settings options will be available here.</p>
 
                 <!-- Database Section -->
-                <h3 class="mt-5">Database</h3>
+                <h3 class="mt-5">Database Management</h3>
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
-                    <button type="button" class="btn btn-danger">Reset database</button>
+                    <button type="button" class="btn btn-danger">
+                        <a href="{{ url_for('delete_db.confirm_reset_database') }}" class="btn btn-danger">
+                            Reset Database
+                        </a>
+                    <!-- Replace your existing reset database button with this -->
                     <button type="button" class="btn btn-success">Export data as CSV</button>
                     <button type="button" class="btn btn-primary">Import data from CSV</button>
                 </div>
