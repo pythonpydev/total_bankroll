@@ -216,3 +216,60 @@ Possible future refinements, efficiencies and refactoring:
 *   **Frontend Asset Management**: The static assets are currently managed manually. Using a tool like Webpack or Parcel could help to bundle and minify the assets, which would improve the application's performance.
 *   **API**: The application is a traditional web application that renders HTML on the server. As the application grows, it might be beneficial to expose a RESTful API that can be consumed by a frontend framework like React or Vue.js. This would allow for a more interactive user experience.
 *   **Database Connection Handling**: The database connection is opened and closed in each route. It would be more efficient to use Flask's application context to manage the database connection. This is already done with `app.teardown_appcontext(close_db)`, but the connection is still opened manually in each route. The `get_db` function should handle the connection opening and reuse it if it's already open in the current context.
+## Running the Application
+
+To run the Flask application, follow these steps:
+
+1.  **Navigate to the project's root directory** in your terminal:
+    ```bash
+    cd /home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/total_bankroll/
+    ```
+
+2.  **Ensure Python Dependencies are Installed**:
+    If you haven't already, install the required Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Configure Environment Variables**:
+    The application uses environment variables for sensitive information and configuration. These are loaded from a `.env` file in the project root.
+
+    *   **Create/Edit your `.env` file**: In the root of your project (`/home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/total_bankroll/.env`), ensure it contains the following, replacing placeholder values with your actual credentials:
+
+        ```
+        # .env file for total_bankroll project
+
+        FLASK_APP=total_bankroll.app
+        FLASK_ENV=development
+
+        # Flask Secret Key (for session management)
+        SECRET_KEY="YOUR_FLASK_SECRET_KEY"
+
+        # Exchange Rate API Key (from exchangerate-api.com)
+        EXCHANGE_RATE_API_KEY="YOUR_EXCHANGERATE_API_KEY"
+
+        # PostgreSQL Database Credentials
+        DB_HOST="localhost"
+        DB_NAME="bankroll"
+        DB_USER="efb"
+        DB_PASS="post123!"
+        ```
+        *   **Generating `SECRET_KEY`**: You can generate a strong, random `SECRET_KEY` by running `python -c "import os; print(os.urandom(24).hex())"` in your terminal and pasting the output.
+        *   **`EXCHANGE_RATE_API_KEY`**: Obtain this from [https://www.exchangerate-api.com/](https://www.exchangerate-api.com/).
+
+4.  **Set `PYTHONPATH` (Linux/macOS)**:
+    This environment variable tells Python where to find your application's modules. You need to set this in your terminal session *before* running the app.
+
+    ```bash
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+    ```
+    *   **Note**: This command needs to be run in each new terminal session. For persistence, you can add it to your shell's startup file (e.g., `~/.bashrc` or `~/.zshrc`).
+
+5.  **Run the Flask Application**:
+    From the project's root directory, execute the following command:
+
+    ```bash
+    python -m flask run
+    ```
+
+    This will start the Flask development server, typically accessible at `http://127.0.0.1:5000/`.

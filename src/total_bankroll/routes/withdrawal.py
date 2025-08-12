@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, request, url_for
 import psycopg2
 import psycopg2.extras
-from db import get_db
+from ..db import get_db
 from datetime import datetime
 
 withdrawal_bp = Blueprint("withdrawal", __name__)

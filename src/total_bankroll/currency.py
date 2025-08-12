@@ -1,4 +1,4 @@
-from db import get_db
+from .db import get_db
 
 def insert_initial_currency_data(app):
     """Insert initial currency data if the table is empty."""

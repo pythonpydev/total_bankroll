@@ -1,19 +1,15 @@
 import psycopg2
 from psycopg2.extras import DictCursor
-from flask import g
-
-DB_HOST = "localhost"
-DB_NAME = "bankroll"
-DB_USER = "efb"
-DB_PASS = "post123!"
+from flask import g, current_app
+import os
 
 def get_db():
     if "db" not in g:
         g.db = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
+            host=current_app.config['DB_HOST'],
+            database=current_app.config['DB_NAME'],
+            user=current_app.config['DB_USER'],
+            password=current_app.config['DB_PASS'],
             cursor_factory=DictCursor
         )
     return g.db

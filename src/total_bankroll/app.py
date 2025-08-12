@@ -2,34 +2,36 @@
 
 from flask import Flask, Blueprint, render_template, request, redirect, url_for
 import os
+from dotenv import load_dotenv
+from total_bankroll.config import config
+
+load_dotenv() # Load environment variables from .env file
+
 import psycopg2
 import psycopg2.extras
 from datetime import datetime
-# import os # No longer needed for PostgreSQL
 
-import currency 
-from db import get_db, close_db
-from routes.home import home_bp
-from routes.poker_sites import poker_sites_bp 
-from routes.assets import assets_bp
-from routes.add_asset import add_asset_bp
-from routes.update_asset import update_asset_bp
-from routes.add_poker_site import add_site_bp
-from routes.update_poker_site import update_site_bp
-from routes.withdrawal import withdrawal_bp
-from routes.deposit import deposit_bp   
-from routes.add_deposit import add_deposit_bp
-from routes.add_withdrawal import add_withdrawal_bp
-from routes.settings import settings_bp
-from routes.settings import reset_db_bp
-from routes.settings import export_db_bp
-from routes.settings import import_db_bp
-from routes.currency_update import currency_update_bp
-
-import os
+from . import currency 
+from .db import get_db, close_db
+from .routes.home import home_bp
+from .routes.poker_sites import poker_sites_bp 
+from .routes.assets import assets_bp
+from .routes.add_asset import add_asset_bp
+from .routes.update_asset import update_asset_bp
+from .routes.add_poker_site import add_site_bp
+from .routes.update_poker_site import update_site_bp
+from .routes.withdrawal import withdrawal_bp
+from .routes.deposit import deposit_bp   
+from .routes.add_deposit import add_deposit_bp
+from .routes.add_withdrawal import add_withdrawal_bp
+from .routes.settings import settings_bp
+from .routes.settings import reset_db_bp
+from .routes.settings import export_db_bp
+from .routes.settings import import_db_bp
+from .routes.currency_update import currency_update_bp
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.config.from_object(config[os.getenv('FLASK_ENV', 'default')])
 
 # Close db after each request
 app.teardown_appcontext(close_db)

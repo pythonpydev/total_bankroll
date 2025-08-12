@@ -2,7 +2,7 @@ from flask import Blueprint, render_template
 import psycopg2
 import psycopg2.extras
 
-from db import get_db
+from ..db import get_db
 
 home_bp = Blueprint("home", __name__)
 

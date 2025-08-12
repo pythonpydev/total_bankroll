@@ -2,14 +2,13 @@ from flask import Blueprint, render_template, redirect, url_for, flash, current_
 import requests
 import psycopg2
 import psycopg2.extras
-from db import get_db
-import os
+from ..db import get_db
 
 currency_update_bp = Blueprint("currency_update", __name__)
 
 @currency_update_bp.route("/update_exchange_rates", methods=["POST"])
 def update_exchange_rates():
-    api_key = os.environ.get("EXCHANGE_RATE_API_KEY") # Get API key from environment variable
+    api_key = current_app.config.get("EXCHANGE_RATE_API_KEY") # Get API key from environment variable
     if not api_key:
         flash("Exchange rate API key not configured. Please set the EXCHANGE_RATE_API_KEY environment variable.", "danger")
         return redirect(url_for("currencies"))
