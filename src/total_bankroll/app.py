@@ -16,8 +16,6 @@ from .db import get_db, close_db
 from .routes.home import home_bp
 from .routes.poker_sites import poker_sites_bp 
 from .routes.assets import assets_bp
-from .routes.add_asset import add_asset_bp
-from .routes.update_asset import update_asset_bp
 from .routes.add_poker_site import add_site_bp
 from .routes.update_poker_site import update_site_bp
 from .routes.withdrawal import withdrawal_bp
@@ -40,8 +38,6 @@ app.teardown_appcontext(close_db)
 app.register_blueprint(home_bp)
 app.register_blueprint(poker_sites_bp)
 app.register_blueprint(assets_bp)
-app.register_blueprint(add_asset_bp)
-app.register_blueprint(update_asset_bp)
 app.register_blueprint(add_site_bp)
 app.register_blueprint(update_site_bp)
 app.register_blueprint(withdrawal_bp)

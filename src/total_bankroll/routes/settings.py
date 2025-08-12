@@ -217,6 +217,21 @@ def insert_data_into_table(cur, table_name, headers, data):
         else:
             print(f"Skipping row due to column mismatch in table {table_name}: {row_data} (Expected {len(headers)} columns, got {len(row_data)}) ") # For debugging: Keep this for now
 
+    # After inserting all data, reset the sequence for the table's primary key
+    # This is crucial for SERIAL columns when importing data with explicit IDs
+    if headers and 'id' in headers: # Only if 'id' column was present in the imported data
+        # Get the primary key column name (assuming 'id' for simplicity, but could be dynamic)
+        pk_column = 'id'
+        # Get the sequence name for the table's primary key
+        # This query is PostgreSQL specific
+        cur.execute(f"SELECT pg_get_serial_sequence('{table_name}', '{pk_column}');")
+        sequence_name = cur.fetchone()[0]
+
+        if sequence_name:
+            # Set the sequence to the maximum ID in the table
+            cur.execute(f"SELECT setval('{sequence_name}', (SELECT MAX({pk_column}) FROM {table_name}) + 1);")
+            print(f"Reset sequence {sequence_name} for table {table_name} to MAX({pk_column}).")
+
 @settings_bp.route("/settings")
 def settings_page():
     """Settings page."""

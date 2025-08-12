@@ -82,3 +82,129 @@ def assets_page():
     cur.close()
     conn.close()
     return render_template("assets.html", assets=assets_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
+
+@assets_bp.route("/add_asset", methods=["GET", "POST"])
+def add_asset():
+    """Add an asset."""
+    print("add_asset function called")
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    if request.method == "POST":
+        print("add_asset: POST request")
+        name = request.form.get("name", "").title()
+        amount_str = request.form.get("amount", "")
+        currency_name = request.form.get("currency", "US Dollar") # Store currency name directly from form
+
+        if not name or not amount_str:
+            cur.close()
+            conn.close()
+            print("add_asset: Name or amount missing")
+            return "Name and amount are required", 400
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                cur.close()
+                conn.close()
+                print("add_asset: Amount not positive")
+                return "Amount must be positive", 400
+        except ValueError:
+            cur.close()
+            conn.close()
+            print("add_asset: Invalid amount format")
+            return "Invalid amount format", 400
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("add_asset: Asset added, redirecting")
+        return redirect(url_for("assets.assets_page"))
+    else:
+        print("add_asset: GET request")
+        cur.execute("""
+            SELECT name, code FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """)
+        currencies = cur.fetchall()
+        cur.close()
+        conn.close()
+        print("add_asset: Rendering add_asset.html")
+        return render_template("add_asset.html", currencies=currencies)
+
+@assets_bp.route("/update_asset/<string:asset_name>", methods=["GET", "POST"])
+def update_asset(asset_name):
+    """Update an asset."""
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    if request.method == "POST":
+        name = request.form.get("name", "").title()
+        amount_str = request.form.get("amount", "")
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                cur.close()
+                conn.close()
+                return redirect(url_for("assets.assets_page"))
+        except ValueError:
+            cur.close()
+            conn.close()
+            return redirect(url_for("assets.assets_page"))
+
+        currency_input = request.form.get("currency", "US Dollar") # This can be name or code
+
+        # Determine the currency name to store
+        cur.execute("SELECT name FROM currency WHERE name = %s", (currency_input,))
+        currency_row = cur.fetchone()
+        if currency_row:
+            currency_name = currency_row['name']
+        else:
+            cur.execute("SELECT name FROM currency WHERE code = %s", (currency_input,))
+            currency_row = cur.fetchone()
+            if currency_row:
+                currency_name = currency_row['name']
+            else:
+                currency_name = "US Dollar" # Default to US Dollar if not found by name or code
+
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("assets.assets_page"))
+    else:
+        cur.execute("SELECT * FROM assets WHERE name = %s ORDER BY last_updated DESC", (asset_name,))
+        asset = cur.fetchone()
+        if asset is None:
+            cur.close()
+            conn.close()
+            return "Asset not found", 404
+
+        cur.execute("SELECT amount FROM assets WHERE name = %s ORDER BY last_updated DESC OFFSET 1 LIMIT 1", (asset_name,))
+        previous_amount_row = cur.fetchone()
+        previous_amount = previous_amount_row[0] if previous_amount_row else None
+
+        cur.execute("""
+            SELECT name, code FROM currency
+            ORDER BY
+                CASE name
+                    WHEN 'US Dollar' THEN 1
+                    WHEN 'British Pound' THEN 2
+                    WHEN 'Euro' THEN 3
+                    ELSE 4
+                END,
+                name
+        """)
+        currencies = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template("update_asset.html", asset=asset, currencies=currencies, previous_amount=previous_amount)
