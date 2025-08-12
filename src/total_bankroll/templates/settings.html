@@ -24,15 +24,10 @@
                 <!-- Database Section -->
                 <h3 class="mt-5">Database Management</h3>
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
-                    <button type="button" class="btn btn-danger">
-                        <a href="{{ url_for('delete_db.confirm_reset_database') }}" class="btn btn_danger">
-                            Reset Database
-                        </a>
-                    <button type="button" class="btn btn-success">
-                        <a href="{{ url_for('export_db.confirm_export_database') }}" class="btn btn_success">
-                            Export data as CSV
-                        </a>
+                    <a href="{{ url_for('delete_db.confirm_reset_database') }}" class="btn btn-danger">Reset Database</a>
+                    <a href="{{ url_for('export_db.confirm_export_database') }}" class="btn btn-success">Export data as CSV</a>
                     <button type="button" class="btn btn-primary">Import data from CSV</button>
+                </div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, redirect, request, url_for, flash
+from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response
 import psycopg2
 import psycopg2.extras
 from db import get_db
 from datetime import datetime
+import io
+import csv
 
 settings_bp = Blueprint("settings", __name__)
 reset_db_bp = Blueprint("delete_db", __name__, url_prefix="/settings")
@@ -39,20 +41,39 @@ def confirm_export_database():
 @export_db_bp.route("/export_database", methods=["POST"])
 def export_database():
     """Export the database to a CSV file."""
-    if request.method == "POST":
-        try:
-            conn = get_db()
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            # Truncate all tables
-            cur.execute("TRUNCATE TABLE sites, assets, deposits, drawings, currency RESTART IDENTITY CASCADE;")
-            conn.commit()
-            cur.close()
-            flash("Database reset successfully!", "success")
-        except Exception as e:
-            flash(f"Error resetting database: {e}", "danger")
-        finally:
-            conn.close()
-    return redirect(url_for("settings.settings_page"))
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        tables = ["sites", "assets", "deposits", "drawings", "currency"]
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        for table_name in tables:
+            cur.execute(f"SELECT * FROM {table_name};")
+            rows = cur.fetchall()
+
+            if rows:
+                # Write table name as a header
+                writer.writerow([f"Table: {table_name}"])
+                # Write headers
+                writer.writerow(rows[0].keys())
+                # Write data
+                for row in rows:
+                    writer.writerow(list(row.values()))
+                writer.writerow([]) # Add an empty row for separation
+
+        cur.close()
+        conn.close()
+
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=database_export.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+
+    except Exception as e:
+        flash(f"Error exporting database: {e}", "danger")
+        return redirect(url_for("settings.settings_page"))
 
 @settings_bp.route("/settings")
 def settings_page():
