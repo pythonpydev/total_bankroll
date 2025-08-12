@@ -2,3 +2,4 @@ pytest>=7.0.0
 black>=22.0.0
 flake8>=4.0.0
 psycopg2-binary
+requests>=2.0.0

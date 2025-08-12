@@ -24,6 +24,7 @@ from routes.settings import settings_bp
 from routes.settings import reset_db_bp
 from routes.settings import export_db_bp
 from routes.settings import import_db_bp
+from routes.currency_update import currency_update_bp
 
 import os
 
@@ -49,6 +50,7 @@ app.register_blueprint(settings_bp)
 app.register_blueprint(reset_db_bp)
 app.register_blueprint(export_db_bp)
 app.register_blueprint(import_db_bp)
+app.register_blueprint(currency_update_bp)
 
 @app.route("/update_exchange_rates", methods=["POST"])
 def update_exchange_rates():

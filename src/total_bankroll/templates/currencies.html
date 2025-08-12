@@ -41,7 +41,7 @@
                     </table>
                 </div>
 
-                <form action="/update_exchange_rates" method="post" class="mt-4 text-end">
+                <form action="{{ url_for('currency_update.update_exchange_rates') }}" method="post" class="mt-4 text-end">
                     <button type="submit" class="btn btn-success">Get Latest Exchange Rates</button>
                 </form>
             </div>
