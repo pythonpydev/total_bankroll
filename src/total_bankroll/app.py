@@ -19,6 +19,7 @@ from routes.withdrawal import withdrawal_bp
 from routes.deposit import deposit_bp   
 from routes.add_deposit import add_deposit_bp
 from routes.add_withdrawal import add_withdrawal_bp
+from routes.settings import settings_bp
 
 app = Flask(__name__)
 
@@ -37,9 +38,7 @@ app.register_blueprint(withdrawal_bp)
 app.register_blueprint(deposit_bp)
 app.register_blueprint(add_deposit_bp)
 app.register_blueprint(add_withdrawal_bp)
-
-
-
+app.register_blueprint(settings_bp)
 
 @app.route("/update_exchange_rates", methods=["POST"])
 def update_exchange_rates():
@@ -129,10 +128,7 @@ def perform_delete(item_type, item_id):
         return "Invalid item type", 400
 
 
-@app.route("/settings")
-def settings_page():
-    """Settings page."""
-    return render_template("settings.html")
+
 
 
 @app.route("/about")
