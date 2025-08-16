@@ -55,32 +55,74 @@ def add_deposit():
                 name
         """)
         currencies = cur.fetchall()
-        # Recalculate total_net_worth for the form
+
+        # Get current poker site totals
         cur.execute("""
+            WITH RankedSites AS (
+                SELECT
+                    name,
+                    amount,
+                    last_updated,
+                    currency,
+                    ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
+                FROM sites
+            ),
+            ConvertedSites AS (
+                SELECT
+                    rs.name,
+                    rs.amount / c.rate AS amount_usd,
+                    rs.rn
+                FROM RankedSites rs
+                JOIN currency c ON rs.currency = c.name
+            )
             SELECT
-                SUM(amount) AS current_total
-            FROM sites
-            WHERE last_updated = (SELECT MAX(last_updated) FROM sites)
+                SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total
+            FROM ConvertedSites;
         """)
         poker_sites_data = cur.fetchone()
-        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else 0
+        current_poker_total = float(poker_sites_data['current_total']) if poker_sites_data and poker_sites_data['current_total'] is not None else 0.0
 
+        # Get current asset totals
         cur.execute("""
+            WITH RankedAssets AS (
+                SELECT
+                    name,
+                    amount,
+                    last_updated,
+                    currency,
+                    ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
+                FROM assets
+            ),
+            ConvertedAssets AS (
+                SELECT
+                    ra.name,
+                    ra.amount / c.rate AS amount_usd,
+                    ra.rn
+                FROM RankedAssets ra
+                JOIN currency c ON ra.currency = c.name
+            )
             SELECT
-                SUM(amount) AS current_total
-            FROM assets
-            WHERE last_updated = (SELECT MAX(last_updated) FROM assets)
+                SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total
+            FROM ConvertedAssets;
         """)
         assets_data = cur.fetchone()
-        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
+        current_asset_total = float(assets_data['current_total']) if assets_data and assets_data['current_total'] is not None else 0.0
 
-        cur.execute("SELECT SUM(amount) FROM drawings")
+        # Get current total of all withdrawals
+        cur.execute("SELECT SUM(d.amount / c.rate) FROM drawings d JOIN currency c ON d.currency = c.name")
         total_withdrawals = cur.fetchone()[0]
         if total_withdrawals is None:
             total_withdrawals = 0
 
-        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
+        # Get current total of all deposits
+        cur.execute("SELECT SUM(d.amount / c.rate) FROM deposits d JOIN currency c ON d.currency = c.name")
+        total_deposits = cur.fetchone()[0]
+        if total_deposits is None:
+            total_deposits = 0
+
+        total_bankroll = current_poker_total + current_asset_total
+        total_profit = total_bankroll - total_deposits + total_withdrawals
 
         cur.close()
         conn.close()
-        return render_template("add_deposit.html", today=today, currencies=currencies, total_net_worth=total_net_worth)
+        return render_template("add_deposit.html", today=today, currencies=currencies, total_profit=total_profit)
