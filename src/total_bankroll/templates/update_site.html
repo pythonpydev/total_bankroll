@@ -11,12 +11,12 @@
         {% if previous_amount is not none %}
         <div class="mb-3">
             <label for="previous_amount" class="form-label">Previous Amount</label>
-            <input type="number" step="any" class="form-control" id="previous_amount" name="previous_amount" value="{{ previous_amount }}" disabled>
+            <input type="number" step="any" class="form-control" id="previous_amount" name="previous_amount" value="{{ "%.2f" | format(previous_amount) }}" disabled>
         </div>
         {% endif %}
         <div class="mb-3">
             <label for="amount" class="form-label">Amount</label>
-            <input type="number" step="any" class="form-control" id="amount" name="amount" value="{{ site.amount }}" required>
+            <input type="number" step="any" class="form-control" id="amount" name="amount" value="{{ "%.2f" | format(site.amount) }}" required>
         </div>
         <div class="mb-3">
             <label for="currency" class="form-label">Currency:</label>

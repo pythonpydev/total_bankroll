@@ -150,7 +150,7 @@ def update_asset(asset_name):
         amount_str = request.form.get("amount", "")
 
         try:
-            amount = float(amount_str)
+            amount = round(float(amount_str), 2)
             if amount <= 0:
                 cur.close()
                 conn.close()

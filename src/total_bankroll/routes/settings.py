@@ -24,7 +24,7 @@ def reset_database():
             conn = get_db()
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             # Truncate all tables
-            cur.execute("TRUNCATE TABLE sites, assets, deposits, drawings, currency RESTART IDENTITY CASCADE;")
+            cur.execute("TRUNCATE TABLE sites, assets, deposits, drawings RESTART IDENTITY CASCADE;")
             conn.commit()
             cur.close()
             flash("Database reset successfully!", "success")
@@ -46,7 +46,7 @@ def export_database():
         conn = get_db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        tables = ["sites", "assets", "deposits", "drawings", "currency"]
+        tables = ["sites", "assets", "deposits", "drawings"]
         output = io.StringIO()
         writer = csv.writer(output)
 
@@ -88,7 +88,7 @@ def export_database():
         conn = get_db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        tables = ["sites", "assets", "deposits", "drawings", "currency"]
+        tables = ["sites", "assets", "deposits", "drawings"]
         output = io.StringIO()
         writer = csv.writer(output)
 
@@ -144,7 +144,7 @@ def import_database():
                 csv_reader = csv.reader(stream)
 
                 # Truncate all tables and restart identity before import
-                cur.execute("TRUNCATE TABLE sites, assets, deposits, drawings, currency RESTART IDENTITY CASCADE;")
+                cur.execute("TRUNCATE TABLE sites, assets, deposits, drawings RESTART IDENTITY CASCADE;")
                 conn.commit()
 
                 current_table = None

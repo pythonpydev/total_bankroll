@@ -23,8 +23,8 @@ def add_withdrawal():
             return "Date, amount, and withdrawn_at are required", 400
 
         try:
-            amount = float(amount_str)
-            withdrawn_at = float(withdrawn_at_str)
+            amount = round(float(amount_str), 2)
+            withdrawn_at = round(float(withdrawn_at_str), 2)
             if amount <= 0:
                 cur.close()
                 conn.close()
@@ -124,4 +124,4 @@ def add_withdrawal():
 
         cur.close()
         conn.close()
-        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_profit=total_profit)
+        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_profit=total_profit, total_bankroll=total_bankroll)

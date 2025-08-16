@@ -23,8 +23,8 @@ def add_deposit():
             return "Date, amount, and deposited_at are required", 400
 
         try:
-            amount = float(amount_str)
-            deposited_at = float(deposited_at_str)
+            amount = round(float(amount_str), 2)
+            deposited_at = round(float(deposited_at_str), 2)
             if amount <= 0 or deposited_at < 0:
                 cur.close()
                 conn.close()

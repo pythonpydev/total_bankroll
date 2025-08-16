@@ -10,7 +10,7 @@
         </div>
         <div class="mb-3">
             <label for="amount" class="form-label">Amount:</label>
-            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ withdrawal_item.amount }}" required>
+            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ "%.2f" | format(withdrawal_item.amount) }}" required>
         </div>
         <div class="mb-3">
             <label for="currency" class="form-label">Currency:</label>
@@ -22,7 +22,7 @@
         </div>
         <div class="mb-3">
             <label for="withdrawn_at" class="form-label">Withdrawn At:</label>
-            <input type="number" step="0.01" class="form-control" id="withdrawn_at" name="withdrawn_at" value="{{ withdrawal_item.withdrawn_at }}" required>
+            <input type="number" step="0.01" class="form-control" id="withdrawn_at" name="withdrawn_at" value="{{ "%.2f" | format(withdrawal_item.withdrawn_at) }}" required>
         </div>
     </form>
 </div>

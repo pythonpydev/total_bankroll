@@ -151,7 +151,7 @@ def update_site(site_name):
             return redirect(url_for("poker_sites_page"))
 
         try:
-            amount = float(amount_str)
+            amount = round(float(amount_str), 2)
             if amount <= 0:
                 cur.close()
                 conn.close()
