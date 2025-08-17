@@ -219,9 +219,7 @@ def get_poker_sites_historical_data():
                 'label': site_name,
                 'data': processed_data[site_name],
                 'backgroundColor': colors[i % len(colors)],
-                'borderColor': border_colors[i % len(border_colors)],
-                'pointRadius': 5,
-                'pointHoverRadius': 7
+                'borderColor': border_colors[i % len(border_colors)]
             })
 
         return jsonify({
