@@ -43,6 +43,16 @@ negative amounts as light red.
 - When displaying a list of currencies in a drop down box, the default should
 US dollars, the second highest option the UK pound and the third highest option
 the Euro.  After that, display the currencies in alphabetical order.
+- There should be a charts page which should have the following options for the
+user:
+    - Value of amount on poker sites over time
+        - This should be a line graph showing the amount of money in $ on 
+        different poker sites over time on the same axis.
+    - Value of amount of assets over time
+    - Value of bankroll over time
+    - Profit over time
+    - Value of withdrawals over time
+    - Value of deposits over time
 
 ## Database
 

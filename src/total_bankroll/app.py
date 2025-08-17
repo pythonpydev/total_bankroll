@@ -30,6 +30,7 @@ from .routes.add_deposit import add_deposit_bp
 from .routes.add_withdrawal import add_withdrawal_bp
 from .routes.settings import settings_bp, reset_db_bp, export_db_bp, import_db_bp
 from .routes.currency_update import currency_update_bp
+from .routes.charts import charts_bp
 
 app.register_blueprint(home_bp)
 app.register_blueprint(poker_sites_bp)
@@ -43,6 +44,7 @@ app.register_blueprint(reset_db_bp)
 app.register_blueprint(export_db_bp)
 app.register_blueprint(import_db_bp)
 app.register_blueprint(currency_update_bp)
+app.register_blueprint(charts_bp)
 
 # Routes
 @app.route("/update_exchange_rates", methods=["POST"])
