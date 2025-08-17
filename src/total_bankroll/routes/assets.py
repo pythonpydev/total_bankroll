@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, request, url_for
-import psycopg2
-import psycopg2.extras
 from ..db import get_db
 from datetime import datetime
+from decimal import Decimal
 
 assets_bp = Blueprint("assets", __name__)
 
@@ -10,7 +9,7 @@ assets_bp = Blueprint("assets", __name__)
 def assets_page():
     """Assets page."""
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
 
     cur.execute("SELECT name, rate, symbol FROM currency")
     currency_data = cur.fetchall()
@@ -56,7 +55,7 @@ def assets_page():
         previous_rate = currency_rates.get(previous_currency, 1.0)
 
         converted_asset['current_amount_usd'] = original_amount / rate
-        converted_asset['previous_amount_usd'] = original_previous_amount / previous_rate if original_previous_amount is not None else 0.0
+        converted_asset['previous_amount_usd'] = Decimal(original_previous_amount / previous_rate if original_previous_amount is not None else 0.0)
         
         # Add currency symbols to the asset data
         converted_asset['currency_symbol'] = currency_symbols.get(currency, currency)
@@ -88,7 +87,7 @@ def add_asset():
     """Add an asset."""
     print("add_asset function called")
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
     if request.method == "POST":
         print("add_asset: POST request")
         name = request.form.get("name", "").title()
@@ -144,7 +143,7 @@ def add_asset():
 def update_asset(asset_name):
     """Update an asset."""
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
@@ -189,7 +188,7 @@ def update_asset(asset_name):
             conn.close()
             return "Asset not found", 404
 
-        cur.execute("SELECT amount FROM assets WHERE name = %s ORDER BY last_updated DESC OFFSET 1 LIMIT 1", (asset_name,))
+        cur.execute("SELECT amount FROM assets WHERE name = %s ORDER BY last_updated DESC LIMIT 1, 1", (asset_name,))
         previous_amount_row = cur.fetchone()
         previous_amount = previous_amount_row[0] if previous_amount_row else None
 

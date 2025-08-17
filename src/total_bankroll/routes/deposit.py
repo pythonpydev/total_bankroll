@@ -10,7 +10,7 @@ deposit_bp = Blueprint("deposit", __name__)
 def deposit():
     """Deposit page."""
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
 
     try:
         # Get currency symbols
@@ -38,10 +38,9 @@ def deposit():
         current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
 
         # Get current total of all withdrawals
-        cur.execute("SELECT SUM(amount) FROM drawings")
-        total_withdrawals = cur.fetchone()[0]
-        if total_withdrawals is None:
-            total_withdrawals = 0
+        cur.execute("SELECT SUM(amount) as total FROM drawings")
+        total_withdrawals_row = cur.fetchone()
+        total_withdrawals = total_withdrawals_row['total'] if total_withdrawals_row and total_withdrawals_row['total'] is not None else 0
 
         total_net_worth = current_poker_total + current_asset_total - total_withdrawals
 
@@ -65,8 +64,8 @@ def deposit():
         deposit_data = []
         for deposit in deposits_raw:
             deposit_dict = dict(deposit)
-            deposit_dict['amount_usd'] = deposit['original_amount'] / deposit['exchange_rate']
-            deposit_dict['deposited_at_usd'] = deposit['original_deposited_at'] / deposit['exchange_rate']
+            deposit_dict['amount_usd'] = float(deposit['original_amount']) / float(deposit['exchange_rate'])
+            deposit_dict['deposited_at_usd'] = float(deposit['original_deposited_at']) / float(deposit['exchange_rate'])
             deposit_dict['currency_symbol'] = currency_symbols.get(deposit['currency'], deposit['currency'])
             deposit_data.append(deposit_dict)
 
@@ -91,5 +90,6 @@ def deposit():
     except Exception as e:
         cur.close()
         conn.close()
-        # For debugging - in production you'd want better error handling
+        import traceback
+        traceback.print_exc()
         return f"Error loading deposits: {str(e)}", 500

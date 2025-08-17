@@ -16,7 +16,7 @@ Keeps a track of total poker bankroll, including funds on each site, cash and ot
 - Store each deposit transaction
 - Add up total amount of deposits.
 - When withdrawals are made, as well as the date and time of the transaction,
-the current net worth also needs to be recorded.
+the current total profit also needs to be recorded.
 - Calculate total bankroll
 - Total bankroll = money on poker sites + assets
 - Calculate total profit
@@ -46,7 +46,7 @@ the Euro.  After that, display the currencies in alphabetical order.
 
 ## Database
 
-- Use PostgreSQL to implement the database
+- Use MySQL to implement the database
 
 ### Database Schema
 

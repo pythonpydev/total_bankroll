@@ -1,4 +1,6 @@
 from .db import get_db
+import click
+from flask.cli import with_appcontext
 
 def insert_initial_currency_data(app):
     """Insert initial currency data if the table is empty."""
@@ -25,3 +27,11 @@ def insert_initial_currency_data(app):
             conn.commit()
         cur.close()
         conn.close()
+
+@click.command('init-currency')
+@with_appcontext
+def init_currency_command():
+    """Add initial currency data to the database."""
+    from flask import current_app
+    insert_initial_currency_data(current_app)
+    click.echo('Initialized the currency data.')

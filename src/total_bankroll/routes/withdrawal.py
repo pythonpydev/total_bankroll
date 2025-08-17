@@ -10,7 +10,7 @@ withdrawal_bp = Blueprint("withdrawal", __name__)
 def withdrawal():
     """Withdrawal page."""
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
 
     # Get currency symbols
     cur.execute("SELECT name, symbol FROM currency")
@@ -37,10 +37,9 @@ def withdrawal():
     current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else 0
 
     # Get current total of all withdrawals
-    cur.execute("SELECT SUM(amount) FROM drawings")
-    total_withdrawals = cur.fetchone()[0]
-    if total_withdrawals is None:
-        total_withdrawals = 0
+    cur.execute("SELECT SUM(amount) as total FROM drawings")
+    total_withdrawals_row = cur.fetchone()
+    total_withdrawals = total_withdrawals_row['total'] if total_withdrawals_row and total_withdrawals_row['total'] is not None else 0
 
     total_net_worth = current_poker_total + current_asset_total - total_withdrawals
 
@@ -64,8 +63,8 @@ def withdrawal():
     withdrawal_data = []
     for withdrawal in withdrawals_raw:
         withdrawal_dict = dict(withdrawal)
-        withdrawal_dict['amount_usd'] = withdrawal['original_amount'] / withdrawal['exchange_rate']
-        withdrawal_dict['withdrawn_at_usd'] = withdrawal['original_withdrawn_at'] / withdrawal['exchange_rate']
+        withdrawal_dict['amount_usd'] = float(withdrawal['original_amount']) / float(withdrawal['exchange_rate'])
+        withdrawal_dict['withdrawn_at_usd'] = float(withdrawal['original_withdrawn_at']) / float(withdrawal['exchange_rate'])
         withdrawal_dict['currency_symbol'] = currency_symbols.get(withdrawal['currency'], withdrawal['currency'])
         withdrawal_data.append(withdrawal_dict)
 

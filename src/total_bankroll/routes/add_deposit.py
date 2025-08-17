@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
-import psycopg2
-import psycopg2.extras
+import mysql.connector
 from ..db import get_db
 from datetime import datetime
 
@@ -10,7 +9,7 @@ add_deposit_bp = Blueprint("add_deposit", __name__)
 def add_deposit():
     """Add a deposit transaction."""
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(dictionary=True)
     if request.method == "POST":
         date = request.form.get("date", "")
         amount_str = request.form.get("amount", "")
@@ -108,20 +107,18 @@ def add_deposit():
         assets_data = cur.fetchone()
         current_asset_total = float(assets_data['current_total']) if assets_data and assets_data['current_total'] is not None else 0.0
 
-        # Get current total of all withdrawals
-        cur.execute("SELECT SUM(d.amount / c.rate) FROM drawings d JOIN currency c ON d.currency = c.name")
-        total_withdrawals = cur.fetchone()[0]
-        if total_withdrawals is None:
-            total_withdrawals = 0
+        # Get current total of all withdrawals - FIXED: Use dictionary key instead of index
+        cur.execute("SELECT SUM(d.amount / c.rate) as total_withdrawals FROM drawings d JOIN currency c ON d.currency = c.name")
+        withdrawal_result = cur.fetchone()
+        total_withdrawals = withdrawal_result['total_withdrawals'] if withdrawal_result and withdrawal_result['total_withdrawals'] is not None else 0
 
         # Get current total of all deposits
-        cur.execute("SELECT SUM(d.amount / c.rate) FROM deposits d JOIN currency c ON d.currency = c.name")
-        total_deposits = cur.fetchone()[0]
-        if total_deposits is None:
-            total_deposits = 0
+        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM deposits d JOIN currency c ON d.currency = c.name")
+        total_deposits_row = cur.fetchone()
+        total_deposits = total_deposits_row['total'] if total_deposits_row and total_deposits_row['total'] is not None else 0
 
-        total_bankroll = current_poker_total + current_asset_total
-        total_profit = total_bankroll - total_deposits + total_withdrawals
+        total_bankroll = float(current_poker_total) + float(current_asset_total)
+        total_profit = float(total_bankroll) - float(total_deposits) + float(total_withdrawals)
 
         cur.close()
         conn.close()
