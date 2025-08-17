@@ -94,15 +94,21 @@ def get_poker_sites_data():
         cur.execute("SELECT DISTINCT name FROM sites ORDER BY name")
         site_names = [row['name'] for row in cur.fetchall()]
 
-        # Get all historical data for poker sites
+        # Get the latest data for each poker site
         cur.execute("""
             SELECT
-                last_updated,
-                name,
-                amount,
-                currency
-            FROM sites
-            ORDER BY last_updated, name
+                s.name,
+                s.amount,
+                s.currency
+            FROM sites s
+            INNER JOIN (
+                SELECT
+                    name,
+                    MAX(last_updated) AS max_last_updated
+                FROM sites
+                GROUP BY name
+            ) AS latest_sites
+            ON s.name = latest_sites.name AND s.last_updated = latest_sites.max_last_updated
         """)
         raw_data = cur.fetchall()
 
@@ -113,28 +119,37 @@ def get_poker_sites_data():
         cur.close()
 
         # Process data for charting
-        # Group data by date and then by site
-        processed_data = {}
-        for row in raw_data:
-            date_str = row['last_updated'].strftime("%Y-%m-%d")
-            if date_str not in processed_data:
-                processed_data[date_str] = {name: 0.0 for name in site_names}
+        labels = []
+        data = []
 
+        for row in raw_data:
             # Convert amount to USD
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            processed_data[date_str][row['name']] = amount_usd
+            labels.append(row['name'])
+            data.append(amount_usd)
 
         # Prepare data for Chart.js
-        labels = sorted(processed_data.keys())
-        datasets = []
-
-        for site_name in site_names:
-            data = [processed_data[date][site_name] for date in labels]
-            datasets.append({
-                'label': site_name,
-                'data': data,
-                'fill': False
-            })
+        datasets = [{
+            'label': 'Latest Amount (USD)',
+            'data': data,
+            'backgroundColor': [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ],
+            'borderColor': [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            'borderWidth': 1
+        }]
 
         return jsonify({
             'labels': labels,

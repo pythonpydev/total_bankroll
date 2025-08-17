@@ -30,31 +30,12 @@
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');
-                // For pie chart, we usually show the latest data or a sum
-                // This example sums up the latest values for each site
-                const latestData = {};
-                data.labels.forEach(label => {
-                    data.datasets.forEach(dataset => {
-                        const value = dataset.data[data.labels.indexOf(label)];
-                        if (value !== undefined) {
-                            latestData[dataset.label] = (latestData[dataset.label] || 0) + value;
-                        }
-                    });
-                });
-
-                const pieLabels = Object.keys(latestData);
-                const pieValues = Object.values(latestData);
-
+                
                 new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: pieLabels,
-                        datasets: [{
-                            label: 'Amount (USD)',
-                            data: pieValues,
-                            backgroundColor: pieLabels.map(() => getRandomColor()),
-                            hoverOffset: 4
-                        }]
+                        labels: data.labels,
+                        datasets: data.datasets
                     },
                     options: {
                         responsive: true,

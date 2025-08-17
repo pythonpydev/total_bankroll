@@ -30,36 +30,21 @@
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');
-                // For scatter chart, we need x and y values for each point
-                // This example uses date as x and amount as y
-                const scatterDatasets = data.datasets.map(dataset => {
-                    return {
-                        label: dataset.label,
-                        data: dataset.data.map((value, index) => ({
-                            x: data.labels[index],
-                            y: value
-                        })),
-                        backgroundColor: getRandomColor(),
-                        borderColor: getRandomColor(),
-                    };
-                });
-
+                
                 new Chart(ctx, {
                     type: 'scatter',
                     data: {
-                        datasets: scatterDatasets
+                        labels: data.labels,
+                        datasets: data.datasets
                     },
                     options: {
                         responsive: true,
                         scales: {
                             x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                },
+                                type: 'category',
                                 title: {
                                     display: true,
-                                    text: 'Date'
+                                    text: 'Poker Site'
                                 }
                             },
                             y: {

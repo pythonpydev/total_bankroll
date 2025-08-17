@@ -30,35 +30,12 @@
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');
-                // For radar chart, we usually show the latest data or a sum
-                // This example sums up the latest values for each site
-                const latestData = {};
-                data.labels.forEach(label => {
-                    data.datasets.forEach(dataset => {
-                        const value = dataset.data[data.labels.indexOf(label)];
-                        if (value !== undefined) {
-                            latestData[dataset.label] = (latestData[dataset.label] || 0) + value;
-                        }
-                    });
-                });
-
-                const radarLabels = Object.keys(latestData);
-                const radarValues = Object.values(latestData);
-
+                
                 new Chart(ctx, {
                     type: 'radar',
                     data: {
-                        labels: radarLabels,
-                        datasets: [{
-                            label: 'Amount (USD)',
-                            data: radarValues,
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            borderColor: 'rgb(255, 99, 132)',
-                            pointBackgroundColor: 'rgb(255, 99, 132)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(255, 99, 132)'
-                        }]
+                        labels: data.labels,
+                        datasets: data.datasets
                     },
                     options: {
                         responsive: true,
