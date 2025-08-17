@@ -39,6 +39,16 @@ def poker_sites_scatter_chart_page():
     """Poker Sites Scatter Chart page."""
     return render_template("poker_sites_scatter_chart.html")
 
+@charts_bp.route("/charts/assets/line")
+def assets_line_chart_page():
+    """Assets Line Chart page."""
+    return render_template("assets_line_chart.html")
+
+@charts_bp.route("/charts/assets/bar")
+def assets_bar_chart_page():
+    """Assets Bar Chart page."""
+    return render_template("assets_bar_chart.html")
+
 @charts_bp.route("/charts/assets/scatter")
 def assets_scatter_chart_page():
     """Assets Scatter Chart page."""
@@ -53,26 +63,6 @@ def bankroll_line_chart_page():
 def bankroll_bar_chart_page():
     """Bankroll Bar Chart page."""
     return render_template("bankroll_bar_chart.html")
-
-@charts_bp.route("/charts/bankroll/pie")
-def bankroll_pie_chart_page():
-    """Bankroll Pie Chart page."""
-    return render_template("bankroll_pie_chart.html")
-
-@charts_bp.route("/charts/bankroll/polar_area")
-def bankroll_polar_area_chart_page():
-    """Bankroll Polar Area Chart page."""
-    return render_template("bankroll_polar_area_chart.html")
-
-@charts_bp.route("/charts/bankroll/radar")
-def bankroll_radar_chart_page():
-    """Bankroll Radar Chart page."""
-    return render_template("bankroll_radar_chart.html")
-
-@charts_bp.route("/charts/bankroll/scatter")
-def bankroll_scatter_chart_page():
-    """Bankroll Scatter Chart page."""
-    return render_template("bankroll_scatter_chart.html")
 
 @charts_bp.route("/charts/profit/line")
 def profit_line_chart_page():
