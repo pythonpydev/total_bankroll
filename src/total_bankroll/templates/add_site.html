@@ -16,7 +16,7 @@
             <label for="currency" class="form-label">Currency</label>
             <select class="form-select" id="currency" name="currency">
                 {% for currency in currencies %}
-                    <option value="{{ currency.name }}">{{ currency.name }}</option>
+                    <option value="{{ currency['name'] }}">{{ currency['name'] }}</option>
                 {% endfor %}
             </select>
         </div>

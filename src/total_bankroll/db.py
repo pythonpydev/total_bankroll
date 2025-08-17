@@ -1,4 +1,4 @@
-import pymysql
+import pymysql, pymysql.cursors
 from flask import g, current_app
 from .currency import insert_initial_currency_data
 

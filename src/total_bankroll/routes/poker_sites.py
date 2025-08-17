@@ -53,11 +53,14 @@ def poker_sites_page():
         currency = converted_site['currency']
         previous_currency = converted_site['previous_currency']
 
-        rate = currency_rates.get(currency, 1.0)
-        previous_rate = currency_rates.get(previous_currency, 1.0)
+        rate = Decimal(str(currency_rates.get(currency, 1.0)))
+        previous_rate = Decimal(str(currency_rates.get(previous_currency, 1.0)))
 
         converted_site['current_amount_usd'] = original_amount / rate
-        converted_site['previous_amount_usd'] = Decimal(original_previous_amount / previous_rate if original_previous_amount is not None else 0.0)
+        converted_site['previous_amount_usd'] = (
+            Decimal(original_previous_amount) / previous_rate
+            if original_previous_amount is not None else Decimal(0)
+        )
 
         # Add currency symbols to the site data
         converted_site['currency_symbol'] = currency_symbols.get(currency, currency)
@@ -131,6 +134,7 @@ def add_site():
                 name
         """)
         currencies = cur.fetchall()
+        print(f"DEBUG - Currencies fetched: {currencies}")  # testing
         cur.close()
         conn.close()
         return render_template("add_site.html", currencies=currencies)
