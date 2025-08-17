@@ -9,7 +9,8 @@ assets_bp = Blueprint("assets", __name__)
 def assets_page():
     """Assets page."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
 
     cur.execute("SELECT name, rate, symbol FROM currency")
     currency_data = cur.fetchall()
@@ -56,11 +57,11 @@ def assets_page():
 
         converted_asset['current_amount_usd'] = original_amount / rate
         converted_asset['previous_amount_usd'] = Decimal(original_previous_amount / previous_rate if original_previous_amount is not None else 0.0)
-        
+
         # Add currency symbols to the asset data
         converted_asset['currency_symbol'] = currency_symbols.get(currency, currency)
         converted_asset['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
-        
+
         assets_data.append(converted_asset)
 
     total_current = sum(asset['current_amount_usd'] for asset in assets_data)
@@ -87,7 +88,8 @@ def add_asset():
     """Add an asset."""
     print("add_asset function called")
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
     if request.method == "POST":
         print("add_asset: POST request")
         name = request.form.get("name", "").title()
@@ -143,7 +145,8 @@ def add_asset():
 def update_asset(asset_name):
     """Update an asset."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")

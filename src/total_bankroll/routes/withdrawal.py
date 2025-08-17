@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
-import psycopg2
-import psycopg2.extras
+import pymysql
 from ..db import get_db
 from datetime import datetime
 
@@ -10,7 +9,8 @@ withdrawal_bp = Blueprint("withdrawal", __name__)
 def withdrawal():
     """Withdrawal page."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
 
     # Get currency symbols
     cur.execute("SELECT name, symbol FROM currency")
@@ -45,12 +45,12 @@ def withdrawal():
 
     # Get deposits with currency conversion to USD
     cur.execute("""
-        SELECT 
-            d.id, 
-            d.date, 
+        SELECT
+            d.id,
+            d.date,
             CAST(d.amount AS REAL) as original_amount,
             CAST(d.withdrawn_at AS REAL) as original_withdrawn_at,
-            d.last_updated, 
+            d.last_updated,
             COALESCE(d.currency, 'US Dollar') as currency,
             COALESCE(c.rate, 1.0) as exchange_rate
         FROM drawings d

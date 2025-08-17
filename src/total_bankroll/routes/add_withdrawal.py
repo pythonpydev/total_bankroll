@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
-import psycopg2
-import psycopg2.extras
+import pymysql
 from ..db import get_db
 from datetime import datetime
 
@@ -10,7 +9,8 @@ add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 def add_withdrawal():
     """Add a withdrawal transaction."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
     if request.method == "POST":
         date = request.form.get("date", "")
         amount_str = request.form.get("amount", "")

@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template
-import psycopg2
-import psycopg2.extras
+import pymysql
 
 from ..db import get_db
 
@@ -10,7 +9,8 @@ home_bp = Blueprint("home", __name__)
 def home():
     """Main page."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
 
     # Get current and previous poker site totals
     cur.execute("""

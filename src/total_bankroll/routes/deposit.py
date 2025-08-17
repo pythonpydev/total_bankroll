@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
-import psycopg2
-import psycopg2.extras
+import pymysql
 from ..db import get_db
 from datetime import datetime
 
@@ -10,7 +9,8 @@ deposit_bp = Blueprint("deposit", __name__)
 def deposit():
     """Deposit page."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
 
     try:
         # Get currency symbols
@@ -46,12 +46,12 @@ def deposit():
 
         # Get deposits with currency conversion to USD
         cur.execute("""
-            SELECT 
-                d.id, 
-                d.date, 
+            SELECT
+                d.id,
+                d.date,
                 CAST(d.amount AS REAL) as original_amount,
                 CAST(d.deposited_at AS REAL) as original_deposited_at,
-                d.last_updated, 
+                d.last_updated,
                 COALESCE(d.currency, 'US Dollar') as currency,
                 COALESCE(c.rate, 1.0) as exchange_rate
             FROM deposits d
@@ -59,7 +59,7 @@ def deposit():
             ORDER BY d.date DESC
         """)
         deposits_raw = cur.fetchall()
-        
+
         # Process deposits to add USD calculations and currency symbols
         deposit_data = []
         for deposit in deposits_raw:
@@ -82,11 +82,11 @@ def deposit():
                 name
         """)
         currencies = cur.fetchall()
-        
+
         cur.close()
         conn.close()
         return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
-        
+
     except Exception as e:
         cur.close()
         conn.close()

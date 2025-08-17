@@ -5,7 +5,9 @@ def insert_initial_currency_data(db_connection):
     """Insert initial currency data if the table is empty."""
     cur = db_connection.cursor()
     cur.execute("SELECT COUNT(*) FROM currency")
-    if cur.fetchone()[0] == 0:
+    # NEW (PyMySQL with DictCursor):
+    result = cur.fetchone()
+    if result and list(result.values())[0] == 0:
         currencies = [
             ('US Dollar', 1.0, 'USD', '$'),
             ('British Pound', 0.4874, 'GBP', '£'),

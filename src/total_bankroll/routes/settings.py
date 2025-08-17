@@ -49,7 +49,8 @@ def export_database():
     """Export the database to a CSV file."""
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        # NEW (PyMySQL):
+        cur = conn.cursor()
 
         tables = ["sites", "assets", "deposits", "drawings"]
         output = io.StringIO()
@@ -80,7 +81,7 @@ def export_database():
     except Exception as e:
         flash(f"Error exporting database: {e}", "danger")
         return redirect(url_for("settings.settings_page"))
-    
+
 @import_db_bp.route("/confirm_export_database", methods=["GET"])
 def confirm_import_database():
     """Show confirmation dialog for database import."""
@@ -91,7 +92,8 @@ def export_database():
     """Import CSV   file to the database file."""
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        # NEW (PyMySQL):
+        cur = conn.cursor()
 
         tables = ["sites", "assets", "deposits", "drawings"]
         output = io.StringIO()
@@ -143,7 +145,7 @@ def import_database():
             try:
                 conn = get_db()
                 cur = conn.cursor()
-                
+
                 # Read the CSV file
                 stream = io.StringIO(file.stream.read().decode("UTF8"))
                 csv_reader = csv.reader(stream)
@@ -181,7 +183,7 @@ def import_database():
                     elif current_table:
                         # This is a data row
                         data_to_insert.append(row)
-                
+
                 # Insert data for the last table
                 if current_table and data_to_insert:
                     insert_data_into_table(cur, current_table, headers, data_to_insert)
@@ -231,7 +233,7 @@ def insert_data_into_table(cur, table_name, headers, data):
 
     # After inserting all data, reset the sequence for the table's primary key
     # This is crucial for SERIAL columns when importing data with explicit IDs
-    
+
 
 @settings_bp.route("/settings")
 def settings_page():

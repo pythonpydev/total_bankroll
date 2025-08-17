@@ -9,7 +9,8 @@ poker_sites_bp = Blueprint("poker_sites", __name__)
 def poker_sites_page():
     """Poker Sites page."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
 
     cur.execute("SELECT name, rate, symbol FROM currency")
     currency_data = cur.fetchall()
@@ -57,11 +58,11 @@ def poker_sites_page():
 
         converted_site['current_amount_usd'] = original_amount / rate
         converted_site['previous_amount_usd'] = Decimal(original_previous_amount / previous_rate if original_previous_amount is not None else 0.0)
-        
+
         # Add currency symbols to the site data
         converted_site['currency_symbol'] = currency_symbols.get(currency, currency)
         converted_site['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
-        
+
         poker_sites_data.append(converted_site)
 
     total_current = sum(site['current_amount_usd'] for site in poker_sites_data)
@@ -88,7 +89,8 @@ def poker_sites_page():
 def add_site():
     """Add a poker site."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
@@ -137,7 +139,8 @@ def add_site():
 def update_site(site_name):
     """Update a poker site."""
     conn = get_db()
-    cur = conn.cursor(dictionary=True)
+    # NEW (PyMySQL):
+    cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
