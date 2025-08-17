@@ -23,6 +23,14 @@ def get_db():
 
             if not tables:  # No tables exist, initialize database
                 _init_db_tables(g.db, current_app)
+            else:
+                # Check if currency table is empty and populate if needed
+                cursor = g.db.cursor()
+                cursor.execute("SELECT COUNT(*) FROM currency")
+                count = cursor.fetchone()["COUNT(*)"]
+                if count == 0:
+                    insert_initial_currency_data(g.db)
+                cursor.close()
 
         except Exception as e:
             # If there's an error, make sure we don't leave a broken connection
