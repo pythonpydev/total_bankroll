@@ -19,7 +19,6 @@ db.init_app(app)
 
 # Currency initialization
 from . import currency
-app.cli.add_command(currency.init_currency_command)
 
 # Register Blueprints
 from .routes.home import home_bp
