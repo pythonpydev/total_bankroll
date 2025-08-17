@@ -159,6 +159,80 @@ def get_poker_sites_data():
         current_app.logger.error(f"Error in get_poker_sites_data: {e}")
         return jsonify({'error': str(e)}), 500
 
+@charts_bp.route("/charts/poker_sites_historical_data")
+def get_poker_sites_historical_data():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+
+        # Get all unique poker site names
+        cur.execute("SELECT DISTINCT name FROM sites ORDER BY name")
+        site_names = [row['name'] for row in cur.fetchall()]
+
+        # Get all historical data for poker sites
+        cur.execute("""
+            SELECT
+                last_updated,
+                name,
+                amount,
+                currency
+            FROM sites
+            ORDER BY last_updated, name
+        """)
+        raw_data = cur.fetchall()
+
+        # Get currency exchange rates
+        cur.execute("SELECT name, rate FROM currency")
+        currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
+        cur.close()
+
+        # Process data for charting
+        # Group data by site name
+        processed_data = {name: [] for name in site_names}
+        for row in raw_data:
+            date_str = row['last_updated'].strftime("%Y-%m-%d")
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            processed_data[row['name']].append({'x': date_str, 'y': amount_usd})
+
+        # Prepare data for Chart.js
+        datasets = []
+        colors = [
+            'rgba(255, 99, 132, 0.8)',  # Red
+            'rgba(54, 162, 235, 0.8)',  # Blue
+            'rgba(255, 206, 86, 0.8)',  # Yellow
+            'rgba(75, 192, 192, 0.8)',  # Green
+            'rgba(153, 102, 255, 0.8)', # Purple
+            'rgba(255, 159, 64, 0.8)'   # Orange
+        ]
+        border_colors = [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ]
+
+        for i, site_name in enumerate(site_names):
+            datasets.append({
+                'label': site_name,
+                'data': processed_data[site_name],
+                'backgroundColor': colors[i % len(colors)],
+                'borderColor': border_colors[i % len(border_colors)],
+                'pointRadius': 5,
+                'pointHoverRadius': 7
+            })
+
+        return jsonify({
+            'labels': site_names, # Labels are not directly used for scatter, but can be for legend
+            'datasets': datasets
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_poker_sites_historical_data: {e}")
+        print(f"Error in get_poker_sites_historical_data: {e}") # Added for debugging
+        return jsonify({'error': str(e)}), 500
+
 @charts_bp.route("/charts/assets_data")
 def get_assets_data():
     try:
