@@ -104,6 +104,11 @@ def deposits_line_chart_page():
     """Deposits Line Chart page."""
     return render_template("deposits_line_chart.html")
 
+@charts_bp.route("/charts/deposits/bar")
+def deposits_bar_chart_page():
+    """Deposits Bar Chart page."""
+    return render_template("deposits_bar_chart.html")
+
 @charts_bp.route("/charts/poker_sites_data")
 def get_poker_sites_data():
     try:
