@@ -435,40 +435,38 @@ def get_assets_data():
 def get_deposits_data():
     try:
         conn = get_db()
-        cur = conn.cursor()
+        cur = conn.cursor()  # make sure this returns dict-like rows; otherwise adjust access below
 
-        # Get all historical data for deposits
         cur.execute("""
             SELECT
-                d.last_updated,
-                SUM(d.amount / c.rate) AS total_usd
+                d.last_updated AS ts,
+                SUM(d.amount / c.rate)
+                  OVER (ORDER BY d.last_updated, d.id) AS cumulative_usd
             FROM deposits d
             JOIN currency c ON d.currency = c.name
-            GROUP BY d.last_updated
-            ORDER BY d.last_updated
+            ORDER BY d.last_updated, d.id
         """)
-        raw_data = cur.fetchall()
-
+        raw = cur.fetchall()
         cur.close()
 
-        labels = [row['last_updated'].strftime("%Y-%m-%d") for row in raw_data]
-        data = [float(row['total_usd']) for row in raw_data]
+        # If your cursor isn't dict-like, replace row['ts'] with row[0] etc.
+        labels = [row['ts'].strftime("%Y-%m-%d %H:%M") for row in raw]
+        data = [float(row['cumulative_usd']) for row in raw]
 
         datasets = [{
-            'label': 'Total Deposits (USD)',
+            'label': 'Cumulative Deposits (USD)',
             'data': data,
             'fill': False,
             'borderColor': 'rgb(54, 162, 235)',
             'tension': 0.1
         }]
 
-        return jsonify({
-            'labels': labels,
-            'datasets': datasets
-        })
+        return jsonify({'labels': labels, 'datasets': datasets})
     except Exception as e:
         current_app.logger.error(f"Error in get_deposits_data: {e}")
         return jsonify({'error': str(e)}), 500
+
+
 
 @charts_bp.route("/charts/profit_data")
 def get_profit_data():
