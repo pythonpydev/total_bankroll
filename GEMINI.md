@@ -50,11 +50,11 @@ bankroll and total profits should be shown in USD $.
         - line chart with historical amounts in $ for total profit
         - bar chart with historical amounts in $ for total profit
     - withdrawals chart
-        - line chart with historical amounts in $ for withdrawals
+        - line chart with cumulative amounts over time in $ for withdrawals
         - bar chart with historical amounts in $ for withdrawals
     - deposits chart
-        - line chart with historical amounts in $ for deposits
-        - bar chart with historical amounts in $ for withdrawals
+        - line chart with cumulative deposit amounts over time in $ for deposits
+        - bar chart with historical amounts in $ for deposits
         
 
 

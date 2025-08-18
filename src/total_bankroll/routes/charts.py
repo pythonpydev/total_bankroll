@@ -99,6 +99,11 @@ def withdrawals_bar_chart_page():
     """Withdrawals Bar Chart page."""
     return render_template("withdrawals_bar_chart.html")
 
+@charts_bp.route("/charts/deposits/line")
+def deposits_line_chart_page():
+    """Deposits Line Chart page."""
+    return render_template("deposits_line_chart.html")
+
 @charts_bp.route("/charts/poker_sites_data")
 def get_poker_sites_data():
     try:
@@ -148,12 +153,12 @@ def get_poker_sites_data():
             'label': 'Latest Amount (USD)',
             'data': data,
             'backgroundColor': [
-                'rgba(255, 99, 132, 0.6)',
-                'rgba(54, 162, 235, 0.6)',
-                'rgba(255, 206, 86, 0.6)',
-                'rgba(75, 192, 192, 0.6)',
-                'rgba(153, 102, 255, 0.6)',
-                'rgba(255, 159, 64, 0.6)'
+                'rgba(255, 99, 132, 0.6)', # Red
+                'rgba(54, 162, 235, 0.6)', # Blue
+                'rgba(255, 206, 86, 0.6)', # Yellow
+                'rgba(75, 192, 192, 0.6)', # Green
+                'rgba(153, 102, 255, 0.6)',# Purple
+                'rgba(255, 159, 64, 0.6)'  # Orange
             ],
             'borderColor': [
                 'rgba(255, 99, 132, 1)',
