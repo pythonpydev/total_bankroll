@@ -562,3 +562,113 @@ def get_profit_data():
     except Exception as e:
         current_app.logger.error(f"Error in get_profit_data: {e}")
         return jsonify({'error': str(e)}), 500
+
+@charts_bp.route("/charts/bankroll_data")
+def get_bankroll_data():
+    """Returns data for the bankroll line chart, aggregated to one point per day."""
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+
+        # Get currency exchange rates
+        cur.execute("SELECT name, rate FROM currency")
+        currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
+        # Get historical data for sites (include name)
+        cur.execute("""
+            SELECT
+                last_updated,
+                name,
+                amount,
+                currency
+            FROM sites
+            ORDER BY last_updated
+        """)
+        sites_data = cur.fetchall()
+
+        # Get historical data for assets (include name)
+        cur.execute("""
+            SELECT
+                last_updated,
+                name,
+                amount,
+                currency
+            FROM assets
+            ORDER BY last_updated
+        """)
+        assets_data = cur.fetchall()
+
+        cur.close()
+
+        # Combine and sort all data points by date
+        all_data_points = []
+        for row in sites_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({
+                'date': row['last_updated'],
+                'amount_usd': amount_usd,
+                'name': row['name'],
+                'type': 'site'
+            })
+        for row in assets_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({
+                'date': row['last_updated'],
+                'amount_usd': amount_usd,
+                'name': row['name'],
+                'type': 'asset'
+            })
+
+        # Sort all points by date
+        all_points_sorted = sorted(all_data_points, key=lambda x: x['date'])
+
+        if not all_points_sorted:
+            return jsonify({'datasets': [{'label': 'Total Bankroll (USD)', 'data': [], 'fill': False, 'borderColor': 'rgb(75, 192, 192)', 'tension': 0.1}]})
+
+        # Determine min and max dates
+        min_day = all_points_sorted[0]['date'].date()
+        max_day = all_points_sorted[-1]['date'].date()
+
+        # Initialize charting data
+        chart_data = []
+        latest_values = {}
+        current_total = 0.0
+        i = 0
+        current_day = min_day
+
+        from datetime import timedelta  # Ensure this import is at the top of the file if not already
+
+        while current_day <= max_day:
+            # Process all updates for this day (update running total)
+            while i < len(all_points_sorted) and all_points_sorted[i]['date'].date() == current_day:
+                point = all_points_sorted[i]
+                key = (point['name'], point['type'])
+                new_value = point['amount_usd']
+                old_value = latest_values.get(key, 0.0)
+                current_total += new_value - old_value
+                latest_values[key] = new_value
+                i += 1
+
+            # Add one point for this day (using end-of-day total, or carried forward)
+            chart_data.append({
+                'x': current_day.isoformat(),  # Date string without time (e.g., '2025-08-18')
+                'y': round(current_total, 2)   # Rounded for display; adjust as needed
+            })
+
+            # Move to next day
+            current_day += timedelta(days=1)
+
+        datasets = [{
+            'label': 'Total Bankroll (USD)',
+            'data': chart_data,
+            'fill': False,
+            'borderColor': 'rgb(75, 192, 192)',
+            'tension': 0.1
+        }]
+
+        return jsonify({
+            'datasets': datasets
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_bankroll_data: {e}")
+        return jsonify({'error': str(e)}), 500
