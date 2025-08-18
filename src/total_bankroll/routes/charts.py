@@ -213,21 +213,38 @@ def get_poker_sites_historical_data():
         cur.close()
 
         # Process data for charting
-        # Group data by site name
-        processed_data = {name: [] for name in site_names}
+        processed_data = {}
         min_date = None
         max_date = None
 
-        for row in raw_data:
-            date_obj = row['last_updated'] # Assuming this is already a datetime object from PyMySQL
-            date_str = date_obj.strftime("%Y-%m-%d")
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            processed_data[row['name']].append({'x': date_str, 'y': amount_usd})
+        # Use a dictionary to store only the last update per day for each site
+        daily_data = {}
 
+        for row in raw_data:
+            date_obj = row['last_updated']
+            date_str = date_obj.strftime("%Y-%m-%d")
             if min_date is None or date_obj < min_date:
                 min_date = date_obj
             if max_date is None or date_obj > max_date:
                 max_date = date_obj
+
+            site_name = row['name']
+            if site_name not in daily_data:
+                daily_data[site_name] = {}
+            
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            # Since the data is ordered by last_updated, this will overwrite
+            # earlier updates for the same day, leaving only the last one.
+            daily_data[site_name][date_str] = amount_usd
+
+        # Convert the daily_data dictionary to the processed_data list format
+        for site_name, dates in daily_data.items():
+            if site_name not in processed_data:
+                processed_data[site_name] = []
+            # Sort items by date to ensure chronological order before appending
+            sorted_dates = sorted(dates.items())
+            for date_str, amount_usd in sorted_dates:
+                processed_data[site_name].append({'x': date_str, 'y': amount_usd})
 
         # Prepare data for Chart.js
         datasets = []
@@ -248,13 +265,30 @@ def get_poker_sites_historical_data():
             'rgba(255, 159, 64, 1)'
         ]
 
-        for i, site_name in enumerate(site_names):
-            datasets.append({
-                'label': site_name,
-                'data': processed_data[site_name],
-                'borderColor': border_colors[i % len(border_colors)],
-                'fill': False
-            })
+        if min_date and max_date:
+            min_date_str = min_date.strftime("%Y-%m-%d")
+            max_date_str = max_date.strftime("%Y-%m-%d")
+
+            for i, site_name in enumerate(site_names):
+                site_data = processed_data.get(site_name, [])
+                if site_data:
+                    # Sort by date to ensure chronological order
+                    site_data.sort(key=lambda item: item['x'])
+                    # Insert y=0 at min_date if needed
+                    if site_data[0]['x'] > min_date_str:
+                        site_data.insert(0, {'x': min_date_str, 'y': 0})
+                    # Extend last value to max_date if needed
+                    if site_data[-1]['x'] < max_date_str:
+                        site_data.append({'x': max_date_str, 'y': site_data[-1]['y']})
+                    # Re-sort after adding min_date and max_date to maintain order
+                    site_data.sort(key=lambda item: item['x'])
+
+                datasets.append({
+                    'label': site_name,
+                    'data': site_data,
+                    'borderColor': border_colors[i % len(border_colors)],
+                    'fill': False
+                })
 
         return jsonify({
             'labels': site_names, # Labels are not directly used for scatter, but can be for legend
