@@ -193,7 +193,7 @@ def update_asset(asset_name):
 
         cur.execute("SELECT amount FROM assets WHERE name = %s ORDER BY last_updated DESC LIMIT 1, 1", (asset_name,))
         previous_amount_row = cur.fetchone()
-        previous_amount = previous_amount_row[0] if previous_amount_row else None
+        previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
 
         cur.execute("""
             SELECT name, code FROM currency
