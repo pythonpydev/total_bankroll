@@ -227,8 +227,8 @@ def get_poker_sites_historical_data():
             datasets.append({
                 'label': site_name,
                 'data': processed_data[site_name],
-                'backgroundColor': colors[i % len(colors)],
-                'borderColor': border_colors[i % len(border_colors)]
+                'borderColor': border_colors[i % len(border_colors)],
+                'fill': False
             })
 
         return jsonify({
