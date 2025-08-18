@@ -25,40 +25,43 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js v4 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+<!-- Load date-fns with correct MIME type -->
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/dist/date-fns.min.js"></script>
+
+<!-- Adapter compatible with Chart.js v4 -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/charts/assets_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
-                // For scatter chart, we need x and y values for each point
-                // This example uses date as x and amount as y
-                const scatterDatasets = data.datasets.map(dataset => {
-                    return {
-                        label: dataset.label,
-                        data: dataset.data.map((value, index) => ({
-                            x: data.labels[index],
-                            y: value
-                        })),
-                        backgroundColor: getRandomColor(),
-                        borderColor: getRandomColor(),
-                    };
-                });
-
+                
                 new Chart(ctx, {
                     type: 'scatter',
                     data: {
-                        datasets: scatterDatasets
+                        datasets: data.datasets
                     },
                     options: {
                         responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
                         scales: {
                             x: {
                                 type: 'time',
                                 time: {
-                                    unit: 'day'
+                                    unit: 'day',
+                                    tooltipFormat: 'MMM D, YYYY'
                                 },
+                                min: data.min_date,
+                                max: data.max_date,
                                 title: {
                                     display: true,
                                     text: 'Date'
@@ -80,9 +83,7 @@
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
             let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
+            for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
             return color;
         }
     });

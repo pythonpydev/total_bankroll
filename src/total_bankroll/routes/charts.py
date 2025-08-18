@@ -370,29 +370,57 @@ def get_assets_data():
 
         # Process data for charting
         processed_data = {}
+        min_date = None
+        max_date = None
+
         for row in raw_data:
-            date_str = row['last_updated'].strftime("%Y-%m-%d")
-            if date_str not in processed_data:
-                processed_data[date_str] = {name: 0.0 for name in asset_names}
+            date_obj = row['last_updated']
+            date_str = date_obj.strftime("%Y-%m-%d")
+            
+            if min_date is None or date_obj < min_date:
+                min_date = date_obj
+            if max_date is None or date_obj > max_date:
+                max_date = date_obj
+
+            if row['name'] not in processed_data:
+                processed_data[row['name']] = []
 
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            processed_data[date_str][row['name']] = amount_usd
+            processed_data[row['name']].append({'x': date_str, 'y': amount_usd})
 
         # Prepare data for Chart.js
-        labels = sorted(processed_data.keys())
         datasets = []
+        colors = [
+            'rgba(255, 99, 132, 0.8)',  # Red
+            'rgba(54, 162, 235, 0.8)',  # Blue
+            'rgba(255, 206, 86, 0.8)',  # Yellow
+            'rgba(75, 192, 192, 0.8)',  # Green
+            'rgba(153, 102, 255, 0.8)', # Purple
+            'rgba(255, 159, 64, 0.8)'   # Orange
+        ]
+        border_colors = [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ]
 
-        for asset_name in asset_names:
-            data = [processed_data[date][asset_name] for date in labels]
+        for i, asset_name in enumerate(asset_names):
             datasets.append({
                 'label': asset_name,
-                'data': data,
+                'data': processed_data.get(asset_name, []),
+                'backgroundColor': colors[i % len(colors)],
+                'borderColor': border_colors[i % len(border_colors)],
                 'fill': False
             })
 
         return jsonify({
-            'labels': labels,
-            'datasets': datasets
+            'labels': asset_names, # Labels are not directly used for scatter, but can be for legend
+            'datasets': datasets,
+            'min_date': min_date.strftime("%Y-%m-%d") if min_date else None,
+            'max_date': max_date.strftime("%Y-%m-%d") if max_date else None
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_withdrawals_data: {e}")
