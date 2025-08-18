@@ -64,6 +64,11 @@ def assets_polar_area_chart_page():
     """Assets Polar Area Chart page."""
     return render_template("assets_polar_area_chart.html")
 
+@charts_bp.route("/charts/assets/radar")
+def assets_radar_chart_page():
+    """Assets Radar Chart page."""
+    return render_template("assets_radar_chart.html")
+
 @charts_bp.route("/charts/bankroll/line")
 def bankroll_line_chart_page():
     """Bankroll Line Chart page."""
