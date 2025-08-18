@@ -24,8 +24,39 @@ the current total profit also needs to be recorded.
 - Users cannot withdraw more money than their net worth
 - Keep a history of all values saved over time
 - Display latest changes in poker site funds, assets (current value - previous)
-- All financial values should be stored on the database in US dollars $.
+- All financial values should be stored on the database in the original currency
+the record was added in.
+- Total on all site, total assets, total withdrawals, total deposits, total
+bankroll and total profits should be shown in USD $.
 - Make available reports on historical data
+    - poker sites charts
+        - line chart with historical amounts in $ for each poker site
+        - bar chart with historical amounts in $ for each poker site
+        - pie chart with only the latest amounts in $ for each poker site
+        - polar area chart with only the latest amounts in $ for each poker site
+        - radar chart with only the latest amounts in $ for each poker site
+        - scatter chart with historical amounts in $ for each poker site
+    - asset charts
+        - line chart with historical amounts in $ for each asset
+        - bar chart with historical amounts in $ for each asset
+        - pie chart with only the latest amounts in $ for each asset
+        - polar area chart with only the latest amounts in $ for each asset
+        - radar chart with only the latest amounts in $ for each asset
+        - scatter chart with historical amounts in $ for each asset
+    - bankroll chart
+        - line chart with historical amounts in $ for total bankroll
+        - bar chart with historical amounts in $ for total bankroll
+    - profit chart
+        - line chart with historical amounts in $ for total profit
+        - bar chart with historical amounts in $ for total profit
+    - withdrawals chart
+        - line chart with historical amounts in $ for withdrawals
+        - bar chart with historical amounts in $ for withdrawals
+    - deposits chart
+        - line chart with historical amounts in $ for deposits
+        - bar chart with historical amounts in $ for withdrawals
+        
+
 
 ## Interface
 
@@ -44,15 +75,7 @@ negative amounts as light red.
 US dollars, the second highest option the UK pound and the third highest option
 the Euro.  After that, display the currencies in alphabetical order.
 - There should be a charts page which should have the following options for the
-user:
-    - Value of amount on poker sites over time
-        - This should be a line graph showing the amount of money in $ on 
-        different poker sites over time on the same axis.
-    - Value of amount of assets over time
-    - Value of bankroll over time
-    - Profit over time
-    - Value of withdrawals over time
-    - Value of deposits over time
+user.
 
 ## Database
 
