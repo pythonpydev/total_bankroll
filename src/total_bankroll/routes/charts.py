@@ -190,10 +190,19 @@ def get_poker_sites_historical_data():
         # Process data for charting
         # Group data by site name
         processed_data = {name: [] for name in site_names}
+        min_date = None
+        max_date = None
+
         for row in raw_data:
-            date_str = row['last_updated'].strftime("%Y-%m-%d")
+            date_obj = row['last_updated'] # Assuming this is already a datetime object from PyMySQL
+            date_str = date_obj.strftime("%Y-%m-%d")
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
             processed_data[row['name']].append({'x': date_str, 'y': amount_usd})
+
+            if min_date is None or date_obj < min_date:
+                min_date = date_obj
+            if max_date is None or date_obj > max_date:
+                max_date = date_obj
 
         # Prepare data for Chart.js
         datasets = []
@@ -224,7 +233,9 @@ def get_poker_sites_historical_data():
 
         return jsonify({
             'labels': site_names, # Labels are not directly used for scatter, but can be for legend
-            'datasets': datasets
+            'datasets': datasets,
+            'min_date': min_date.strftime("%Y-%m-%d") if min_date else None,
+            'max_date': max_date.strftime("%Y-%m-%d") if max_date else None
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_poker_sites_historical_data: {e}")
