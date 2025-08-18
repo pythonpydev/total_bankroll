@@ -25,7 +25,8 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/charts/profit_data')
@@ -35,21 +36,16 @@
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.labels,
-                        datasets: data.datasets.map(dataset => ({
-                            ...dataset,
-                            borderColor: getRandomColor(),
-                            tension: 0.1
-                        }))
+                        datasets: data.datasets
                     },
                     options: {
                         responsive: true,
                         scales: {
                             y: {
-                                beginAtZero: true,
+                                beginAtZero: false, // Profit can be negative
                                 title: {
                                     display: true,
-                                    text: 'Amount (USD)'
+                                    text: 'Profit (USD)'
                                 }
                             },
                             x: {
@@ -67,15 +63,6 @@
                 });
             })
             .catch(error => console.error('Error fetching profit data:', error));
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     });
 </script>
 {% endblock %}

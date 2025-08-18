@@ -490,55 +490,106 @@ def get_withdrawals_data():
 
 @charts_bp.route("/charts/profit_data")
 def get_profit_data():
+    """Returns data for the profit line chart, aggregated to one point per day."""
     try:
         conn = get_db()
         cur = conn.cursor()
 
-        # Get historical data for total bankroll, deposits, and withdrawals
-        cur.execute("""
-            SELECT
-                t.last_updated,
-                SUM(CASE WHEN t.type = 'bankroll' THEN t.amount_usd ELSE 0 END) AS total_bankroll,
-                SUM(CASE WHEN t.type = 'deposits' THEN t.amount_usd ELSE 0 END) AS total_deposits,
-                SUM(CASE WHEN t.type = 'withdrawals' THEN t.amount_usd ELSE 0 END) AS total_withdrawals
-            FROM (
-                SELECT last_updated, (amount / c.rate) AS amount_usd, 'bankroll' AS type FROM sites JOIN currency c ON sites.currency = c.name
-                UNION ALL
-                SELECT last_updated, (amount / c.rate) AS amount_usd, 'bankroll' AS type FROM assets JOIN currency c ON assets.currency = c.name
-                UNION ALL
-                SELECT last_updated, (amount / c.rate) AS amount_usd, 'deposits' AS type FROM deposits JOIN currency c ON deposits.currency = c.name
-                UNION ALL
-                SELECT last_updated, (amount / c.rate) AS amount_usd, 'withdrawals' AS type FROM drawings JOIN currency c ON drawings.currency = c.name
-            ) AS t
-            GROUP BY t.last_updated
-            ORDER BY t.last_updated
-        """)
-        raw_data = cur.fetchall()
+        # Get currency exchange rates
+        cur.execute("SELECT name, rate FROM currency")
+        currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
+        # Get historical data for sites
+        cur.execute("SELECT last_updated, name, amount, currency FROM sites ORDER BY last_updated")
+        sites_data = cur.fetchall()
+
+        # Get historical data for assets
+        cur.execute("SELECT last_updated, name, amount, currency FROM assets ORDER BY last_updated")
+        assets_data = cur.fetchall()
+
+        # Get historical data for deposits
+        cur.execute("SELECT date, amount, currency FROM deposits ORDER BY date")
+        deposits_data = cur.fetchall()
+
+        # Get historical data for withdrawals
+        cur.execute("SELECT date, amount, currency FROM drawings ORDER BY date")
+        withdrawals_data = cur.fetchall()
 
         cur.close()
 
-        labels = [row['last_updated'].strftime("%Y-%m-%d") for row in raw_data]
-        profit_data = []
+        all_data_points = []
+        # Add bankroll components (sites and assets)
+        for row in sites_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({'date': row['last_updated'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'site'})
+        for row in assets_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({'date': row['last_updated'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'asset'})
+        
+        # Add deposits and withdrawals as events that change the profit calculation
+        for row in deposits_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({'date': row['date'], 'amount_usd': amount_usd, 'type': 'deposit'})
+        for row in withdrawals_data:
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            all_data_points.append({'date': row['date'], 'amount_usd': amount_usd, 'type': 'withdrawal'})
 
-        for row in raw_data:
-            bankroll = float(row['total_bankroll'])
-            deposits = float(row['total_deposits'])
-            withdrawals = float(row['total_withdrawals'])
-            profit = bankroll - deposits + withdrawals
-            profit_data.append(profit)
+        # Sort all points by date
+        all_points_sorted = sorted(all_data_points, key=lambda x: x['date'])
+
+        if not all_points_sorted:
+            return jsonify({'datasets': [{'label': 'Total Profit (USD)', 'data': [], 'fill': False, 'borderColor': 'rgb(255, 99, 132)', 'tension': 0.1}]})
+
+        min_day = all_points_sorted[0]['date'].date()
+        max_day = all_points_sorted[-1]['date'].date()
+
+        chart_data = []
+        latest_values = {}
+        current_bankroll = 0.0
+        total_deposits = 0.0
+        total_withdrawals = 0.0
+        
+        i = 0
+        current_day = min_day
+        from datetime import timedelta
+
+        while current_day <= max_day:
+            
+            while i < len(all_points_sorted) and all_points_sorted[i]['date'].date() == current_day:
+                point = all_points_sorted[i]
+                
+                if point['type'] in ['site', 'asset']:
+                    key = (point['name'], point['type'])
+                    new_value = point['amount_usd']
+                    old_value = latest_values.get(key, 0.0)
+                    current_bankroll += new_value - old_value
+                    latest_values[key] = new_value
+                elif point['type'] == 'deposit':
+                    total_deposits += point['amount_usd']
+                elif point['type'] == 'withdrawal':
+                    total_withdrawals += point['amount_usd']
+                
+                i += 1
+            
+            profit = current_bankroll - total_deposits + total_withdrawals
+            
+            chart_data.append({
+                'x': current_day.isoformat(),
+                'y': round(profit, 2)
+            })
+            
+            current_day += timedelta(days=1)
 
         datasets = [{
-            'label': 'Profit (USD)',
-            'data': profit_data,
+            'label': 'Total Profit (USD)',
+            'data': chart_data,
             'fill': False,
             'borderColor': 'rgb(255, 99, 132)',
             'tension': 0.1
         }]
 
-        return jsonify({
-            'labels': labels,
-            'datasets': datasets
-        })
+        return jsonify({'datasets': datasets})
+
     except Exception as e:
         current_app.logger.error(f"Error in get_profit_data: {e}")
         return jsonify({'error': str(e)}), 500
