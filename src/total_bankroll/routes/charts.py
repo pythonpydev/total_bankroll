@@ -439,12 +439,12 @@ def get_deposits_data():
 
         cur.execute("""
             SELECT
-                d.last_updated AS ts,
+                d.date AS ts,
                 SUM(d.amount / c.rate)
-                  OVER (ORDER BY d.last_updated, d.id) AS cumulative_usd
+                  OVER (ORDER BY d.date, d.id) AS cumulative_usd
             FROM deposits d
             JOIN currency c ON d.currency = c.name
-            ORDER BY d.last_updated, d.id
+            ORDER BY d.date, d.id
         """)
         raw = cur.fetchall()
         cur.close()
@@ -474,12 +474,12 @@ def get_withdrawals_data():
 
         cur.execute("""
             SELECT
-                d.last_updated AS ts,
+                d.date AS ts,
                 SUM(d.amount / c.rate)
-                  OVER (ORDER BY d.last_updated, d.id) AS cumulative_usd
+                  OVER (ORDER BY d.date, d.id) AS cumulative_usd
             FROM drawings d
             JOIN currency c ON d.currency = c.name
-            ORDER BY d.last_updated, d.id
+            ORDER BY d.date, d.id
         """)
         raw = cur.fetchall()
         cur.close()
