@@ -72,15 +72,22 @@ def insert_initial_currency_data(db_connection):
         else:
             # Fallback to static CSV data
             current_app.logger.warning("Using fallback currency data from CSV")
-            currencies = get_fallback_currencies()
+            currencies = [
+                (name, rate, code, symbol)
+                for name, rate, code, symbol in get_fallback_currencies()
+            ]
 
         # Insert data into the database
         try:
             cur.executemany(
-                "INSERT INTO currency (name, rate, code, symbol) VALUES (%s, %s, %s, %s)",
+                """
+                INSERT INTO currency (name, rate, code, symbol, updated_at)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+                """,
                 currencies
             )
             db_connection.commit()
+            current_app.logger.info(f"Inserted {cur.rowcount} currencies into the database")
         except pymysql.Error as e:
             current_app.logger.error(f"Database error: {e}")
             db_connection.rollback()
@@ -91,6 +98,6 @@ def insert_initial_currency_data(db_connection):
 @with_appcontext
 def init_currency_command():
     """Add initial currency data to the database."""
-    from flask import current_app
-    insert_initial_currency_data(current_app)
+    from ..db import get_db
+    insert_initial_currency_data(get_db())
     click.echo('Initialized the currency data.')
