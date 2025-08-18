@@ -267,100 +267,13 @@ def get_poker_sites_historical_data():
         print(f"Error in get_poker_sites_historical_data: {e}") # Added for debugging
         return jsonify({'error': str(e)}), 500
 
-@charts_bp.route("/charts/assets_latest_data")
-def get_assets_latest_data():
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-
-        # Get all unique asset names
-        cur.execute("SELECT DISTINCT name FROM assets ORDER BY name")
-        asset_names = [row['name'] for row in cur.fetchall()]
-
-        # Get the latest data for each asset
-        cur.execute("""
-            SELECT
-                a.name,
-                a.amount,
-                a.currency
-            FROM assets a
-            INNER JOIN (
-                SELECT
-                    name,
-                    MAX(last_updated) AS max_last_updated
-                FROM assets
-                GROUP BY name
-            ) AS latest_assets
-            ON a.name = latest_assets.name AND a.last_updated = latest_assets.max_last_updated
-        """)
-        raw_data = cur.fetchall()
-
-        # Get currency exchange rates
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
-
-        cur.close()
-
-        # Process data for charting
-        labels = []
-        data = []
-        background_colors = []
-        border_colors = []
-
-        # Define a set of colors for pie/bar charts
-        chart_colors = [
-            'rgba(255, 99, 132, 0.6)', # Red
-            'rgba(54, 162, 235, 0.6)', # Blue
-            'rgba(255, 206, 86, 0.6)', # Yellow
-            'rgba(75, 192, 192, 0.6)', # Green
-            'rgba(153, 102, 255, 0.6)',# Purple
-            'rgba(255, 159, 64, 0.6)'  # Orange
-        ]
-        chart_border_colors = [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-        ]
-
-        for i, row in enumerate(raw_data):
-            # Convert amount to USD
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            labels.append(row['name'])
-            data.append(amount_usd)
-            background_colors.append(chart_colors[i % len(chart_colors)])
-            border_colors.append(chart_border_colors[i % len(chart_border_colors)])
-
-        # Prepare data for Chart.js
-        datasets = [{
-            'label': 'Latest Amount (USD)',
-            'data': data,
-            'backgroundColor': background_colors,
-            'borderColor': border_colors,
-            'borderWidth': 1
-        }]
-
-        return jsonify({
-            'labels': labels,
-            'datasets': datasets
-        })
-    except Exception as e:
-        current_app.logger.error(f"Error in get_assets_latest_data: {e}")
-        return jsonify({'error': str(e)}), 500
-
 @charts_bp.route("/charts/assets_data")
 def get_assets_data():
     try:
         conn = get_db()
         cur = conn.cursor()
 
-        # Get all unique asset names
-        cur.execute("SELECT DISTINCT name FROM assets ORDER BY name")
-        asset_names = [row['name'] for row in cur.fetchall()]
-
-        # Get all historical data for assets
+        # Get all historical data for assets with last_updated
         cur.execute("""
             SELECT
                 last_updated,
@@ -383,20 +296,34 @@ def get_assets_data():
         min_date = None
         max_date = None
 
+        # Use a dictionary to store only the last update per day for each asset
+        daily_data = {}
+
         for row in raw_data:
             date_obj = row['last_updated']
             date_str = date_obj.strftime("%Y-%m-%d")
-            
             if min_date is None or date_obj < min_date:
                 min_date = date_obj
             if max_date is None or date_obj > max_date:
                 max_date = date_obj
 
-            if row['name'] not in processed_data:
-                processed_data[row['name']] = []
-
+            asset_name = row['name']
+            if asset_name not in daily_data:
+                daily_data[asset_name] = {}
+            
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            processed_data[row['name']].append({'x': date_str, 'y': amount_usd})
+            # Since the data is ordered by last_updated, this will overwrite
+            # earlier updates for the same day, leaving only the last one.
+            daily_data[asset_name][date_str] = amount_usd
+
+        # Convert the daily_data dictionary to the processed_data list format
+        for asset_name, dates in daily_data.items():
+            if asset_name not in processed_data:
+                processed_data[asset_name] = []
+            # Sort items by date to ensure chronological order before appending
+            sorted_dates = sorted(dates.items())
+            for date_str, amount_usd in sorted_dates:
+                processed_data[asset_name].append({'x': date_str, 'y': amount_usd})
 
         # Prepare data for Chart.js
         datasets = []
@@ -417,23 +344,42 @@ def get_assets_data():
             'rgba(255, 159, 64, 1)'
         ]
 
-        for i, asset_name in enumerate(asset_names):
-            datasets.append({
-                'label': asset_name,
-                'data': processed_data.get(asset_name, []),
-                'backgroundColor': colors[i % len(colors)],
-                'borderColor': border_colors[i % len(border_colors)],
-                'fill': False
-            })
+        if min_date and max_date:
+            min_date_str = min_date.strftime("%Y-%m-%d")
+            max_date_str = max_date.strftime("%Y-%m-%d")
+
+            # Get all unique asset names
+            asset_names = list(processed_data.keys())
+
+            for i, asset_name in enumerate(asset_names):
+                asset_data = processed_data[asset_name]
+                if asset_data:
+                    # Sort by date to ensure chronological order
+                    asset_data.sort(key=lambda item: item['x'])
+                    # Insert y=0 at min_date if needed
+                    if asset_data[0]['x'] > min_date_str:
+                        asset_data.insert(0, {'x': min_date_str, 'y': 0})
+                    # Extend last value to max_date if needed
+                    if asset_data[-1]['x'] < max_date_str:
+                        asset_data.append({'x': max_date_str, 'y': asset_data[-1]['y']})
+                    # Re-sort after adding min_date and max_date to maintain order
+                    asset_data.sort(key=lambda item: item['x'])
+
+                datasets.append({
+                    'label': asset_name,
+                    'data': asset_data,
+                    'backgroundColor': colors[i % len(colors)],
+                    'borderColor': border_colors[i % len(border_colors)],
+                    'fill': False
+                })
 
         return jsonify({
-            'labels': asset_names, # Labels are not directly used for scatter, but can be for legend
             'datasets': datasets,
             'min_date': min_date.strftime("%Y-%m-%d") if min_date else None,
             'max_date': max_date.strftime("%Y-%m-%d") if max_date else None
         })
     except Exception as e:
-        current_app.logger.error(f"Error in get_withdrawals_data: {e}")
+        current_app.logger.error(f"Error in get_assets_data: {e}")
         return jsonify({'error': str(e)}), 500
 
 @charts_bp.route("/charts/deposits_data")

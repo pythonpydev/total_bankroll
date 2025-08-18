@@ -25,7 +25,8 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/charts/assets_data')
@@ -35,7 +36,6 @@
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.labels,
                         datasets: data.datasets.map(dataset => ({
                             ...dataset,
                             borderColor: getRandomColor(),
@@ -53,6 +53,10 @@
                                 }
                             },
                             x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                },
                                 title: {
                                     display: true,
                                     text: 'Date'
