@@ -1,0 +1,35 @@
+Table: sites,,,,,
+id,name,amount,last_updated,currency,
+5,Party Poker,200,2025-08-01 17:00:48,British Pound,
+6,Gg,500,2025-08-17 17:00:58,US Dollar,
+7,Party Poker,100,2025-08-17 22:09:58,British Pound,
+8,Party Poker,150,2025-08-16 07:32:42,British Pound,
+9,888,100,2025-08-02 07:34:53,US Dollar,
+10,888,50,2025-08-08 07:35:18,US Dollar,
+11,888,3,2025-08-18 07:35:27,US Dollar,
+12,Party Poker,200,2025-08-18 07:35:36,British Pound,
+13,Pokerstars,100,2025-08-03 07:35:45,US Dollar,
+14,Pokerstars,200,2025-08-13 07:35:52,US Dollar,
+15,Pokerstars,300,2025-08-18 07:36:04,US Dollar,
+,,,,,
+Table: assets,,,,,
+id,name,amount,last_updated,currency,
+1,Silver Coins,60,2025-07-17 17:47:47,British Pound,
+2,Crypto,33,2025-08-01 17:48:02,US Dollar,
+3,Gold,100,2025-08-08 07:33:44,British Pound,
+4,Gold,150,2025-08-18 07:33:55,British Pound,
+5,Crypto,200,2025-08-03 07:59:37,US Dollar,
+6,Crypto,2,2025-08-18 08:01:07,US Dollar,
+7,Silver Coins,90,2025-08-18 08:01:16,British Pound,
+,,,,,
+Table: deposits,,,,,
+id,date,amount,deposited_at,last_updated,currency
+1,2025-08-17 00:00:00,50,242,2025-08-17 12:03:19,British Pound
+2,2025-08-18 00:00:00,50,1271.61,2025-08-18 07:34:19,US Dollar
+,,,,,
+Table: drawings,,,,,
+id,date,amount,withdrawn_at,last_updated,currency
+1,2025-08-01 00:00:00,50,1169.03,2025-08-18 07:34:09,British Pound
+2,2025-08-03 00:00:00,10,1657.75,2025-08-03 09:09:41,US Dollar
+3,2025-08-16 00:00:00,100,1667.75,2025-08-18 09:09:49,British Pound
+4,2025-08-18 00:00:00,50,1872.92,2025-08-18 09:09:55,US Dollar
