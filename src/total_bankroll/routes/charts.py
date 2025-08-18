@@ -466,6 +466,41 @@ def get_deposits_data():
         current_app.logger.error(f"Error in get_deposits_data: {e}")
         return jsonify({'error': str(e)}), 500
 
+@charts_bp.route("/charts/withdrawals_data")
+def get_withdrawals_data():
+    try:
+        conn = get_db()
+        cur = conn.cursor()  # make sure this returns dict-like rows; otherwise adjust access below
+
+        cur.execute("""
+            SELECT
+                d.last_updated AS ts,
+                SUM(d.amount / c.rate)
+                  OVER (ORDER BY d.last_updated, d.id) AS cumulative_usd
+            FROM drawings d
+            JOIN currency c ON d.currency = c.name
+            ORDER BY d.last_updated, d.id
+        """)
+        raw = cur.fetchall()
+        cur.close()
+
+        # If your cursor isn't dict-like, replace row['ts'] with row[0] etc.
+        labels = [row['ts'].strftime("%Y-%m-%d %H:%M") for row in raw]
+        data = [float(row['cumulative_usd']) for row in raw]
+
+        datasets = [{
+            'label': 'Cumulative Withdrawals (USD)',
+            'data': data,
+            'fill': False,
+            'borderColor': 'rgb(54, 162, 235)',
+            'tension': 0.1
+        }]
+
+        return jsonify({'labels': labels, 'datasets': datasets})
+    except Exception as e:
+        current_app.logger.error(f"Error in get_withdrawals_data: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 
 @charts_bp.route("/charts/profit_data")
