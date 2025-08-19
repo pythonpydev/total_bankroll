@@ -182,7 +182,7 @@ def insert_data_into_table(cur, table_name, headers, data):
             try:
                 cur.execute(insert_sql, filtered_row_data)
             except Exception as e:
-                print(f"Error executing INSERT for {table_name} with data {row_data}: {e}")
+                current_app.logger.error(f"Error executing INSERT for {table_name} with data {row_data}: {e}")
         else:
             print(f"Skipping row due to column mismatch in table {table_name}: {row_data} (Expected {len(valid_headers)} columns, got {len(filtered_row_data)}) ")
 

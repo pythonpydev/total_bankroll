@@ -5,3 +5,9 @@ mysql-connector-python
 requests>=2.0.0
 python-dotenv>=1.0.0
 PyMySQL
+flask-security-too==5.6.2  # Or latest version
+authlib==1.3.2  # Or latest
+flask-bcrypt==1.0.1  # For password hashing (integrated with Flask-Security)
+flask-wtf==1.2.1  # For CSRF protection in forms
+flask-limiter==3.8.0  # For rate limiting (e.g., login attempts)
+flask_sqlalchemy>=3.1.1

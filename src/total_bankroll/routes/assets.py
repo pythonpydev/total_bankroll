@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
+from flask_security import login_required, current_user
 from ..db import get_db
 from datetime import datetime
 from decimal import Decimal
@@ -6,10 +7,10 @@ from decimal import Decimal
 assets_bp = Blueprint("assets", __name__)
 
 @assets_bp.route("/assets")
+@login_required
 def assets_page():
     """Assets page."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
 
     cur.execute("SELECT name, rate, symbol FROM currency")
@@ -28,6 +29,7 @@ def assets_page():
                 currency,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
             FROM assets
+            WHERE user_id = %s
         )
         SELECT
             a1.id,
@@ -41,7 +43,7 @@ def assets_page():
             ON a1.name = a2.name AND a2.rn = 2
         WHERE a1.rn = 1
         ORDER BY a1.name
-    """)
+    """, (current_user.id,))
     assets_data_raw = cur.fetchall()
 
     assets_data = []
@@ -84,11 +86,11 @@ def assets_page():
     return render_template("assets.html", assets=assets_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
 
 @assets_bp.route("/add_asset", methods=["GET", "POST"])
+@login_required
 def add_asset():
     """Add an asset."""
     print("add_asset function called")
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
     if request.method == "POST":
         print("add_asset: POST request")
@@ -116,7 +118,7 @@ def add_asset():
             return "Invalid amount format", 400
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
@@ -142,10 +144,10 @@ def add_asset():
         return render_template("add_asset.html", currencies=currencies)
 
 @assets_bp.route("/update_asset/<string:asset_name>", methods=["GET", "POST"])
+@login_required
 def update_asset(asset_name):
     """Update an asset."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
@@ -178,20 +180,20 @@ def update_asset(asset_name):
                 currency_name = "US Dollar" # Default to US Dollar if not found by name or code
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_.id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("assets.assets_page"))
     else:
-        cur.execute("SELECT * FROM assets WHERE name = %s ORDER BY last_updated DESC", (asset_name,))
+        cur.execute("SELECT * FROM assets WHERE name = %s AND user_id = %s ORDER BY last_updated DESC", (asset_name, current_user.id))
         asset = cur.fetchone()
         if asset is None:
             cur.close()
             conn.close()
             return "Asset not found", 404
 
-        cur.execute("SELECT amount FROM assets WHERE name = %s ORDER BY last_updated DESC LIMIT 1, 1", (asset_name,))
+        cur.execute("SELECT amount FROM assets WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (asset_name, current_user.id))
         previous_amount_row = cur.fetchone()
         previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
 

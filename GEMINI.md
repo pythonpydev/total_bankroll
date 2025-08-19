@@ -55,7 +55,7 @@ bankroll and total profits should be shown in USD $.
     - deposits chart
         - line chart with cumulative deposit amounts over time in $ for deposits
         - bar chart with historical amounts in $ for deposits
-        
+- Users should have to log into the site before being able to access it fully.
 
 
 ## Interface
@@ -83,47 +83,77 @@ user.
 
 ### Database Schema
 
-CREATE TABLE IF NOT EXISTS sites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    amount REAL NOT NULL,
-    last_updated TEXT NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'Dollar'
-);
+CREATE TABLE `assets` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `last_updated` datetime NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
+  `user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS assets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    amount REAL NOT NULL,
-    last_updated TEXT NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'Dollar'
-);
+CREATE TABLE `asset_history` (
+  `id` int NOT NULL,
+  `asset_id` int NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(255) NOT NULL,
+  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS drawings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL,
-    amount REAL NOT NULL,
-    withdrawn_at REAL NOT NULL,
-    last_updated TEXT NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'Dollar'
-);
+CREATE TABLE `currency` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `rate` decimal(10,6) NOT NULL,
+  `code` varchar(3) NOT NULL,
+  `symbol` varchar(5) NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS deposits (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL,
-    amount REAL NOT NULL,
-    deposited_at REAL NOT NULL,
-    last_updated TEXT NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'Dollar'
-);
+CREATE TABLE `deposits` (
+  `id` int NOT NULL,
+  `date` datetime NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `deposited_at` decimal(10,2) NOT NULL,
+  `last_updated` datetime NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
+  `user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS currency (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    rate REAL NOT NULL,
-    code TEXT NOT NULL,
-    symbol TEXT NOT NULL
-);
+CREATE TABLE `drawings` (
+  `id` int NOT NULL,
+  `date` datetime NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `withdrawn_at` decimal(10,2) NOT NULL,
+  `last_updated` datetime NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
+  `user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `sites` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `last_updated` datetime NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
+  `user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `site_history` (
+  `id` int NOT NULL,
+  `site_id` int NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(255) NOT NULL,
+  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `users` (
+  `id` int NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_login_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 ## File locations
 
@@ -135,17 +165,32 @@ CREATE TABLE IF NOT EXISTS currency (
 /home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/total_bankroll/
 ├── .aider.chat.history.md
 ├── .aider.input.history
+├── .aider.tags.cache.v4/
+│   └── cache.db
+├── .env
 ├── .flake8
+├── .github/
+│   └── workflows/
+│       └── python-ci.yml
 ├── .gitignore
+├── .pytest_cache/
+│   ├── .gitignore
+│   ├── CACHEDIR.TAG
+│   ├── README.md
+│   └── v/
+│       └── cache/
+│           ├── lastfailed
+│           └── nodeids
 ├── bankroll.db
+├── env.txt
 ├── GEMINI.md
+├── info/
+│   ├── git pull issues.md
+│   └── google_gemini_cli.md
 ├── LICENSE
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-├── .github/
-│   └── workflows/
-│       └── python-ci.yml
 ├── resources/
 │   └── bootstrap/
 │       └── index.html
@@ -154,72 +199,100 @@ CREATE TABLE IF NOT EXISTS currency (
 │   └── total_bankroll/
 │       ├── __init__.py
 │       ├── app.py
+│       ├── config.py
 │       ├── currency.py
 │       ├── db.py
-│       ├── schema_postgres.sql
-│       ├── schema.sql
-│       ├── site.py
 │       ├── routes/
 │       │   ├── __init__.py
-│       │   ├── add_asset.py
 │       │   ├── add_deposit.py
-│       │   ├── add_poker_site.py
 │       │   ├── add_withdrawal.py
 │       │   ├── assets.py
+│       │   ├── auth.py
+│       │   ├── charts.py
+│       │   ├── currency_update.py
 │       │   ├── deposit.py
 │       │   ├── home.py
 │       │   ├── poker_sites.py
 │       │   ├── settings.py
-│       │   ├── update_asset.py
-│       │   ├── update_poker_site.py
 │       │   └── withdrawal.py
+│       ├── schema.sql
+│       ├── site.py
 │       ├── static/
-│       │   ├── index.html
 │       │   ├── assets/
 │       │   │   ├── favicon.ico
 │       │   │   └── img/
-│       │   │       ├── bg-masthead.jpg
-│       │   │       └── portfolio/
-│       │   │           ├── fullsize/
-│       │   │           │   ├── 1.jpg
-│       │   │           │   ├── 2.jpg
-│       │   │           │   ├── 3.jpg
-│       │   │           │   ├── 4.jpg
-│       │   │           │   ├── 5.jpg
-│       │   │           │   └── 6.jpg
-│       │   │           └── thumbnails/
-│       │   │               ├── 1.jpg
-│       │   │               ├── 2.jpg
-│       │   │               ├── 3.jpg
-│       │   │               ├── 4.jpg
-│       │   │               ├── 5.jpg
-│       │   │               └── 6.jpg
+│       │   │       ├── portfolio/
+│       │   │       │   ├── fullsize/
+│       │   │       │   │   ├── 1.jpg
+│       │   │       │   │   ├── 2.jpg
+│       │   │       │   │   ├── 3.jpg
+│       │   │       │   │   ├── 4.jpg
+│       │   │       │   │   ├── 5.jpg
+│       │   │       │   │   └── 6.jpg
+│       │   │       │   └── thumbnails/
+│       │   │       │       ├── 1.jpg
+│       │   │       │       ├── 2.jpg
+│       │   │       │       ├── 3.jpg
+│       │   │       │       ├── 4.jpg
+│       │   │       │       ├── 5.jpg
+│       │   │       │       └── 6.jpg
+│       │   │       └── bg-masthead.jpg
+│       │   ├── chartjs-adapter-date-fns.min.js
 │       │   ├── css/
 │       │   │   └── styles.css
+│       │   ├── date-fns.min.js
+│       │   ├── index.html
 │       │   └── js/
+│       │       ├── date-fns.min.js
 │       │       └── scripts.js
 │       └── templates/
+│           ├── _chart_selection.html
 │           ├── about.html
 │           ├── add_asset.html
 │           ├── add_deposit.html
 │           ├── add_site.html
 │           ├── add_withdrawal.html
+│           ├── assets_bar_chart.html
+│           ├── assets_line_chart.html
+│           ├── assets_pie_chart.html
+│           ├── assets_polar_area_chart.html
+│           ├── assets_radar_chart.html
+│           ├── assets_scatter_chart.html
 │           ├── assets.html
+│           ├── bankroll_bar_chart.html
+│           ├── bankroll_line_chart.html
 │           ├── base.html
+│           ├── charts.html
 │           ├── confirm_delete.html
+│           ├── confirm_export_database.html
+│           ├── confirm_import_database.html
 │           ├── confirm_reset_database.html
 │           ├── currencies.html
 │           ├── deposit.html
+│           ├── deposits_bar_chart.html
+│           ├── deposits_line_chart.html
 │           ├── index.html
+│           ├── login.html
+│           ├── poker_sites_bar_chart.html
+│           ├── poker_sites_line_chart.html
+│           ├── poker_sites_pie_chart.html
+│           ├── poker_sites_polar_area_chart.html
+│           ├── poker_sites_radar_chart.html
+│           ├── poker_sites_scatter_chart.html
 │           ├── poker_sites.html
+│           ├── profit_bar_chart.html
+│           ├── profit_line_chart.html
+│           ├── register.html
 │           ├── settings.html
 │           ├── update_asset.html
 │           ├── update_deposit.html
 │           ├── update_site.html
 │           ├── update_withdrawal.html
-│           └── withdrawal.html
+│           ├── withdrawal.html
+│           └── withdrawals_bar_chart.html
 └── tests/
     ├── test_basic.py
+    ├── test_data.csv
     └── test_forms.py
 ```
 

@@ -95,3 +95,17 @@ def home():
                            total_bankroll=total_bankroll,
                            total_profit=total_profit)
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email
+
+class DummyLoginForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+@home_bp.route("/debug_login")
+def debug_login():
+    dummy_form = DummyLoginForm()
+    return render_template("security/login_user.html", form=dummy_form)
+

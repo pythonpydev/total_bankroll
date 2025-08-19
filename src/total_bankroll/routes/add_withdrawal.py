@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
+from flask_security import login_required, current_user
 import pymysql
 from ..db import get_db
 from datetime import datetime
@@ -6,10 +7,10 @@ from datetime import datetime
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 
 @add_withdrawal_bp.route("/add_withdrawal", methods=["GET", "POST"])
+@login_required
 def add_withdrawal():
     """Add a withdrawal transaction."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
     if request.method == "POST":
         date = request.form.get("date", "")
@@ -35,7 +36,7 @@ def add_withdrawal():
             return "Invalid amount or withdrawn_at format", 400
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency) VALUES (%s, %s, %s, %s, %s)", (date, amount, withdrawn_at, last_updated, currency_name))
+        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s, %s)", (date, amount, withdrawn_at, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
@@ -65,6 +66,7 @@ def add_withdrawal():
                     currency,
                     ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
                 FROM sites
+                WHERE user_id = %s
             ),
             ConvertedSites AS (
                 SELECT
@@ -77,7 +79,7 @@ def add_withdrawal():
             SELECT
                 SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total
             FROM ConvertedSites;
-        """)
+        """, (current_user.id,))
         poker_sites_data = cur.fetchone()
         current_poker_total = float(poker_sites_data['current_total']) if poker_sites_data and poker_sites_data['current_total'] is not None else 0.0
 
@@ -91,6 +93,7 @@ def add_withdrawal():
                     currency,
                     ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
                 FROM assets
+                WHERE user_id = %s
             ),
             ConvertedAssets AS (
                 SELECT
@@ -103,17 +106,17 @@ def add_withdrawal():
             SELECT
                 SUM(CASE WHEN rn = 1 THEN amount_usd ELSE 0 END) AS current_total
             FROM ConvertedAssets;
-        """)
+        """, (current_user.id,))
         assets_data = cur.fetchone()
         current_asset_total = float(assets_data['current_total']) if assets_data and assets_data['current_total'] is not None else 0.0
 
         # Get current total of all withdrawals
-        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM drawings d JOIN currency c ON d.currency = c.name")
+        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM drawings d JOIN currency c ON d.currency = c.name WHERE d.user_id = %s", (current_user.id,))
         total_withdrawals_row = cur.fetchone()
         total_withdrawals = total_withdrawals_row['total'] if total_withdrawals_row and total_withdrawals_row['total'] is not None else 0
 
         # Get current total of all deposits
-        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM deposits d JOIN currency c ON d.currency = c.name")
+        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM deposits d JOIN currency c ON d.currency = c.name WHERE d.user_id = %s", (current_user.id,))
         total_deposits_row = cur.fetchone()
         total_deposits = total_deposits_row['total'] if total_deposits_row and total_deposits_row['total'] is not None else 0
 

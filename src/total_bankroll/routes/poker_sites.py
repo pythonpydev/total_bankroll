@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for
+from flask_security import login_required, current_user
 from ..db import get_db
 from datetime import datetime
 from decimal import Decimal
@@ -6,10 +7,10 @@ from decimal import Decimal
 poker_sites_bp = Blueprint("poker_sites", __name__)
 
 @poker_sites_bp.route("/poker_sites")
+@login_required
 def poker_sites_page():
     """Poker Sites page."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
 
     cur.execute("SELECT name, rate, symbol FROM currency")
@@ -28,6 +29,7 @@ def poker_sites_page():
                 currency,
                 ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
             FROM sites
+            WHERE user_id = %s
         )
         SELECT
             s1.id,
@@ -41,7 +43,7 @@ def poker_sites_page():
             ON s1.name = s2.name AND s2.rn = 2
         WHERE s1.rn = 1
         ORDER BY s1.name
-    """)
+    """, (current_user.id,))
 
     poker_sites_data_raw = cur.fetchall()
 
@@ -89,10 +91,10 @@ def poker_sites_page():
 
 
 @poker_sites_bp.route("/add_site", methods=["GET", "POST"])
+@login_required
 def add_site():
     """Add a poker site."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
@@ -116,7 +118,7 @@ def add_site():
             return "Invalid amount format", 400
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO sites (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        cur.execute("INSERT INTO sites (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
@@ -140,10 +142,10 @@ def add_site():
         return render_template("add_site.html", currencies=currencies)
 
 @poker_sites_bp.route("/update_site/<string:site_name>", methods=["GET", "POST"])
+@login_required
 def update_site(site_name):
     """Update a poker site."""
     conn = get_db()
-    # NEW (PyMySQL):
     cur = conn.cursor()
     if request.method == "POST":
         name = request.form.get("name", "").title()
@@ -153,7 +155,7 @@ def update_site(site_name):
         if not name or not amount_str:
             cur.close()
             conn.close()
-            return redirect(url_for("poker_sites_page"))
+            return redirect(url_for("poker_sites.poker_sites_page"))
 
         try:
             amount = round(float(amount_str), 2)
@@ -164,23 +166,23 @@ def update_site(site_name):
         except ValueError:
             cur.close()
             conn.close()
-            return redirect(url_for("poker_sites_page"))
+            return redirect(url_for("poker_sites.poker_sites_page"))
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO sites (name, amount, last_updated, currency) VALUES (%s, %s, %s, %s)", (name, amount, last_updated, currency_name))
+        cur.execute("INSERT INTO sites (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
-        cur.execute("SELECT * FROM sites WHERE name = %s ORDER BY last_updated DESC", (site_name,))
+        cur.execute("SELECT * FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC", (site_name, current_user.id))
         site = cur.fetchone()
         if site is None:
             cur.close()
             conn.close()
             return "Site not found", 404
 
-        cur.execute("SELECT amount FROM sites WHERE name = %s ORDER BY last_updated DESC LIMIT 1, 1", (site_name,))
+        cur.execute("SELECT amount FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (site_name, current_user.id))
         previous_amount_row = cur.fetchone()
         previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
 
@@ -198,4 +200,4 @@ def update_site(site_name):
         currencies = cur.fetchall()
         cur.close()
         conn.close()
-        return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount)
+        return render_template("update__site.html", site=site, currencies=currencies, previous_amount=previous_amount)
