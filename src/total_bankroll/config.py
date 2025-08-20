@@ -11,6 +11,19 @@ class Config:
     DB_PASS = os.getenv('DB_PASS', 'f3gWoQe7X7BFCm')
     EXCHANGE_RATE_API_KEY = os.getenv('EXCHANGE_RATE_API_KEY')
 
+    # --- Mail settings ---
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'true').lower() in ['true', '1', 't']
+    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'false').lower() in ['true', '1', 't']
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_USERNAME')
+
+    # --- Flask-Security email integration ---
+    SECURITY_EMAIL_SENDER = os.getenv('MAIL_USERNAME')
+    SECURITY_EMAIL_SUBJECT_REGISTER = "Please confirm your email"
+
 class DevelopmentConfig(Config):
     DEBUG = True
 
