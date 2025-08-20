@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, jsonify, current_app
+from flask_security import current_user
 from ..db import get_db
 from datetime import datetime
 
@@ -116,7 +117,7 @@ def get_poker_sites_data():
         cur = conn.cursor()
 
         # Get all unique poker site names
-        cur.execute("SELECT DISTINCT name FROM sites ORDER BY name")
+        cur.execute("SELECT DISTINCT name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
         site_names = [row['name'] for row in cur.fetchall()]
 
         # Get the latest data for each poker site
@@ -131,10 +132,12 @@ def get_poker_sites_data():
                     name,
                     MAX(last_updated) AS max_last_updated
                 FROM sites
+                WHERE user_id = %s
                 GROUP BY name
             ) AS latest_sites
             ON s.name = latest_sites.name AND s.last_updated = latest_sites.max_last_updated
-        """)
+            WHERE s.user_id = %s
+        """, (current_user.id, current_user.id))
         raw_data = cur.fetchall()
 
         # Get currency exchange rates
@@ -191,7 +194,7 @@ def get_poker_sites_historical_data():
         cur = conn.cursor()
 
         # Get all unique poker site names
-        cur.execute("SELECT DISTINCT name FROM sites ORDER BY name")
+        cur.execute("SELECT DISTINCT name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
         site_names = [row['name'] for row in cur.fetchall()]
 
         # Get all historical data for poker sites
@@ -202,8 +205,9 @@ def get_poker_sites_historical_data():
                 amount,
                 currency
             FROM sites
+            WHERE user_id = %s
             ORDER BY last_updated, name
-        """)
+        """, (current_user.id,))
         raw_data = cur.fetchall()
 
         # Get currency exchange rates
@@ -315,8 +319,9 @@ def get_assets_data():
                 amount,
                 currency
             FROM assets
+            WHERE user_id = %s
             ORDER BY last_updated, name
-        """)
+        """, (current_user.id,))
         raw_data = cur.fetchall()
 
         # Get currency exchange rates
@@ -429,8 +434,9 @@ def get_deposits_data():
                   OVER (ORDER BY d.date, d.id) AS cumulative_usd
             FROM deposits d
             JOIN currency c ON d.currency = c.name
+            WHERE d.user_id = %s
             ORDER BY d.date, d.id
-        """)
+        """, (current_user.id,))
         raw = cur.fetchall()
         cur.close()
 
@@ -464,8 +470,9 @@ def get_withdrawals_data():
                   OVER (ORDER BY d.date, d.id) AS cumulative_usd
             FROM drawings d
             JOIN currency c ON d.currency = c.name
+            WHERE d.user_id = %s
             ORDER BY d.date, d.id
-        """)
+        """, (current_user.id,))
         raw = cur.fetchall()
         cur.close()
 
@@ -613,8 +620,9 @@ def get_bankroll_data():
                 amount,
                 currency
             FROM sites
+            WHERE user_id = %s
             ORDER BY last_updated
-        """)
+        """, (current_user.id,))
         sites_data = cur.fetchall()
 
         # Get historical data for assets (include name)
@@ -625,8 +633,9 @@ def get_bankroll_data():
                 amount,
                 currency
             FROM assets
+            WHERE user_id = %s
             ORDER BY last_updated
-        """)
+        """, (current_user.id,))
         assets_data = cur.fetchall()
 
         cur.close()
