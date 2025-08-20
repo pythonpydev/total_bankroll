@@ -200,4 +200,4 @@ def update_site(site_name):
         currencies = cur.fetchall()
         cur.close()
         conn.close()
-        return render_template("update__site.html", site=site, currencies=currencies, previous_amount=previous_amount)
+        return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount)

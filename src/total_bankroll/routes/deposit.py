@@ -86,12 +86,10 @@ def deposit():
         currencies = cur.fetchall()
 
         cur.close()
-        conn.close()
         return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
 
     except Exception as e:
         cur.close()
-        conn.close()
         import traceback
         traceback.print_exc()
         return f"Error loading deposits: {str(e)}", 500

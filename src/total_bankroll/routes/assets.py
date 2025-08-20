@@ -180,7 +180,7 @@ def update_asset(asset_name):
                 currency_name = "US Dollar" # Default to US Dollar if not found by name or code
 
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_.id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
+        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
         conn.commit()
         cur.close()
         conn.close()

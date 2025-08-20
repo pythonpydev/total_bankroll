@@ -83,6 +83,36 @@ user.
 
 ### Database Schema
 
+```sql
+-- phpMyAdmin SQL Dump
+-- version 5.2.1deb3
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost:3306
+-- Generation Time: Aug 20, 2025 at 02:21 PM
+-- Server version: 8.0.43-0ubuntu0.24.04.1
+-- PHP Version: 8.3.6
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `bankroll`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `assets`
+--
+
 CREATE TABLE `assets` (
   `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -92,6 +122,12 @@ CREATE TABLE `assets` (
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `asset_history`
+--
+
 CREATE TABLE `asset_history` (
   `id` int NOT NULL,
   `asset_id` int NOT NULL,
@@ -99,6 +135,12 @@ CREATE TABLE `asset_history` (
   `currency` varchar(255) NOT NULL,
   `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `currency`
+--
 
 CREATE TABLE `currency` (
   `id` int NOT NULL,
@@ -108,6 +150,12 @@ CREATE TABLE `currency` (
   `symbol` varchar(5) NOT NULL,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `deposits`
+--
 
 CREATE TABLE `deposits` (
   `id` int NOT NULL,
@@ -119,6 +167,12 @@ CREATE TABLE `deposits` (
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `drawings`
+--
+
 CREATE TABLE `drawings` (
   `id` int NOT NULL,
   `date` datetime NOT NULL,
@@ -129,6 +183,26 @@ CREATE TABLE `drawings` (
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `oauth`
+--
+
+CREATE TABLE `oauth` (
+  `id` int NOT NULL,
+  `provider` varchar(50) NOT NULL,
+  `provider_user_id` varchar(255) NOT NULL,
+  `token` text NOT NULL,
+  `user_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sites`
+--
+
 CREATE TABLE `sites` (
   `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -138,6 +212,12 @@ CREATE TABLE `sites` (
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `site_history`
+--
+
 CREATE TABLE `site_history` (
   `id` int NOT NULL,
   `site_id` int NOT NULL,
@@ -146,14 +226,201 @@ CREATE TABLE `site_history` (
   `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
 CREATE TABLE `users` (
   `id` int NOT NULL,
   `email` varchar(255) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
+  `password_hash` varchar(255) DEFAULT NULL,
   `active` tinyint(1) DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_login_at` timestamp NULL DEFAULT NULL
+  `last_login_at` timestamp NULL DEFAULT NULL,
+  `fs_uniquifier` varchar(255) NOT NULL,
+  `is_confirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `confirmed_on` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `assets`
+--
+ALTER TABLE `assets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `asset_history`
+--
+ALTER TABLE `asset_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `asset_id` (`asset_id`);
+
+--
+-- Indexes for table `currency`
+--
+ALTER TABLE `currency`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `deposits`
+--
+ALTER TABLE `deposits`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `drawings`
+--
+ALTER TABLE `drawings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `oauth`
+--
+ALTER TABLE `oauth`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `sites`
+--
+ALTER TABLE `sites`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `site_history`
+--
+ALTER TABLE `site_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `site_id` (`site_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `fs_uniquifier` (`fs_uniquifier`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `assets`
+--
+ALTER TABLE `assets`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `asset_history`
+--
+ALTER TABLE `asset_history`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `currency`
+--
+ALTER TABLE `currency`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `deposits`
+--
+ALTER TABLE `deposits`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `drawings`
+--
+ALTER TABLE `drawings`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `oauth`
+--
+ALTER TABLE `oauth`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sites`
+--
+ALTER TABLE `sites`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `site_history`
+--
+ALTER TABLE `site_history`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `assets`
+--
+ALTER TABLE `assets`
+  ADD CONSTRAINT `assets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `asset_history`
+--
+ALTER TABLE `asset_history`
+  ADD CONSTRAINT `asset_history_ibfk_1` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `deposits`
+--
+ALTER TABLE `deposits`
+  ADD CONSTRAINT `deposits_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `drawings`
+--
+ALTER TABLE `drawings`
+  ADD CONSTRAINT `drawings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `oauth`
+--
+ALTER TABLE `oauth`
+  ADD CONSTRAINT `oauth_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `sites`
+--
+ALTER TABLE `sites`
+  ADD CONSTRAINT `sites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `site_history`
+--
+ALTER TABLE `site_history`
+  ADD CONSTRAINT `site_history_ibfk_1` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+```
+
 
 ## File locations
 
@@ -163,137 +430,26 @@ CREATE TABLE `users` (
 
 ```
 /home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/total_bankroll/
-├── .aider.chat.history.md
-├── .aider.input.history
-├── .aider.tags.cache.v4/
-│   └── cache.db
+├── _clone/
+├── .aider.tags.cache.v4
+├── .git/
+├── .github/
+├── .pytest_cache/
+├── .venv/
+├── info/
+├── resources/
+├── src/
+├── tests/
 ├── .env
 ├── .flake8
-├── .github/
-│   └── workflows/
-│       └── python-ci.yml
 ├── .gitignore
-├── .pytest_cache/
-│   ├── .gitignore
-│   ├── CACHEDIR.TAG
-│   ├── README.md
-│   └── v/
-│       └── cache/
-│           ├── lastfailed
-│           └── nodeids
-├── bankroll.db
+├── bankroll.sql
 ├── env.txt
 ├── GEMINI.md
-├── info/
-│   ├── git pull issues.md
-│   └── google_gemini_cli.md
 ├── LICENSE
 ├── pyproject.toml
 ├── README.md
-├── requirements.txt
-├── resources/
-│   └── bootstrap/
-│       └── index.html
-├── src/
-│   ├── __init__.py
-│   └── total_bankroll/
-│       ├── __init__.py
-│       ├── app.py
-│       ├── config.py
-│       ├── currency.py
-│       ├── db.py
-│       ├── routes/
-│       │   ├── __init__.py
-│       │   ├── add_deposit.py
-│       │   ├── add_withdrawal.py
-│       │   ├── assets.py
-│       │   ├── auth.py
-│       │   ├── charts.py
-│       │   ├── currency_update.py
-│       │   ├── deposit.py
-│       │   ├── home.py
-│       │   ├── poker_sites.py
-│       │   ├── settings.py
-│       │   └── withdrawal.py
-│       ├── schema.sql
-│       ├── site.py
-│       ├── static/
-│       │   ├── assets/
-│       │   │   ├── favicon.ico
-│       │   │   └── img/
-│       │   │       ├── portfolio/
-│       │   │       │   ├── fullsize/
-│       │   │       │   │   ├── 1.jpg
-│       │   │       │   │   ├── 2.jpg
-│       │   │       │   │   ├── 3.jpg
-│       │   │       │   │   ├── 4.jpg
-│       │   │       │   │   ├── 5.jpg
-│       │   │       │   │   └── 6.jpg
-│       │   │       │   └── thumbnails/
-│       │   │       │       ├── 1.jpg
-│       │   │       │       ├── 2.jpg
-│       │   │       │       ├── 3.jpg
-│       │   │       │       ├── 4.jpg
-│       │   │       │       ├── 5.jpg
-│       │   │       │       └── 6.jpg
-│       │   │       └── bg-masthead.jpg
-│       │   ├── chartjs-adapter-date-fns.min.js
-│       │   ├── css/
-│       │   │   └── styles.css
-│       │   ├── date-fns.min.js
-│       │   ├── index.html
-│       │   └── js/
-│       │       ├── date-fns.min.js
-│       │       └── scripts.js
-│       └── templates/
-│           ├── _chart_selection.html
-│           ├── about.html
-│           ├── add_asset.html
-│           ├── add_deposit.html
-│           ├── add_site.html
-│           ├── add_withdrawal.html
-│           ├── assets_bar_chart.html
-│           ├── assets_line_chart.html
-│           ├── assets_pie_chart.html
-│           ├── assets_polar_area_chart.html
-│           ├── assets_radar_chart.html
-│           ├── assets_scatter_chart.html
-│           ├── assets.html
-│           ├── bankroll_bar_chart.html
-│           ├── bankroll_line_chart.html
-│           ├── base.html
-│           ├── charts.html
-│           ├── confirm_delete.html
-│           ├── confirm_export_database.html
-│           ├── confirm_import_database.html
-│           ├── confirm_reset_database.html
-│           ├── currencies.html
-│           ├── deposit.html
-│           ├── deposits_bar_chart.html
-│           ├── deposits_line_chart.html
-│           ├── index.html
-│           ├── login.html
-│           ├── poker_sites_bar_chart.html
-│           ├── poker_sites_line_chart.html
-│           ├── poker_sites_pie_chart.html
-│           ├── poker_sites_polar_area_chart.html
-│           ├── poker_sites_radar_chart.html
-│           ├── poker_sites_scatter_chart.html
-│           ├── poker_sites.html
-│           ├── profit_bar_chart.html
-│           ├── profit_line_chart.html
-│           ├── register.html
-│           ├── settings.html
-│           ├── update_asset.html
-│           ├── update_deposit.html
-│           ├── update_site.html
-│           ├── update_withdrawal.html
-│           ├── withdrawal.html
-│           └── withdrawals_bar_chart.html
-└── tests/
-    ├── test_basic.py
-    ├── test_data.csv
-    └── test_forms.py
+└── requirements.txt
 ```
 
 ### Explanation of file structure
@@ -314,13 +470,7 @@ The project also has a `.github/workflows` directory, which contains a `python-c
 
 Overall, the project is well-structured and follows best practices for Flask application development.
 
-Possible future refinements, efficiencies and refactoring:
 
-*   **Database Migrations**: The project uses SQL scripts to create the database schema. As the application evolves, managing database schema changes can become complex. Using a database migration tool like Alembic would help to manage schema changes in a more structured way.
-*   **Blueprints Refactoring**: The `routes` directory is a good start, but as the application grows, it might be beneficial to group related routes into more specific blueprints. For example, all routes related to poker sites could be in a `poker_sites` blueprint, and all routes related to assets could be in an `assets` blueprint. This is already partially done, but could be more consistent.
-*   **Frontend Asset Management**: The static assets are currently managed manually. Using a tool like Webpack or Parcel could help to bundle and minify the assets, which would improve the application's performance.
-*   **API**: The application is a traditional web application that renders HTML on the server. As the application grows, it might be beneficial to expose a RESTful API that can be consumed by a frontend framework like React or Vue.js. This would allow for a more interactive user experience.
-*   **Database Connection Handling**: The database connection is opened and closed in each route. It would be more efficient to use Flask's application context to manage the database connection. This is already done with `app.teardown_appcontext(close_db)`, but the connection is still opened manually in each route. The `get_db` function should handle the connection opening and reuse it if it's already open in the current context.
 
 ## Analysis of Project
 

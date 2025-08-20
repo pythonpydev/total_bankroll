@@ -43,7 +43,7 @@
                                     <td>{{ withdrawal_item.currency }}</td>
                                     <td>{{ withdrawal_item.currency_symbol }}{{ "%.2f" | format(withdrawal_item.original_amount) }}</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-danger delete-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='withdrawal', item_id=withdrawal_item.id) }}">Delete</a>
+                                        <a href="#" class="btn btn-sm btn-danger delete-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='withdrawal', item_id=withdrawal_item.id) }}">Delete</a>
                                     </td>
                                 </tr>
                             {% endfor %}

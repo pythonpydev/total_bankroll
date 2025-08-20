@@ -46,7 +46,7 @@
                                 <td class="{% if (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.update_site', site_name=site.name) }}">Update</button>
-                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
                                 </td>
                             </tr>
                             {% endfor %}

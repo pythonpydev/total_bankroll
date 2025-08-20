@@ -245,6 +245,9 @@ from total_bankroll.routes.currency_update import currency_update_bp
 from total_bankroll.routes.about import about_bp
 from total_bankroll.routes.charts import charts_bp
 from total_bankroll.routes.settings import settings_bp
+from total_bankroll.routes.common import common_bp
+from total_bankroll.routes.add_withdrawal import add_withdrawal_bp
+from total_bankroll.routes.add_deposit import add_deposit_bp
 
 app.register_blueprint(auth_bp, url_prefix='/security')
 app.register_blueprint(home_bp)
@@ -256,6 +259,9 @@ app.register_blueprint(currency_update_bp)
 app.register_blueprint(about_bp)
 app.register_blueprint(charts_bp)
 app.register_blueprint(settings_bp)
+app.register_blueprint(common_bp)
+app.register_blueprint(add_withdrawal_bp)
+app.register_blueprint(add_deposit_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
