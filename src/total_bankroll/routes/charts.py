@@ -507,19 +507,19 @@ def get_profit_data():
         currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
 
         # Get historical data for sites
-        cur.execute("SELECT last_updated, name, amount, currency FROM sites ORDER BY last_updated")
+        cur.execute("SELECT last_updated, name, amount, currency FROM sites WHERE user_id = %s ORDER BY last_updated", (current_user.id,))
         sites_data = cur.fetchall()
 
         # Get historical data for assets
-        cur.execute("SELECT last_updated, name, amount, currency FROM assets ORDER BY last_updated")
+        cur.execute("SELECT last_updated, name, amount, currency FROM assets WHERE user_id = %s ORDER BY last_updated", (current_user.id,))
         assets_data = cur.fetchall()
 
         # Get historical data for deposits
-        cur.execute("SELECT date, amount, currency FROM deposits ORDER BY date")
+        cur.execute("SELECT date, amount, currency FROM deposits WHERE user_id = %s ORDER BY date", (current_user.id,))
         deposits_data = cur.fetchall()
 
         # Get historical data for withdrawals
-        cur.execute("SELECT date, amount, currency FROM drawings ORDER BY date")
+        cur.execute("SELECT date, amount, currency FROM drawings WHERE user_id = %s ORDER BY date", (current_user.id,))
         withdrawals_data = cur.fetchall()
 
         cur.close()
