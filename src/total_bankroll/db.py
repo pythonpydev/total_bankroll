@@ -83,7 +83,7 @@ def close_db(e=None):
             # Connection was already closed or doesn't have _closed attribute
             pass
 
-def _init_db_tables(db_connection, app):
+def init_db_tables(db_connection, app):
     cursor = db_connection.cursor()
     try:
         with app.open_resource('schema.sql') as f:
