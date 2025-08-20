@@ -3,6 +3,9 @@ from flask_security import login_required, current_user
 from ..db import get_db
 from datetime import datetime
 from decimal import Decimal
+import logging
+
+logger = logging.getLogger(__name__)
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
 
@@ -45,7 +48,9 @@ def poker_sites_page():
         ORDER BY s1.name
     """, (current_user.id,))
 
+    logger.debug(f"Current user ID: {current_user.id}")
     poker_sites_data_raw = cur.fetchall()
+    logger.debug(f"Poker sites data raw: {poker_sites_data_raw}")
 
     poker_sites_data = []
     for site in poker_sites_data_raw:
