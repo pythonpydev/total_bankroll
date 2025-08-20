@@ -421,6 +421,83 @@ def get_assets_data():
         current_app.logger.error(f"Error in get_assets_data: {e}")
         return jsonify({'error': str(e)}), 500
 
+@charts_bp.route("/charts/assets_pie_chart_data")
+def get_assets_pie_chart_data():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+
+        # Get all unique asset names for the current user
+        cur.execute("SELECT DISTINCT name FROM assets WHERE user_id = %s ORDER BY name", (current_user.id,))
+        asset_names = [row['name'] for row in cur.fetchall()]
+
+        # Get the latest data for each asset for the current user
+        cur.execute("""
+            SELECT
+                a.name,
+                a.amount,
+                a.currency
+            FROM assets a
+            INNER JOIN (
+                SELECT
+                    name,
+                    MAX(last_updated) AS max_last_updated
+                FROM assets
+                WHERE user_id = %s
+                GROUP BY name
+            ) AS latest_assets
+            ON a.name = latest_assets.name AND a.last_updated = latest_assets.max_last_updated
+            WHERE a.user_id = %s
+        """, (current_user.id, current_user.id))
+        raw_data = cur.fetchall()
+
+        # Get currency exchange rates
+        cur.execute("SELECT name, rate FROM currency")
+        currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
+
+        cur.close()
+
+        # Process data for charting
+        labels = []
+        data = []
+
+        for row in raw_data:
+            # Convert amount to USD
+            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+            labels.append(row['name'])
+            data.append(amount_usd)
+
+        # Prepare data for Chart.js
+        datasets = [{
+            'label': 'Latest Amount (USD)',
+            'data': data,
+            'backgroundColor': [
+                'rgba(255, 99, 132, 0.6)', # Red
+                'rgba(54, 162, 235, 0.6)', # Blue
+                'rgba(255, 206, 86, 0.6)', # Yellow
+                'rgba(75, 192, 192, 0.6)', # Green
+                'rgba(153, 102, 255, 0.6)',# Purple
+                'rgba(255, 159, 64, 0.6)'  # Orange
+            ],
+            'borderColor': [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            'borderWidth': 1
+        }]
+
+        return jsonify({
+            'labels': labels,
+            'datasets': datasets
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_assets_pie_chart_data: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @charts_bp.route("/charts/deposits_data")
 def get_deposits_data():
     try:
