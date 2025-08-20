@@ -81,8 +81,9 @@ def perform_export_database():
     cur = conn.cursor()
     try:
         tables = ['assets', 'deposits', 'drawings', 'sites'] # Tables to export
-        output = io.StringIO()
-        writer = csv.writer(output)
+        output = io.BytesIO() # Changed to BytesIO
+        text_wrapper = io.TextIOWrapper(output, encoding='utf-8', newline='') # Store TextIOWrapper
+        writer = csv.writer(text_wrapper) # Pass TextIOWrapper to csv.writer
 
         for table_name in tables:
             cur.execute(f"SELECT * FROM {table_name} WHERE user_id = %s", (current_user.id,))
@@ -97,7 +98,9 @@ def perform_export_database():
                     writer.writerow(row.values())
                 writer.writerow([]) # Add an empty row for separation
 
-        output.seek(0)
+        text_wrapper.flush() # Flush the TextIOWrapper
+        text_wrapper.detach() # Detach the BytesIO object from the TextIOWrapper
+        output.seek(0) # Seek to the beginning of the BytesIO object
         return send_file(output, mimetype='text/csv', as_attachment=True, download_name='bankroll_export.csv')
 
     except Exception as e:
