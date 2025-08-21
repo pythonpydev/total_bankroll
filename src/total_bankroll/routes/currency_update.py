@@ -5,13 +5,22 @@ from ..db import get_db
 
 currency_update_bp = Blueprint("currency_update", __name__)
 
+@currency_update_bp.route("/currencies")
+def currencies_page():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT name, code, symbol, rate, updated_at FROM currency ORDER BY name")
+    currencies = cur.fetchall()
+    cur.close()
+    return render_template("currencies.html", currencies=currencies)
+
 @currency_update_bp.route("/update_exchange_rates", methods=["POST"])
 def update_exchange_rates():
     api_key = current_app.config.get("EXCHANGE_RATE_API_KEY")
     if not api_key:
         current_app.logger.error("Exchange rate API key not configured")
         flash("Exchange rate API key not configured. Please set the EXCHANGE_RATE_API_KEY environment variable.", "danger")
-        return redirect(url_for("currencies"))
+        return redirect(url_for("currency_update.currencies_page"))
 
     base_currency = "USD"
     api_url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/{base_currency}"
@@ -26,13 +35,13 @@ def update_exchange_rates():
             error_message = data.get("error-type", "Unknown API error")
             current_app.logger.error(f"API error: {error_message}")
             flash(f"Failed to retrieve exchange rates: {error_message}", "danger")
-            return redirect(url_for("currencies"))
+            return redirect(url_for("currency_update.currencies_page"))
 
         rates = data.get("conversion_rates")
         if not rates:
             current_app.logger.error("No conversion rates found in API response")
             flash("Failed to retrieve exchange rates: No conversion rates found.", "danger")
-            return redirect(url_for("currencies"))
+            return redirect(url_for("currency_update.currencies_page"))
 
         # Get existing currency codes from the database
         conn = get_db()
@@ -72,4 +81,4 @@ def update_exchange_rates():
         current_app.logger.error(f"Unexpected error: {e}")
         flash(f"An unexpected error occurred: {e}", "danger")
 
-    return redirect(url_for("currencies"))
+    return redirect(url_for("currency_update.currencies_page"))
