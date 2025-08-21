@@ -178,7 +178,7 @@ def forgot_password():
             msg = Message(
                 'Reset Your Password',
                 recipients=[user.email],
-                body=f"Please click the link to reset your password: {reset_url}\nThe link expires in 1 hour."
+                html=render_template('reset_password_email.html', reset_url=reset_url)
             )
             try:
                 mail.send(msg)
