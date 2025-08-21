@@ -49,18 +49,11 @@ def perform_reset_database():
     conn = get_db()
     cur = conn.cursor()
     try:
-        # Drop all tables
-        cur.execute("SET FOREIGN_KEY_CHECKS = 0")
-        cur.execute("SHOW TABLES")
-        tables = cur.fetchall()
-        for table in tables:
-            table_name = list(table.values())[0] # Get the table name from the dictionary
-            cur.execute(f"DROP TABLE IF EXISTS `{table_name}`")
-        cur.execute("SET FOREIGN_KEY_CHECKS = 1")
-        conn.commit()
-
-        # Reinitialize tables
-        init_db_tables(conn, current_app._get_current_object()) # Pass current_app object
+        # Delete records for the current user from relevant tables
+        cur.execute("DELETE FROM sites WHERE user_id = %s", (current_user.id,))
+        cur.execute("DELETE FROM assets WHERE user_id = %s", (current_user.id,))
+        cur.execute("DELETE FROM deposits WHERE user_id = %s", (current_user.id,))
+        cur.execute("DELETE FROM drawings WHERE user_id = %s", (current_user.id,))
         conn.commit()
 
         return redirect(url_for('home.home')) # Redirect to home page after reset
