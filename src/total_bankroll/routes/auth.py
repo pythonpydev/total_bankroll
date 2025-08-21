@@ -213,17 +213,42 @@ def reset_password(token):
 
 @auth_bp.route('/google')
 def google():
-    if not google_blueprint.authorized:
-        return redirect(url_for('google.login'))
-    return redirect(url_for('home.home'))
+    return redirect(url_for('google.login'))
+
 
 @auth_bp.route('/google/authorized')
-def google_auth():
-    if google_blueprint.authorized:
-        flash('Logged in with Google successfully!', 'success')
-        return redirect(url_for('home.home'))
-    flash('Google login failed.', 'danger')
-    return redirect(url_for('auth.login'))
+def google_authorized():
+    if not google_blueprint.authorized:
+        flash("Google login failed.", "danger")
+        return redirect(url_for("auth.login"))
+
+    resp = google_blueprint.get("/oauth2/v2/userinfo")
+    if not resp.ok:
+        flash("Failed to fetch user info from Google.", "danger")
+        return redirect(url_for("auth.login"))
+
+    info = resp.json()
+    email = info.get("email")
+    if not email:
+        flash("Email not provided by Google.", "danger")
+        return redirect(url_for("auth.login"))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(
+            email=email,
+            is_confirmed=True,
+            confirmed_on=datetime.utcnow(),
+            fs_uniquifier=os.urandom(24).hex(),
+            active=True,
+            created_at=datetime.utcnow()
+        )
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
+    flash("Logged in with Google successfully!", "success")
+    return redirect(url_for("home.home"))
 
 @auth_bp.route('/twitter')
 def twitter():
