@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response
+from flask_security import login_required
 from ..db import get_db
 from datetime import datetime
 import io
@@ -187,6 +188,7 @@ def insert_data_into_table(cur, table_name, headers, data):
             print(f"Skipping row due to column mismatch in table {table_name}: {row_data} (Expected {len(valid_headers)} columns, got {len(filtered_row_data)}) ")
 
 @settings_bp.route("/settings")
+@login_required
 def settings_page():
     """Settings page."""
     return render_template("settings.html")

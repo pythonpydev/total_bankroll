@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, jsonify, current_app
-from flask_security import current_user
+from flask_security import current_user, login_required
 from ..db import get_db
 from datetime import datetime
 
 charts_bp = Blueprint("charts", __name__)
 
 @charts_bp.route("/charts")
+@login_required
 def charts_page():
     """Charts page."""
     return render_template("charts.html")

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app
+from flask_security import login_required
 import requests
 import pymysql
 from ..db import get_db
@@ -6,6 +7,7 @@ from ..db import get_db
 currency_update_bp = Blueprint("currency_update", __name__)
 
 @currency_update_bp.route("/currencies")
+@login_required
 def currencies_page():
     conn = get_db()
     cur = conn.cursor()
@@ -15,6 +17,7 @@ def currencies_page():
     return render_template("currencies.html", currencies=currencies)
 
 @currency_update_bp.route("/update_exchange_rates", methods=["POST"])
+@login_required
 def update_exchange_rates():
     api_key = current_app.config.get("EXCHANGE_RATE_API_KEY")
     if not api_key:
