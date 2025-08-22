@@ -9,6 +9,7 @@
                 <hr class="divider divider-light" />
                 <p class="text-white-75 mb-4">Are you sure you want to delete your account? This action cannot be undone.</p>
                 <form action="{{ url_for('settings.delete_user_account_confirmed') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger btn-xl">Yes, Delete My Account</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-light btn-xl">Cancel</a>
                 </form>

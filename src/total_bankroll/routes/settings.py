@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app
-from flask_security import login_required, current_user
+from flask_security import login_required, current_user, logout_user
 from ..db import get_db
 from datetime import datetime
 import io
@@ -7,7 +7,7 @@ import csv
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
-from total_bankroll.extensions import db, mail
+from total_bankroll.extensions import db, mail, csrf
 from total_bankroll.models import User
 from flask_security.utils import hash_password
 from flask_mail import Message
@@ -140,9 +140,6 @@ def import_database():
             conn = get_db()
             cur = conn.cursor()
 
-            stream = io.StringIO(file.stream.read().decode("UTF8"))
-            csv_reader = csv.reader(stream)
-
             cur.execute("SET FOREIGN_KEY_CHECKS = 0;")
             cur.execute("TRUNCATE TABLE sites;")
             cur.execute("ALTER TABLE sites AUTO_INCREMENT = 1;")
@@ -156,6 +153,9 @@ def import_database():
             cur.execute("ALTER TABLE currency AUTO_INCREMENT = 1;")
             cur.execute("SET FOREIGN_KEY_CHECKS = 1;")
             conn.commit()
+
+            stream = io.StringIO(file.stream.read().decode("UTF8"))
+            csv_reader = csv.reader(stream)
 
             current_table = None
             headers = []
@@ -236,10 +236,18 @@ def delete_user_account():
 
 @settings_bp.route("/delete_user_account_confirmed", methods=["POST"])
 @login_required
+@csrf.exempt
 def delete_user_account_confirmed():
     """Deletes the user account."""
-    # Placeholder for actual deletion logic
-    flash("User account deleted successfully! (Placeholder)", "success")
+    try:
+        user = current_user
+        db.session.delete(user)
+        db.session.commit()
+        logout_user()
+        flash("User account deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting user account: {e}", "danger")
     return redirect(url_for("auth.login"))
 
 @settings_bp.route("/update_account_details")
@@ -273,7 +281,7 @@ def update_email():
         msg = Message(
             'Confirm Your New Email',
             recipients=[new_email],
-            body=f"Please click the link to confirm your new email: {confirm_url}\nThis link expires in 1 hour."
+            body=f"Please click the link to confirm your email: {confirm_url}\nThis link expires in 1 hour."
         )
         try:
             mail.send(msg)

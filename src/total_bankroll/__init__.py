@@ -11,8 +11,7 @@ from total_bankroll.config import config
 import logging
 from flask_security import current_user
 from datetime import datetime
-from .extensions import db, mail
-from flask_wtf.csrf import CSRFProtect
+from .extensions import db, mail, csrf
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -43,7 +42,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize CSRFProtect
-    csrf = CSRFProtect(app)
+    csrf.init_app(app)
 
     # Mail configuration
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
