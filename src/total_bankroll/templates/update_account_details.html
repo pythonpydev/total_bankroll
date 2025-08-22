@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="update_account_details">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Update Account Details</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Update your email address or password below.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="portfolio">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="card bg-light text-dark p-4 mb-4">
+                    <h4 class="mb-3">Current Email: {{ current_user.email }}</h4>
+
+                    <!-- Update Email Form -->
+                    <h5 class="mt-4 mb-3">Change Email Address</h5>
+                    <form method="POST" action="{{ url_for('settings.update_email') }}">
+                        {{ email_form.hidden_tag() }}
+
+                        <div class="mb-3 text-start">
+                            {{ email_form.email.label(class="form-label") }}
+                            {{ email_form.email(class="form-control", placeholder="Enter new email address") }}
+                            {% if email_form.email.errors %}
+                                <div class="text-danger">{% for error in email_form.email.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        {{ email_form.submit_email(class="btn btn-primary btn-xl") }}
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <!-- Update Password Form -->
+                    <h5 class="mt-4 mb-3">Change Password</h5>
+                    <form method="POST" action="{{ url_for('settings.update_password') }}">
+                        {{ password_form.hidden_tag() }}
+
+                        <div class="mb-3 text-start">
+                            {{ password_form.password.label(class="form-label") }}
+                            {{ password_form.password(class="form-control", placeholder="Enter new password") }}
+                            {% if password_form.password.errors %}
+                                <div class="text-danger">{% for error in password_form.password.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            {{ password_form.confirm_password.label(class="form-label") }}
+                            {{ password_form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                            {% if password_form.confirm_password.errors %}
+                                <div class="text-danger">{% for error in password_form.confirm_password.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        {{ password_form.submit_password(class="btn btn-primary btn-xl") }}
+                    </form>
+                </div>
+
+                <a href="{{ url_for('settings.settings_page') }}" class="btn btn-light btn-xl">Back to Settings</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

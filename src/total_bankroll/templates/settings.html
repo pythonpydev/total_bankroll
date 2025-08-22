@@ -28,6 +28,12 @@
                     <a href="{{ url_for('common.confirm_export_database') }}" class="btn btn-success">Export data as CSV</a>
                     <a href="{{ url_for('common.confirm_import_database') }}" class="btn btn-primary">Import data from CSV</a>
                 </div>
+
+                <h3 class="mt-5">User Account Management</h3>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
+                    <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete User Account</a>
+                    <a href="{{ url_for('settings.update_account_details') }}" class="btn btn-primary">Update Account Details</a>
+                </div>
                 </div>
             </div>
         </div>
