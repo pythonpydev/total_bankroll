@@ -4,6 +4,7 @@ from ..db import get_db
 from datetime import datetime
 from decimal import Decimal
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +190,16 @@ def update_site(site_name):
 
         cur.execute("SELECT amount FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (site_name, current_user.id))
         previous_amount_row = cur.fetchone()
-        previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
+        print(f"Type of previous_amount_row: {type(previous_amount_row)}", file=sys.stderr)
+        print(f"Content of previous_amount_row: {previous_amount_row}", file=sys.stderr)
+        if previous_amount_row and isinstance(previous_amount_row, dict):
+            print(f"Keys in previous_amount_row: {previous_amount_row.keys()}", file=sys.stderr)
+        previous_amount = None
+        if previous_amount_row:
+            if isinstance(previous_amount_row, dict):
+                previous_amount = previous_amount_row['amount']
+            else:
+                previous_amount = previous_amount_row[0]
 
         cur.execute("""
             SELECT name FROM currency
