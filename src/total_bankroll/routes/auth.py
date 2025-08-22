@@ -5,7 +5,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo
 from itsdangerous import URLSafeTimedSerializer
-from total_bankroll.app import db, User, mail
+from total_bankroll.extensions import db, mail
+from total_bankroll.models import User
 from flask_mail import Message
 import os
 import logging

@@ -1,18 +1,18 @@
 import os
 from flask import Flask, session
 from dotenv import load_dotenv
-from flask_security import Security, SQLAlchemyUserDatastore, UserMixin
-from flask_sqlalchemy import SQLAlchemy
+from flask_security import Security, SQLAlchemyUserDatastore
 from flask_login import LoginManager
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.facebook import make_facebook_blueprint
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized
-from flask_mail import Mail
 from total_bankroll.config import config
 import logging
 from flask_security import current_user
 from datetime import datetime
+from .extensions import db, mail
+from .models import User, OAuth
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -61,34 +61,8 @@ logger.debug(f"SECURITY_PASSWORD_SALT: {app.config['SECURITY_PASSWORD_SALT']}")
 logger.debug(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 logger.debug(f"MAIL_SERVER: {app.config['MAIL_SERVER']}")
 
-db = SQLAlchemy(app)
-mail = Mail(app)
-
-# User model
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
-    active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_login_at = db.Column(db.DateTime, nullable=True)
-    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
-    is_confirmed = db.Column(db.Boolean, default=False, nullable=False)
-    confirmed_on = db.Column(db.DateTime, nullable=True)
-
-    def get_id(self):
-        return str(self.id)
-
-# OAuth model for social logins
-class OAuth(db.Model):
-    __tablename__ = 'oauth'
-    id = db.Column(db.Integer, primary_key=True)
-    provider = db.Column(db.String(50), nullable=False)
-    provider_user_id = db.Column(db.String(255), nullable=False)
-    token = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref=db.backref('oauth', lazy='dynamic'))
+db.init_app(app)
+mail.init_app(app)
 
 # Initialize Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, None)
