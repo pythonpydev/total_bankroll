@@ -147,6 +147,7 @@ def add_site():
         conn.close()
         return render_template("add_site.html", currencies=currencies)
 
+
 @poker_sites_bp.route("/update_site/<string:site_name>", methods=["GET", "POST"])
 @login_required
 def update_site(site_name):
@@ -181,6 +182,7 @@ def update_site(site_name):
         conn.close()
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
+        # Get latest site info
         cur.execute("SELECT * FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC", (site_name, current_user.id))
         site = cur.fetchone()
         if site is None:
@@ -188,19 +190,22 @@ def update_site(site_name):
             conn.close()
             return "Site not found", 404
 
+        # Get previous amount (second most recent entry)
         cur.execute("SELECT amount FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (site_name, current_user.id))
         previous_amount_row = cur.fetchone()
-        print(f"Type of previous_amount_row: {type(previous_amount_row)}", file=sys.stderr)
-        print(f"Content of previous_amount_row: {previous_amount_row}", file=sys.stderr)
-        if previous_amount_row and isinstance(previous_amount_row, dict):
-            print(f"Keys in previous_amount_row: {previous_amount_row.keys()}", file=sys.stderr)
+
+        # Debug logs
+        print(f"DEBUG - previous_amount_row type: {type(previous_amount_row)}", file=sys.stderr)
+        print(f"DEBUG - previous_amount_row content: {previous_amount_row}", file=sys.stderr)
+
         previous_amount = None
         if previous_amount_row:
-            if isinstance(previous_amount_row, dict):
-                previous_amount = previous_amount_row['amount']
-            else:
+            if hasattr(previous_amount_row, 'get'):  # dict-like
+                previous_amount = previous_amount_row.get('amount')
+            elif isinstance(previous_amount_row, (tuple, list)) and len(previous_amount_row) > 0:
                 previous_amount = previous_amount_row[0]
 
+        # Fetch currencies
         cur.execute("""
             SELECT name FROM currency
             ORDER BY
