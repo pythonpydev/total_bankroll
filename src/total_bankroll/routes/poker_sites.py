@@ -198,12 +198,7 @@ def update_site(site_name):
         print(f"DEBUG - previous_amount_row type: {type(previous_amount_row)}", file=sys.stderr)
         print(f"DEBUG - previous_amount_row content: {previous_amount_row}", file=sys.stderr)
 
-        previous_amount = None
-        if previous_amount_row:
-            if hasattr(previous_amount_row, 'get'):  # dict-like
-                previous_amount = previous_amount_row.get('amount')
-            elif isinstance(previous_amount_row, (tuple, list)) and len(previous_amount_row) > 0:
-                previous_amount = previous_amount_row[0]
+        previous_amount = previous_amount_row['amount'] if previous_amount_row else None
 
         # Fetch currencies
         cur.execute("""
