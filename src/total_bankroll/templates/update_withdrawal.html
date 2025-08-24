@@ -4,6 +4,7 @@
 </div>
 <div class="modal-body">
     <form id="updateWithdrawalForm" action="{{ url_for('update_withdrawal', withdrawal_id=withdrawal_item.id) }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="mb-3">
             <label for="date" class="form-label">Date:</label>
             <input type="date" class="form-control" id="date" name="date" value="{{ withdrawal_item.date }}" required autofocus>

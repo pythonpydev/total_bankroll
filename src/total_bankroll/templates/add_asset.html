@@ -4,6 +4,7 @@
 </div>
 <div class="modal-body">
     <form id="addAssetForm" action="{{ url_for('assets.add_asset') }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="mb-3">
             <label for="name" class="form-label">Asset Name</label>
             <input type="text" class="form-control" id="name" name="name" required>

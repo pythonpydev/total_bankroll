@@ -9,6 +9,7 @@
                 <hr class="divider divider-light" />
                 <p class="text-white-75 mb-4">Are you sure you want to reset the database? All your data will be deleted and this cannot be undone.</p>
                 <form action="{{ url_for('common.perform_reset_database') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn btn-light btn-xl">Yes, Reset Database</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
                 </form>
