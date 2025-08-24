@@ -61,14 +61,14 @@ def login():
         session.pop('_flashes', None)
     if request.method == 'POST':
         if form.validate_on_submit():
-            current_app.logger.info(f"Login attempt for email: {form.email.data}")
             user_datastore = current_app.extensions['security'].datastore
             user = user_datastore.find_user(email=form.email.data)
-            current_app.logger.info(f"User found for login: {user}")
             if user and user.password_hash:
-                current_app.logger.info(f"Password hash from DB: {user.password_hash}")
                 password_valid = verify_password(form.password.data, user.password_hash)
-                current_app.logger.info(f"Password verification result: {password_valid}")
+                flash(f"Email: {form.email.data}", 'info')
+                flash(f"User found: {user}", 'info')
+                flash(f"Password hash from DB: {user.password_hash}", 'info')
+                flash(f"Password verification result: {password_valid}", 'info')
                 if password_valid:
                     if not user.is_confirmed:
                         flash('Please verify your email address before logging in.', 'danger')
