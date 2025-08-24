@@ -55,41 +55,10 @@ def confirm_token(token, expiration=3600):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    facebook_enabled = os.getenv('FACEBOOK_CLIENT_ID') and os.getenv('FACEBOOK_CLIENT_SECRET')
-    twitter_enabled = os.getenv('TWITTER_CLIENT_ID') and os.getenv('TWITTER_CLIENT_SECRET')
-    if request.method == 'GET':
-        session.pop('_flashes', None)
     if request.method == 'POST':
-        if form.validate_on_submit():
-            user_datastore = current_app.extensions['security'].datastore
-            user = user_datastore.find_user(email=form.email.data)
-            if user and user.password_hash:
-                password_valid = verify_password(form.password.data, user.password_hash)
-                flash(f"Email: {form.email.data}", 'info')
-                flash(f"User found: {user}", 'info')
-                flash(f"Password hash from DB: {user.password_hash}", 'info')
-                flash(f"Password verification result: {password_valid}", 'info')
-                if password_valid:
-                    if not user.is_confirmed:
-                        flash('Please verify your email address before logging in.', 'danger')
-                        return redirect(url_for('auth.login'))
-                    if user.id is None:
-                        flash('Account error: No user ID. Please contact support.', 'danger')
-                        return redirect(url_for('auth.login'))
-                    user.last_login_at = datetime.utcnow()
-                    db.session.commit()
-                    login_user(user)
-                    flash('Logged in successfully!', 'success')
-                    return redirect(url_for('home.home'))
-                else:
-                    flash('Invalid email or password.', 'danger')
-            else:
-                flash('Invalid email or password.', 'danger')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    flash(f"Error in {field}: {error}", 'danger')
-    return render_template('security/login_user.html', form=form, facebook_enabled=facebook_enabled, twitter_enabled=twitter_enabled)
+        flash('POST request received!', 'success')
+        return redirect(url_for('auth.login'))
+    return render_template('security/login_user.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
