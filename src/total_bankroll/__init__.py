@@ -7,7 +7,7 @@ from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.facebook import make_facebook_blueprint
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized
-from total_bankroll.config import config
+from .config import config
 import logging
 from flask_security import current_user
 from datetime import datetime
