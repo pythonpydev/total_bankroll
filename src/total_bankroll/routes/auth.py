@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo
 from itsdangerous import URLSafeTimedSerializer
 from ..extensions import db, mail
-from total_bankroll.models import User
+from ..models import User
 from flask_mail import Message
 import os
 from sqlalchemy.exc import IntegrityError
