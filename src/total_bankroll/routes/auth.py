@@ -56,8 +56,30 @@ def confirm_token(token, expiration=3600):
 def login():
     form = LoginForm()
     if request.method == 'POST':
-        flash('POST request received!', 'success')
-        return redirect(url_for('auth.login'))
+        if not form.validate_on_submit():
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Error in {field}: {error}", 'danger')
+            return render_template('security/login_user.html', form=form)
+
+        user_datastore = current_app.extensions['security'].datastore
+        user = user_datastore.find_user(email=form.email.data)
+        if user and user.password_hash and verify_password(form.password.data, user.password_hash):
+            if not user.is_confirmed:
+                flash('Please verify your email address before logging in.', 'danger')
+                return redirect(url_for('auth.login'))
+            if user.id is None:
+                flash('Account error: No user ID. Please contact support.', 'danger')
+                return redirect(url_for('auth.login'))
+            user.last_login_at = datetime.utcnow()
+            db.session.commit()
+            login_user(user)
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('home.home'))
+        else:
+            flash('Invalid email or password.', 'danger')
+            return redirect(url_for('auth.login'))
+            
     return render_template('security/login_user.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
