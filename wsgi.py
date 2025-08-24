@@ -1,13 +1,9 @@
 import sys
-import os
-
-# Add project directory to Python path
-project_home = '/home/pythonpydev/total_bankroll/src'
+# add your project directory to the sys.path
+project_home = '/home/pythonpydev/total_bankroll'
 if project_home not in sys.path:
-    sys.path.insert(0, project_home)
-
-# Set Flask environment to production
-os.environ['FLASK_ENV'] = 'production'
-
-# Import the Flask application
-from total_bankroll.app import app as application
+    sys.path = [project_home] + sys.path
+ 
+# import flask app but need to call it "application" for WSGI to work
+from src.total_bankroll import create_app
+application = create_app()
