@@ -181,16 +181,30 @@ def reset_password(token):
     if not email:
         flash('The reset link is invalid or has expired.', 'danger')
         return redirect(url_for('auth.login'))
+    
+    current_app.logger.info(f"Password reset attempt for email: {email}")
+    
     user = db.session.query(User).filter_by(email=email).first()
     if not user:
         flash('User not found.', 'danger')
         return redirect(url_for('auth.login'))
+        
+    current_app.logger.info(f"User found for password reset: {user}")
+
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user.password_hash = hash_password(form.password.data)
-        db.session.commit()
-        flash('Password reset successfully! Please log in.', 'success')
-        return redirect(url_for('auth.login'))
+        try:
+            user.password_hash = hash_password(form.password.data)
+            current_app.logger.info("Password hash created for user: %s", user.email)
+            db.session.commit()
+            current_app.logger.info("Password updated and committed for user: %s", user.email)
+            flash('Password reset successfully! Please log in.', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error during password reset for {user.email}: {e}")
+            flash('An error occurred during password reset. Please try again.', 'danger')
+            
     return render_template('security/reset_password.html', form=form)
 
 @auth_bp.route('/google')
