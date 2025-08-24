@@ -7,7 +7,7 @@ import csv
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
-from total_bankroll.extensions import db, mail, csrf
+from ..extensions import db, mail, csrf
 from ..models import User
 from flask_security.utils import hash_password
 from flask_mail import Message
