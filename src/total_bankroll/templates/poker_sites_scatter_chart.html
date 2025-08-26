@@ -44,8 +44,15 @@
         new Chart(ctx, {
           type: 'scatter',
           data: {
-            // Expect each dataset to contain points shaped like { x: <date>, y: <number> }
-            datasets: data.datasets
+            datasets: data.datasets.map(dataset => ({
+                label: dataset.label,
+                borderColor: dataset.borderColor,
+                backgroundColor: dataset.borderColor, // Scatter points are usually solid
+                data: dataset.data.map((amount, index) => ({
+                    x: data.labels[index], // Use the date from labels as x-value
+                    y: amount
+                }))
+            }))
           },
           options: {
                         responsive: true,

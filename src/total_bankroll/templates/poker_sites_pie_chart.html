@@ -28,7 +28,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/charts/poker_sites_data')
+        fetch('/charts/poker_sites_pie_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');

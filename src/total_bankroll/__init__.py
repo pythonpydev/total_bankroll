@@ -217,7 +217,7 @@ def create_app():
     app.register_blueprint(deposit_bp)
     app.register_blueprint(currency_update_bp)
     app.register_blueprint(about_bp)
-    app.register_blueprint(charts_bp)
+    app.register_blueprint(charts_bp, url_prefix='/charts')
     app.register_blueprint(settings_bp)
     app.register_blueprint(common_bp)
     app.register_blueprint(add_withdrawal_bp)

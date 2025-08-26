@@ -7,7 +7,7 @@
             <div class="col-lg-8 text-center">
                 <h2 class="text-white mt-0">Deposits Over Time (Line Chart)</h2>
                 <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Line graph showing the total deposits value in $ over time.</p>
+                <p class="text-white-75 mb-4">Line graph showing the total deposits in $ over time.</p>
             </div>
         </div>
     </div>
@@ -25,14 +25,9 @@
     </div>
 </section>
 
-<!-- Chart.js v4 -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
-<!-- Load date-fns with correct MIME type -->
-<script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/dist/date-fns.min.js"></script>
-
-<!-- Adapter compatible with Chart.js v4 -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/charts/deposits_data')
@@ -58,11 +53,8 @@
                             x: {
                                 type: 'time',
                                 time: {
-                                    unit: 'day',
-                                    tooltipFormat: 'MMM D, YYYY'
+                                    unit: 'day'
                                 },
-                                min: data.min_date,
-                                max: data.max_date,
                                 title: {
                                     display: true,
                                     text: 'Date'

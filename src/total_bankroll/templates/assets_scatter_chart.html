@@ -36,7 +36,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/charts/assets_data')
+        fetch('/charts/assets_historical_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
@@ -44,8 +44,16 @@
                 new Chart(ctx, {
                     type: 'scatter',
                     data: {
-                        datasets: data.datasets
-                    },
+            datasets: data.datasets.map(dataset => ({
+                label: dataset.label,
+                borderColor: dataset.borderColor,
+                backgroundColor: dataset.borderColor, // Scatter points are usually solid
+                data: dataset.data.map((amount, index) => ({
+                    x: data.labels[index], // Use the date from labels as x-value
+                    y: amount
+                }))
+            }))
+          },
                     options: {
                         responsive: true,
                         plugins: {
@@ -80,12 +88,7 @@
             })
             .catch(error => console.error('Error fetching assets data:', error));
 
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
-            return color;
-        }
+        
     });
 </script>
 {% endblock %}

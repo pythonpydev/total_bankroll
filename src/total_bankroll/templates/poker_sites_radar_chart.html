@@ -28,7 +28,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/charts/poker_sites_data')
+        fetch('/charts/poker_sites_historical_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');
@@ -37,7 +37,12 @@
                     type: 'radar',
                     data: {
                         labels: data.labels,
-                        datasets: data.datasets
+                        datasets: data.datasets.map(dataset => ({
+                            label: dataset.label,
+                            data: dataset.data,
+                            borderColor: dataset.borderColor,
+                            backgroundColor: dataset.borderColor.replace('rgb', 'rgba').replace(')', ', 0.2)')
+                        }))
                     },
                     options: {
                         responsive: true,
