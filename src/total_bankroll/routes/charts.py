@@ -117,29 +117,9 @@ def get_poker_sites_data():
         conn = get_db()
         cur = conn.cursor()
 
-        # Get all unique poker site names
-        cur.execute("SELECT DISTINCT name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
-        site_names = [row['name'] for row in cur.fetchall()]
-
-        # Get the latest data for each poker site
-        cur.execute("""
-            SELECT
-                s.name,
-                s.amount,
-                s.currency
-            FROM sites s
-            INNER JOIN (
-                SELECT
-                    name,
-                    MAX(last_updated) AS max_last_updated
-                FROM sites
-                WHERE user_id = %s
-                GROUP BY name
-            ) AS latest_sites
-            ON s.name = latest_sites.name AND s.last_updated = latest_sites.max_last_updated
-            WHERE s.user_id = %s
-        """, (current_user.id, current_user.id))
-        raw_data = cur.fetchall()
+        # Get all unique poker site names and their IDs
+        cur.execute("SELECT id, name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
+        sites = cur.fetchall()
 
         # Get currency exchange rates
         cur.execute("SELECT name, rate FROM currency")
@@ -147,15 +127,20 @@ def get_poker_sites_data():
 
         cur.close()
 
-        # Process data for charting
         labels = []
         data = []
 
-        for row in raw_data:
-            # Convert amount to USD
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            labels.append(row['name'])
-            data.append(amount_usd)
+        for site in sites:
+            # Get the latest amount for each site from site_history
+            cur = conn.cursor() # Re-open cursor for inner query
+            cur.execute("SELECT amount, currency FROM site_history WHERE site_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1", (site['id'], current_user.id))
+            latest_record = cur.fetchone()
+            cur.close()
+
+            if latest_record:
+                amount_usd = float(latest_record['amount']) / float(currency_rates.get(latest_record['currency'], 1.0))
+                labels.append(site['name'])
+                data.append(amount_usd)
 
         # Prepare data for Chart.js
         datasets = [{
@@ -194,22 +179,9 @@ def get_poker_sites_historical_data():
         conn = get_db()
         cur = conn.cursor()
 
-        # Get all unique poker site names
-        cur.execute("SELECT DISTINCT name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
-        site_names = [row['name'] for row in cur.fetchall()]
-
-        # Get all historical data for poker sites
-        cur.execute("""
-            SELECT
-                last_updated,
-                name,
-                amount,
-                currency
-            FROM sites
-            WHERE user_id = %s
-            ORDER BY last_updated, name
-        """, (current_user.id,))
-        raw_data = cur.fetchall()
+        # Get all unique poker site names and their IDs
+        cur.execute("SELECT id, name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
+        sites = cur.fetchall()
 
         # Get currency exchange rates
         cur.execute("SELECT name, rate FROM currency")
@@ -217,37 +189,37 @@ def get_poker_sites_historical_data():
 
         cur.close()
 
-        # Process data for charting
         processed_data = {}
         min_date = None
         max_date = None
 
-        # Use a dictionary to store only the last update per day for each site
-        daily_data = {}
+        for site in sites:
+            site_name = site['name']
+            site_id = site['id']
 
-        for row in raw_data:
-            date_obj = row['last_updated']
-            date_str = date_obj.strftime("%Y-%m-%d")
-            if min_date is None or date_obj < min_date:
-                min_date = date_obj
-            if max_date is None or date_obj > max_date:
-                max_date = date_obj
+            # Get all historical data for this site
+            cur = conn.cursor() # Re-open cursor for inner query
+            cur.execute("SELECT amount, currency, recorded_at FROM site_history WHERE site_id = %s AND user_id = %s ORDER BY recorded_at", (site_id, current_user.id))
+            raw_data = cur.fetchall()
+            cur.close()
 
-            site_name = row['name']
-            if site_name not in daily_data:
-                daily_data[site_name] = {}
-            
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            # Since the data is ordered by last_updated, this will overwrite
-            # earlier updates for the same day, leaving only the last one.
-            daily_data[site_name][date_str] = amount_usd
+            daily_data = {}
+            for row in raw_data:
+                date_obj = row['recorded_at']
+                date_str = date_obj.strftime("%Y-%m-%d")
+                if min_date is None or date_obj < min_date:
+                    min_date = date_obj
+                if max_date is None or date_obj > max_date:
+                    max_date = date_obj
 
-        # Convert the daily_data dictionary to the processed_data list format
-        for site_name, dates in daily_data.items():
+                amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
+                daily_data[date_str] = amount_usd # Only keep the last update for the day
+
             if site_name not in processed_data:
                 processed_data[site_name] = []
+            
             # Sort items by date to ensure chronological order before appending
-            sorted_dates = sorted(dates.items())
+            sorted_dates = sorted(daily_data.items())
             for date_str, amount_usd in sorted_dates:
                 processed_data[site_name].append({'x': date_str, 'y': amount_usd})
 
@@ -274,7 +246,8 @@ def get_poker_sites_historical_data():
             min_date_str = min_date.strftime("%Y-%m-%d")
             max_date_str = max_date.strftime("%Y-%m-%d")
 
-            for i, site_name in enumerate(site_names):
+            for i, site in enumerate(sites):
+                site_name = site['name']
                 site_data = processed_data.get(site_name, [])
                 if site_data:
                     # Sort by date to ensure chronological order
@@ -296,7 +269,7 @@ def get_poker_sites_historical_data():
                 })
 
         return jsonify({
-            'labels': site_names, # Labels are not directly used for scatter, but can be for legend
+            'labels': [site['name'] for site in sites], # Labels are not directly used for scatter, but can be for legend
             'datasets': datasets,
             'min_date': min_date.strftime("%Y-%m-%d") if min_date else None,
             'max_date': max_date.strftime("%Y-%m-%d") if max_date else None
@@ -312,18 +285,9 @@ def get_assets_data():
         conn = get_db()
         cur = conn.cursor()
 
-        # Get all historical data for assets with last_updated
-        cur.execute("""
-            SELECT
-                last_updated,
-                name,
-                amount,
-                currency
-            FROM assets
-            WHERE user_id = %s
-            ORDER BY last_updated, name
-        """, (current_user.id,))
-        raw_data = cur.fetchall()
+        # Get all unique asset names and their IDs
+        cur.execute("SELECT id, name FROM assets WHERE user_id = %s ORDER BY name", (current_user.id,))
+        assets = cur.fetchall()
 
         # Get currency exchange rates
         cur.execute("SELECT name, rate FROM currency")
@@ -331,92 +295,47 @@ def get_assets_data():
 
         cur.close()
 
-        # Process data for charting
-        processed_data = {}
-        min_date = None
-        max_date = None
+        labels = []
+        data = []
 
-        # Use a dictionary to store only the last update per day for each asset
-        daily_data = {}
+        for asset in assets:
+            # Get the latest amount for each asset from asset_history
+            cur = conn.cursor() # Re-open cursor for inner query
+            cur.execute("SELECT amount, currency FROM asset_history WHERE asset_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1", (asset['id'], current_user.id))
+            latest_record = cur.fetchone()
+            cur.close()
 
-        for row in raw_data:
-            date_obj = row['last_updated']
-            date_str = date_obj.strftime("%Y-%m-%d")
-            if min_date is None or date_obj < min_date:
-                min_date = date_obj
-            if max_date is None or date_obj > max_date:
-                max_date = date_obj
-
-            asset_name = row['name']
-            if asset_name not in daily_data:
-                daily_data[asset_name] = {}
-            
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            # Since the data is ordered by last_updated, this will overwrite
-            # earlier updates for the same day, leaving only the last one.
-            daily_data[asset_name][date_str] = amount_usd
-
-        # Convert the daily_data dictionary to the processed_data list format
-        for asset_name, dates in daily_data.items():
-            if asset_name not in processed_data:
-                processed_data[asset_name] = []
-            # Sort items by date to ensure chronological order before appending
-            sorted_dates = sorted(dates.items())
-            for date_str, amount_usd in sorted_dates:
-                processed_data[asset_name].append({'x': date_str, 'y': amount_usd})
+            if latest_record:
+                amount_usd = float(latest_record['amount']) / float(currency_rates.get(latest_record['currency'], 1.0))
+                labels.append(asset['name'])
+                data.append(amount_usd)
 
         # Prepare data for Chart.js
-        datasets = []
-        colors = [
-            'rgba(255, 99, 132, 0.8)',  # Red
-            'rgba(54, 162, 235, 0.8)',  # Blue
-            'rgba(255, 206, 86, 0.8)',  # Yellow
-            'rgba(75, 192, 192, 0.8)',  # Green
-            'rgba(153, 102, 255, 0.8)', # Purple
-            'rgba(255, 159, 64, 0.8)'   # Orange
-        ]
-        border_colors = [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-        ]
-
-        if min_date and max_date:
-            min_date_str = min_date.strftime("%Y-%m-%d")
-            max_date_str = max_date.strftime("%Y-%m-%d")
-
-            # Get all unique asset names
-            asset_names = list(processed_data.keys())
-
-            for i, asset_name in enumerate(asset_names):
-                asset_data = processed_data[asset_name]
-                if asset_data:
-                    # Sort by date to ensure chronological order
-                    asset_data.sort(key=lambda item: item['x'])
-                    # Insert y=0 at min_date if needed
-                    if asset_data[0]['x'] > min_date_str:
-                        asset_data.insert(0, {'x': min_date_str, 'y': 0})
-                    # Extend last value to max_date if needed
-                    if asset_data[-1]['x'] < max_date_str:
-                        asset_data.append({'x': max_date_str, 'y': asset_data[-1]['y']})
-                    # Re-sort after adding min_date and max_date to maintain order
-                    asset_data.sort(key=lambda item: item['x'])
-
-                datasets.append({
-                    'label': asset_name,
-                    'data': asset_data,
-                    'backgroundColor': colors[i % len(colors)],
-                    'borderColor': border_colors[i % len(border_colors)],
-                    'fill': False
-                })
+        datasets = [{
+            'label': 'Latest Amount (USD)',
+            'data': data,
+            'backgroundColor': [
+                'rgba(255, 99, 132, 0.6)', # Red
+                'rgba(54, 162, 235, 0.6)', # Blue
+                'rgba(255, 206, 86, 0.6)', # Yellow
+                'rgba(75, 192, 192, 0.6)', # Green
+                'rgba(153, 102, 255, 0.6)',# Purple
+                'rgba(255, 159, 64, 0.6)'  # Orange
+            ],
+            'borderColor': [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            'borderWidth': 1
+        }]
 
         return jsonify({
-            'datasets': datasets,
-            'min_date': min_date.strftime("%Y-%m-%d") if min_date else None,
-            'max_date': max_date.strftime("%Y-%m-%d") if max_date else None
+            'labels': labels,
+            'datasets': datasets
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_assets_data: {e}")
@@ -428,29 +347,9 @@ def get_assets_pie_chart_data():
         conn = get_db()
         cur = conn.cursor()
 
-        # Get all unique asset names for the current user
-        cur.execute("SELECT DISTINCT name FROM assets WHERE user_id = %s ORDER BY name", (current_user.id,))
-        asset_names = [row['name'] for row in cur.fetchall()]
-
-        # Get the latest data for each asset for the current user
-        cur.execute("""
-            SELECT
-                a.name,
-                a.amount,
-                a.currency
-            FROM assets a
-            INNER JOIN (
-                SELECT
-                    name,
-                    MAX(last_updated) AS max_last_updated
-                FROM assets
-                WHERE user_id = %s
-                GROUP BY name
-            ) AS latest_assets
-            ON a.name = latest_assets.name AND a.last_updated = latest_assets.max_last_updated
-            WHERE a.user_id = %s
-        """, (current_user.id, current_user.id))
-        raw_data = cur.fetchall()
+        # Get all unique asset names and their IDs for the current user
+        cur.execute("SELECT id, name FROM assets WHERE user_id = %s ORDER BY name", (current_user.id,))
+        assets = cur.fetchall()
 
         # Get currency exchange rates
         cur.execute("SELECT name, rate FROM currency")
@@ -458,15 +357,20 @@ def get_assets_pie_chart_data():
 
         cur.close()
 
-        # Process data for charting
         labels = []
         data = []
 
-        for row in raw_data:
-            # Convert amount to USD
-            amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            labels.append(row['name'])
-            data.append(amount_usd)
+        for asset in assets:
+            # Get the latest amount for each asset from asset_history
+            cur = conn.cursor() # Re-open cursor for inner query
+            cur.execute("SELECT amount, currency FROM asset_history WHERE asset_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1", (asset['id'], current_user.id))
+            latest_record = cur.fetchone()
+            cur.close()
+
+            if latest_record:
+                amount_usd = float(latest_record['amount']) / float(currency_rates.get(latest_record['currency'], 1.0))
+                labels.append(asset['name'])
+                data.append(amount_usd)
 
         # Prepare data for Chart.js
         datasets = [{
@@ -585,11 +489,11 @@ def get_profit_data():
         currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
 
         # Get historical data for sites
-        cur.execute("SELECT last_updated, name, amount, currency FROM sites WHERE user_id = %s ORDER BY last_updated", (current_user.id,))
+        cur.execute("SELECT sh.recorded_at, s.name, sh.amount, sh.currency FROM site_history sh JOIN sites s ON sh.site_id = s.id WHERE sh.user_id = %s ORDER BY sh.recorded_at", (current_user.id,))
         sites_data = cur.fetchall()
 
         # Get historical data for assets
-        cur.execute("SELECT last_updated, name, amount, currency FROM assets WHERE user_id = %s ORDER BY last_updated", (current_user.id,))
+        cur.execute("SELECT ah.recorded_at, a.name, ah.amount, ah.currency FROM asset_history ah JOIN assets a ON ah.asset_id = a.id WHERE ah.user_id = %s ORDER BY ah.recorded_at", (current_user.id,))
         assets_data = cur.fetchall()
 
         # Get historical data for deposits
@@ -606,10 +510,10 @@ def get_profit_data():
         # Add bankroll components (sites and assets)
         for row in sites_data:
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            all_data_points.append({'date': row['last_updated'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'site'})
+            all_data_points.append({'date': row['recorded_at'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'site'})
         for row in assets_data:
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
-            all_data_points.append({'date': row['last_updated'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'asset'})
+            all_data_points.append({'date': row['recorded_at'], 'amount_usd': amount_usd, 'name': row['name'], 'type': 'asset'})
         
         # Add deposits and withdrawals as events that change the profit calculation
         for row in deposits_data:
@@ -691,29 +595,11 @@ def get_bankroll_data():
         currency_rates = {row['name']: row['rate'] for row in cur.fetchall()}
 
         # Get historical data for sites (include name)
-        cur.execute("""
-            SELECT
-                last_updated,
-                name,
-                amount,
-                currency
-            FROM sites
-            WHERE user_id = %s
-            ORDER BY last_updated
-        """, (current_user.id,))
+        cur.execute("SELECT sh.recorded_at, s.name, sh.amount, sh.currency FROM site_history sh JOIN sites s ON sh.site_id = s.id WHERE sh.user_id = %s ORDER BY sh.recorded_at", (current_user.id,))
         sites_data = cur.fetchall()
 
         # Get historical data for assets (include name)
-        cur.execute("""
-            SELECT
-                last_updated,
-                name,
-                amount,
-                currency
-            FROM assets
-            WHERE user_id = %s
-            ORDER BY last_updated
-        """, (current_user.id,))
+        cur.execute("SELECT ah.recorded_at, a.name, ah.amount, ah.currency FROM asset_history ah JOIN assets a ON ah.asset_id = a.id WHERE ah.user_id = %s ORDER BY ah.recorded_at", (current_user.id,))
         assets_data = cur.fetchall()
 
         cur.close()
@@ -723,7 +609,7 @@ def get_bankroll_data():
         for row in sites_data:
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
             all_data_points.append({
-                'date': row['last_updated'],
+                'date': row['recorded_at'],
                 'amount_usd': amount_usd,
                 'name': row['name'],
                 'type': 'site'
@@ -731,7 +617,7 @@ def get_bankroll_data():
         for row in assets_data:
             amount_usd = float(row['amount']) / float(currency_rates.get(row['currency'], 1.0))
             all_data_points.append({
-                'date': row['last_updated'],
+                'date': row['recorded_at'],
                 'amount_usd': amount_usd,
                 'name': row['name'],
                 'type': 'asset'

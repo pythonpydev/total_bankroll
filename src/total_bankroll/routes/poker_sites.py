@@ -22,62 +22,55 @@ def poker_sites_page():
     currency_rates = {row['name']: row['rate'] for row in currency_data}
     currency_symbols = {row['name']: row['symbol'] for row in currency_data}
 
-    # Get current and previous asset totals
-    cur.execute("""
-        WITH RankedSites AS (
-            SELECT
-                id,
-                name,
-                amount,
-                last_updated,
-                currency,
-                ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
-            FROM sites
-            WHERE user_id = %s
-        )
-        SELECT
-            s1.id,
-            s1.name,
-            s1.amount AS current_amount,
-            s2.amount AS previous_amount,
-            s1.currency,
-            s2.currency AS previous_currency
-        FROM RankedSites s1
-        LEFT JOIN RankedSites s2
-            ON s1.name = s2.name AND s2.rn = 2
-        WHERE s1.rn = 1
-        ORDER BY s1.name
-    """, (current_user.id,))
-
-    logger.debug(f"Current user ID: {current_user.id}")
-    poker_sites_data_raw = cur.fetchall()
-    logger.debug(f"Poker sites data raw: {poker_sites_data_raw}")
+    # Get all sites for the user
+    cur.execute("SELECT id, name FROM sites WHERE user_id = %s ORDER BY name", (current_user.id,))
+    sites = cur.fetchall()
 
     poker_sites_data = []
-    for site in poker_sites_data_raw:
-        converted_site = dict(site)
-        original_amount = converted_site['current_amount']
-        original_previous_amount = converted_site['previous_amount']
-        currency = converted_site['currency']
-        previous_currency = converted_site['previous_currency']
+    for site in sites:
+        # Get the latest two history records for each site
+        cur.execute("""
+            SELECT amount, currency
+            FROM site_history
+            WHERE site_id = %s AND user_id = %s
+            ORDER BY recorded_at DESC
+            LIMIT 2
+        """, (site['id'], current_user.id))
+        history_records = cur.fetchall()
+
+        current_amount = 0.0
+        previous_amount = 0.0
+        currency = "US Dollar"
+        previous_currency = "US Dollar"
+
+        if len(history_records) > 0:
+            current_amount = history_records[0]['amount']
+            currency = history_records[0]['currency']
+        if len(history_records) > 1:
+            previous_amount = history_records[1]['amount']
+            previous_currency = history_records[1]['currency']
 
         rate = Decimal(str(currency_rates.get(currency, 1.0)))
         previous_rate = Decimal(str(currency_rates.get(previous_currency, 1.0)))
 
-        converted_site['current_amount_usd'] = original_amount / rate
-        converted_site['previous_amount_usd'] = (
-            Decimal(original_previous_amount) / previous_rate
-            if original_previous_amount is not None else Decimal(0)
-        )
+        current_amount_usd = current_amount / rate
+        previous_amount_usd = previous_amount / previous_rate
 
-        # Add currency symbols to the site data
-        converted_site['currency_symbol'] = currency_symbols.get(currency, currency)
-        converted_site['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
-
-        poker_sites_data.append(converted_site)
+        poker_sites_data.append({
+            'id': site['id'],
+            'name': site['name'],
+            'current_amount': current_amount,
+            'previous_amount': previous_amount,
+            'currency': currency,
+            'previous_currency': previous_currency,
+            'current_amount_usd': current_amount_usd,
+            'previous_amount_usd': previous_amount_usd,
+            'currency_symbol': currency_symbols.get(currency, currency),
+            'previous_currency_symbol': currency_symbols.get(previous_currency, previous_currency)
+        })
 
     total_current = sum(site['current_amount_usd'] for site in poker_sites_data)
-    total_previous = sum(site['previous_amount_usd'] if site['previous_amount_usd'] is not None else 0 for site in poker_sites_data)
+    total_previous = sum(site['previous_amount_usd'] for site in poker_sites_data)
 
     cur.execute("""
         SELECT name, code FROM currency
@@ -123,8 +116,14 @@ def add_site():
             conn.close()
             return "Invalid amount format", 400
 
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO sites (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
+        # Insert into sites table
+        cur.execute("INSERT INTO sites (name, user_id) VALUES (%s, %s)", (name, current_user.id))
+        site_id = cur.lastrowid
+        
+        # Insert into site_history table
+        recorded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO site_history (site_id, amount, currency, recorded_at, user_id) VALUES (%s, %s, %s, %s, %s)", (site_id, amount, currency_name, recorded_at, current_user.id))
+        
         conn.commit()
         cur.close()
         conn.close()
@@ -148,18 +147,17 @@ def add_site():
         return render_template("add_site.html", currencies=currencies)
 
 
-@poker_sites_bp.route("/update_site/<string:site_name>", methods=["GET", "POST"])
+@poker_sites_bp.route("/update_site/<int:site_id>", methods=["GET", "POST"])
 @login_required
-def update_site(site_name):
+def update_site(site_id):
     """Update a poker site."""
     conn = get_db()
     cur = conn.cursor()
     if request.method == "POST":
-        name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
         currency_name = request.form.get("currency", "US Dollar")
 
-        if not name or not amount_str:
+        if not amount_str:
             cur.close()
             conn.close()
             return redirect(url_for("poker_sites.poker_sites_page"))
@@ -175,15 +173,15 @@ def update_site(site_name):
             conn.close()
             return redirect(url_for("poker_sites.poker_sites_page"))
 
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO sites (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
+        recorded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO site_history (site_id, amount, currency, recorded_at, user_id) VALUES (%s, %s, %s, %s, %s)", (site_id, amount, currency_name, recorded_at, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
         # Get latest site info
-        cur.execute("SELECT * FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC", (site_name, current_user.id))
+        cur.execute("SELECT * FROM sites WHERE id = %s AND user_id = %s", (site_id, current_user.id))
         site = cur.fetchone()
         if site is None:
             cur.close()
@@ -191,12 +189,8 @@ def update_site(site_name):
             return "Site not found", 404
 
         # Get previous amount (second most recent entry)
-        cur.execute("SELECT amount FROM sites WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (site_name, current_user.id))
+        cur.execute("SELECT amount FROM site_history WHERE site_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1, 1", (site_id, current_user.id))
         previous_amount_row = cur.fetchone()
-
-        # Debug logs
-        print(f"DEBUG - previous_amount_row type: {type(previous_amount_row)}", file=sys.stderr)
-        print(f"DEBUG - previous_amount_row content: {previous_amount_row}", file=sys.stderr)
 
         previous_amount = previous_amount_row['amount'] if previous_amount_row else None
 
@@ -216,3 +210,32 @@ def update_site(site_name):
         cur.close()
         conn.close()
         return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount)
+
+@poker_sites_bp.route("/rename_site/<int:site_id>", methods=["GET", "POST"])
+@login_required
+def rename_site(site_id):
+    """Rename a poker site."""
+    conn = get_db()
+    cur = conn.cursor()
+    if request.method == "POST":
+        new_name = request.form.get("new_name", "").title()
+        if not new_name:
+            cur.close()
+            conn.close()
+            return "New name is required", 400
+
+        cur.execute("UPDATE sites SET name = %s WHERE id = %s AND user_id = %s", (new_name, site_id, current_user.id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("poker_sites.poker_sites_page"))
+    else:
+        cur.execute("SELECT id, name FROM sites WHERE id = %s AND user_id = %s", (site_id, current_user.id))
+        site = cur.fetchone()
+        if site is None:
+            cur.close()
+            conn.close()
+            return "Site not found", 404
+        cur.close()
+        conn.close()
+        return render_template("rename_site.html", site=site)

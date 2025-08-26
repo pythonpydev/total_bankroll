@@ -18,56 +18,55 @@ def assets_page():
     currency_rates = {row['name']: row['rate'] for row in currency_data}
     currency_symbols = {row['name']: row['symbol'] for row in currency_data}
 
-    # Get current and previous asset totals
-    cur.execute("""
-        WITH RankedAssets AS (
-            SELECT
-                id,
-                name,
-                amount,
-                last_updated,
-                currency,
-                ROW_NUMBER() OVER (PARTITION BY name ORDER BY last_updated DESC) as rn
-            FROM assets
-            WHERE user_id = %s
-        )
-        SELECT
-            a1.id,
-            a1.name,
-            a1.amount AS current_amount,
-            a2.amount AS previous_amount,
-            a1.currency,
-            a2.currency AS previous_currency
-        FROM RankedAssets a1
-        LEFT JOIN RankedAssets a2
-            ON a1.name = a2.name AND a2.rn = 2
-        WHERE a1.rn = 1
-        ORDER BY a1.name
-    """, (current_user.id,))
-    assets_data_raw = cur.fetchall()
+    # Get all assets for the user
+    cur.execute("SELECT id, name FROM assets WHERE user_id = %s ORDER BY name", (current_user.id,))
+    assets = cur.fetchall()
 
     assets_data = []
-    for asset in assets_data_raw:
-        converted_asset = dict(asset) # Create a mutable dictionary from the DictRow
-        original_amount = converted_asset['current_amount']
-        original_previous_amount = converted_asset['previous_amount']
-        currency = converted_asset['currency']
-        previous_currency = converted_asset['previous_currency']
+    for asset in assets:
+        # Get the latest two history records for each asset
+        cur.execute("""
+            SELECT amount, currency
+            FROM asset_history
+            WHERE asset_id = %s AND user_id = %s
+            ORDER BY recorded_at DESC
+            LIMIT 2
+        """, (asset['id'], current_user.id))
+        history_records = cur.fetchall()
 
-        rate = currency_rates.get(currency, 1.0) # Default to 1.0 if rate not found
-        previous_rate = currency_rates.get(previous_currency, 1.0)
+        current_amount = 0.0
+        previous_amount = 0.0
+        currency = "US Dollar"
+        previous_currency = "US Dollar"
 
-        converted_asset['current_amount_usd'] = original_amount / rate
-        converted_asset['previous_amount_usd'] = Decimal(original_previous_amount / previous_rate if original_previous_amount is not None else 0.0)
+        if len(history_records) > 0:
+            current_amount = history_records[0]['amount']
+            currency = history_records[0]['currency']
+        if len(history_records) > 1:
+            previous_amount = history_records[1]['amount']
+            previous_currency = history_records[1]['currency']
 
-        # Add currency symbols to the asset data
-        converted_asset['currency_symbol'] = currency_symbols.get(currency, currency)
-        converted_asset['previous_currency_symbol'] = currency_symbols.get(previous_currency, previous_currency) if previous_currency else None
+        rate = Decimal(str(currency_rates.get(currency, 1.0)))
+        previous_rate = Decimal(str(currency_rates.get(previous_currency, 1.0)))
 
-        assets_data.append(converted_asset)
+        current_amount_usd = current_amount / rate
+        previous_amount_usd = previous_amount / previous_rate
+
+        assets_data.append({
+            'id': asset['id'],
+            'name': asset['name'],
+            'current_amount': current_amount,
+            'previous_amount': previous_amount,
+            'currency': currency,
+            'previous_currency': previous_currency,
+            'current_amount_usd': current_amount_usd,
+            'previous_amount_usd': previous_amount_usd,
+            'currency_symbol': currency_symbols.get(currency, currency),
+            'previous_currency_symbol': currency_symbols.get(previous_currency, previous_currency)
+        })
 
     total_current = sum(asset['current_amount_usd'] for asset in assets_data)
-    total_previous = sum(asset['previous_amount_usd'] if asset['previous_amount_usd'] is not None else 0 for asset in assets_data)
+    total_previous = sum(asset['previous_amount_usd'] for asset in assets_data)
 
     cur.execute("""
         SELECT name, code FROM currency
@@ -117,8 +116,14 @@ def add_asset():
             print("add_asset: Invalid amount format")
             return "Invalid amount format", 400
 
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
+        # Insert into assets table
+        cur.execute("INSERT INTO assets (name, user_id) VALUES (%s, %s)", (name, current_user.id))
+        asset_id = cur.lastrowid
+
+        # Insert into asset_history table
+        recorded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO asset_history (asset_id, amount, currency, recorded_at, user_id) VALUES (%s, %s, %s, %s, %s)", (asset_id, amount, currency_name, recorded_at, current_user.id))
+
         conn.commit()
         cur.close()
         conn.close()
@@ -143,15 +148,20 @@ def add_asset():
         print("add_asset: Rendering add_asset.html")
         return render_template("add_asset.html", currencies=currencies)
 
-@assets_bp.route("/update_asset/<string:asset_name>", methods=["GET", "POST"])
+@assets_bp.route("/update_asset/<int:asset_id>", methods=["GET", "POST"])
 @login_required
-def update_asset(asset_name):
+def update_asset(asset_id):
     """Update an asset."""
     conn = get_db()
     cur = conn.cursor()
     if request.method == "POST":
-        name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
+        currency_name = request.form.get("currency", "US Dollar")
+
+        if not amount_str:
+            cur.close()
+            conn.close()
+            return redirect(url_for("assets.assets_page"))
 
         try:
             amount = round(float(amount_str), 2)
@@ -164,36 +174,23 @@ def update_asset(asset_name):
             conn.close()
             return redirect(url_for("assets.assets_page"))
 
-        currency_input = request.form.get("currency", "US Dollar") # This can be name or code
-
-        # Determine the currency name to store
-        cur.execute("SELECT name FROM currency WHERE name = %s", (currency_input,))
-        currency_row = cur.fetchone()
-        if currency_row:
-            currency_name = currency_row['name']
-        else:
-            cur.execute("SELECT name FROM currency WHERE code = %s", (currency_input,))
-            currency_row = cur.fetchone()
-            if currency_row:
-                currency_name = currency_row['name']
-            else:
-                currency_name = "US Dollar" # Default to US Dollar if not found by name or code
-
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO assets (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)", (name, amount, last_updated, currency_name, current_user.id))
+        recorded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute("INSERT INTO asset_history (asset_id, amount, currency, recorded_at, user_id) VALUES (%s, %s, %s, %s, %s)", (asset_id, amount, currency_name, recorded_at, current_user.id))
         conn.commit()
         cur.close()
         conn.close()
         return redirect(url_for("assets.assets_page"))
     else:
-        cur.execute("SELECT * FROM assets WHERE name = %s AND user_id = %s ORDER BY last_updated DESC", (asset_name, current_user.id))
+        # Get latest asset info
+        cur.execute("SELECT * FROM assets WHERE id = %s AND user_id = %s", (asset_id, current_user.id))
         asset = cur.fetchone()
         if asset is None:
             cur.close()
             conn.close()
             return "Asset not found", 404
 
-        cur.execute("SELECT amount FROM assets WHERE name = %s AND user_id = %s ORDER BY last_updated DESC LIMIT 1, 1", (asset_name, current_user.id))
+        # Get previous amount (second most recent entry)
+        cur.execute("SELECT amount FROM asset_history WHERE asset_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1, 1", (asset_id, current_user.id))
         previous_amount_row = cur.fetchone()
         previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
 
@@ -212,3 +209,32 @@ def update_asset(asset_name):
         cur.close()
         conn.close()
         return render_template("update_asset.html", asset=asset, currencies=currencies, previous_amount=previous_amount)
+
+@assets_bp.route("/rename_asset/<int:asset_id>", methods=["GET", "POST"])
+@login_required
+def rename_asset(asset_id):
+    """Rename an asset."""
+    conn = get_db()
+    cur = conn.cursor()
+    if request.method == "POST":
+        new_name = request.form.get("new_name", "").title()
+        if not new_name:
+            cur.close()
+            conn.close()
+            return "New name is required", 400
+
+        cur.execute("UPDATE assets SET name = %s WHERE id = %s AND user_id = %s", (new_name, asset_id, current_user.id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("assets.assets_page"))
+    else:
+        cur.execute("SELECT id, name FROM assets WHERE id = %s AND user_id = %s", (asset_id, current_user.id))
+        asset = cur.fetchone()
+        if asset is None:
+            cur.close()
+            conn.close()
+            return "Asset not found", 404
+        cur.close()
+        conn.close()
+        return render_template("rename_asset.html", asset=asset)

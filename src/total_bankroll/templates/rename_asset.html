@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="rename_asset">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Rename Asset</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Rename {{ asset.name }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8">
+                <form action="{{ url_for('assets.rename_asset', asset_id=asset.id) }}" method="post">
+                    <div class="mb-3">
+                        <label for="new_name" class="form-label">New Name</label>
+                        <input type="text" class="form-control" id="new_name" name="new_name" value="{{ asset.name }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Rename Asset</button>
+                    <a href="{{ url_for('assets.assets_page') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

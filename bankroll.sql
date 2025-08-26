@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 20, 2025 at 02:21 PM
+-- Generation Time: Aug 26, 2025 at 02:00 PM
 -- Server version: 8.0.43-0ubuntu0.24.04.1
 -- PHP Version: 8.3.6
 
@@ -30,9 +30,6 @@ SET time_zone = "+00:00";
 CREATE TABLE `assets` (
   `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `last_updated` datetime NOT NULL,
-  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -47,7 +44,8 @@ CREATE TABLE `asset_history` (
   `asset_id` int NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(255) NOT NULL,
-  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -120,9 +118,6 @@ CREATE TABLE `oauth` (
 CREATE TABLE `sites` (
   `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `last_updated` datetime NOT NULL,
-  `currency` varchar(255) NOT NULL DEFAULT 'Dollar',
   `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -137,7 +132,8 @@ CREATE TABLE `site_history` (
   `site_id` int NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(255) NOT NULL,
-  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `recorded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
