@@ -38,8 +38,8 @@ def poker_sites_page():
         """, (site['id'], current_user.id))
         history_records = cur.fetchall()
 
-        current_amount = 0.0
-        previous_amount = 0.0
+        current_amount = Decimal(0)
+        previous_amount = Decimal(0)
         currency = "US Dollar"
         previous_currency = "US Dollar"
 
@@ -181,18 +181,24 @@ def update_site(site_id):
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
         # Get latest site info
-        cur.execute("SELECT * FROM sites WHERE id = %s AND user_id = %s", (site_id, current_user.id))
+        cur.execute("SELECT id, name FROM sites WHERE id = %s AND user_id = %s", (site_id, current_user.id))
         site = cur.fetchone()
         if site is None:
             cur.close()
             conn.close()
             return "Site not found", 404
 
+        # Get current amount and currency from site_history
+        cur.execute("SELECT amount, currency FROM site_history WHERE site_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1", (site_id, current_user.id))
+        current_amount_row = cur.fetchone()
+        current_amount = current_amount_row['amount'] if current_amount_row else Decimal(0)
+        current_currency = current_amount_row['currency'] if current_amount_row else "US Dollar"
+
         # Get previous amount (second most recent entry)
         cur.execute("SELECT amount FROM site_history WHERE site_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1, 1", (site_id, current_user.id))
         previous_amount_row = cur.fetchone()
 
-        previous_amount = previous_amount_row['amount'] if previous_amount_row else None
+        previous_amount = previous_amount_row['amount'] if previous_amount_row else Decimal(0)
 
         # Fetch currencies
         cur.execute("""
@@ -209,7 +215,7 @@ def update_site(site_id):
         currencies = cur.fetchall()
         cur.close()
         conn.close()
-        return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount)
+        return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount, current_amount=current_amount, current_currency=current_currency)
 
 @poker_sites_bp.route("/rename_site/<int:site_id>", methods=["GET", "POST"])
 @login_required

@@ -18,6 +18,7 @@
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-8">
                 <form action="{{ url_for('poker_sites.rename_site', site_id=site.id) }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <label for="new_name" class="form-label">New Name</label>
                         <input type="text" class="form-control" id="new_name" name="new_name" value="{{ site.name }}" required>

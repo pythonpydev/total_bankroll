@@ -34,8 +34,8 @@ def assets_page():
         """, (asset['id'], current_user.id))
         history_records = cur.fetchall()
 
-        current_amount = 0.0
-        previous_amount = 0.0
+        current_amount = Decimal(0)
+        previous_amount = Decimal(0)
         currency = "US Dollar"
         previous_currency = "US Dollar"
 
@@ -182,17 +182,23 @@ def update_asset(asset_id):
         return redirect(url_for("assets.assets_page"))
     else:
         # Get latest asset info
-        cur.execute("SELECT * FROM assets WHERE id = %s AND user_id = %s", (asset_id, current_user.id))
+        cur.execute("SELECT id, name FROM assets WHERE id = %s AND user_id = %s", (asset_id, current_user.id))
         asset = cur.fetchone()
         if asset is None:
             cur.close()
             conn.close()
             return "Asset not found", 404
 
+        # Get current amount and currency from asset_history
+        cur.execute("SELECT amount, currency FROM asset_history WHERE asset_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1", (asset_id, current_user.id))
+        current_amount_row = cur.fetchone()
+        current_amount = current_amount_row['amount'] if current_amount_row else Decimal(0)
+        current_currency = current_amount_row['currency'] if current_amount_row else "US Dollar"
+
         # Get previous amount (second most recent entry)
         cur.execute("SELECT amount FROM asset_history WHERE asset_id = %s AND user_id = %s ORDER BY recorded_at DESC LIMIT 1, 1", (asset_id, current_user.id))
         previous_amount_row = cur.fetchone()
-        previous_amount = previous_amount_row['amount'] if previous_amount_row and 'amount' in previous_amount_row else None
+        previous_amount = previous_amount_row['amount'] if previous_amount_row else Decimal(0)
 
         cur.execute("""
             SELECT name, code FROM currency
@@ -208,7 +214,7 @@ def update_asset(asset_id):
         currencies = cur.fetchall()
         cur.close()
         conn.close()
-        return render_template("update_asset.html", asset=asset, currencies=currencies, previous_amount=previous_amount)
+        return render_template("update_asset.html", asset=asset, currencies=currencies, previous_amount=previous_amount, current_amount=current_amount, current_currency=current_currency)
 
 @assets_bp.route("/rename_asset/<int:asset_id>", methods=["GET", "POST"])
 @login_required

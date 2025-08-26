@@ -63,6 +63,10 @@ def reset_database():
             cur.execute("ALTER TABLE sites AUTO_INCREMENT = 1;")
             cur.execute("TRUNCATE TABLE assets;")
             cur.execute("ALTER TABLE assets AUTO_INCREMENT = 1;")
+            cur.execute("TRUNCATE TABLE site_history;")
+            cur.execute("ALTER TABLE site_history AUTO_INCREMENT = 1;")
+            cur.execute("TRUNCATE TABLE asset_history;")
+            cur.execute("ALTER TABLE asset_history AUTO_INCREMENT = 1;")
             cur.execute("TRUNCATE TABLE deposits;")
             cur.execute("ALTER TABLE deposits AUTO_INCREMENT = 1;")
             cur.execute("TRUNCATE TABLE drawings;")
@@ -90,7 +94,7 @@ def export_database():
         conn = get_db()
         cur = conn.cursor()
 
-        tables = ["sites", "assets", "deposits", "drawings", "currency"]
+        tables = ["sites", "assets", "site_history", "asset_history", "deposits", "drawings", "currency"]
         output = io.StringIO()
         writer = csv.writer(output)
 
