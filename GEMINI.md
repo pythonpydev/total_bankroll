@@ -69,6 +69,18 @@ While the application has a good security foundation, there are several areas th
 *   [#7: ADD TABLE FOR CASH GAME BLINDS](https://github.com/pythonpydev/total_bankroll/issues/7)
 *   [#6: ADD RECOMMENDED STAKES FOR CASH AND TOURNAMENT BASED ON BANKROLL](https://github.com/pythonpydev/total_bankroll/issues/6)
 *   [#5: ADD BUY ME A COFFEE LINK](https://github.com/pythonpydev/total_bankroll/issues/5)
-*   [#4: WHAT HAPPENS IF YOU WANT TO RENAME A POKER SITE OR ASSET?](https://github.com/pythonpydev/total_bankroll/issues/4)
+
 *   [#3: MODIFY HOME PAGE IF NOT LOGGED IN GO TO ABOUT](https://github.com/pythonpydev/total_bankroll/issues/3)
 *   [#2: SOLID FILL COLOURS FOR CHART KEYS](https://github.com/pythonpydev/total_bankroll/issues/2)
+
+## Access Github Issues Lists
+
+To retrieve a list of GitHub issues for this project, you can use the GitHub CLI (`gh`).
+
+**Command:**
+```bash
+gh issue list -R pythonpydev/total_bankroll
+```
+
+**Project's GitHub URL:**
+https://github.com/pythonpydev/total_bankroll
