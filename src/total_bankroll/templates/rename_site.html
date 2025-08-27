@@ -1,33 +1,17 @@
-{% extends "base.html" %}
-
-{% block content %}
-<section class="page-section bg-primary" id="rename_site">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Rename Poker Site</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Rename {{ site.name }}</p>
-            </div>
+<div class="modal-header">
+    <h5 class="modal-title">Rename Poker Site</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form id="renameSiteForm" action="{{ url_for('poker_sites.rename_site', site_id=site.id) }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+            <label for="new_name" class="form-label">New Name</label>
+            <input type="text" class="form-control" id="new_name" name="new_name" value="{{ site.name }}" required autofocus>
         </div>
-    </div>
-</section>
-
-<section class="page-section">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8">
-                <form action="{{ url_for('poker_sites.rename_site', site_id=site.id) }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <div class="mb-3">
-                        <label for="new_name" class="form-label">New Name</label>
-                        <input type="text" class="form-control" id="new_name" name="new_name" value="{{ site.name }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Rename Site</button>
-                    <a href="{{ url_for('poker_sites.poker_sites_page') }}" class="btn btn-secondary">Cancel</a>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
-{% endblock %}
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-info" form="renameSiteForm">Rename Site</button>
+</div>
