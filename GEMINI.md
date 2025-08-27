@@ -59,19 +59,20 @@ While the application has a good security foundation, there are several areas th
 
 ## GitHub Issues
 
-*   [#13: SQL Injection in Raw SQL](https://github.com/pythonpydev/total_bankroll/issues/13)
-*   [#14: Cross-Site Scripting (XSS)](https://github.com/pythonpydev/total_bankroll/issues/14)
-*   [#11: Dependency Vulnerabilities](https://github.com/pythonpydev/total_bankroll/issues/11)
-*   [#12: Error Handling](https://github.com/pythonpydev/total_bankroll/issues/12)
-*   [#10: Clickjacking](https://github.com/pythonpydev/total_bankroll/issues/10)
-*   [#9: ON POKER SITES AND ASSETS, ORIGINAL AMOUNT SHOULD BE FIRST DEPOSITED AMOUNT. COULD HAVE RECENT CHANGE AND OVERALL CHANGE TOO?](https://github.com/pythonpydev/total_bankroll/issues/9)
-*   [#8: LOOK AT BUYING URL](https://github.com/pythonpydev/total_bankroll/issues/8)
-*   [#7: ADD TABLE FOR CASH GAME BLINDS](https://github.com/pythonpydev/total_bankroll/issues/7)
-*   [#6: ADD RECOMMENDED STAKES FOR CASH AND TOURNAMENT BASED ON BANKROLL](https://github.com/pythonpydev/total_bankroll/issues/6)
-*   [#5: ADD BUY ME A COFFEE LINK](https://github.com/pythonpydev/total_bankroll/issues/5)
+- Google Gemini CLI should check the list of issues on github at the start of each session and update the list below if necessay.  Instructions for this are shown below.
 
-*   [#3: MODIFY HOME PAGE IF NOT LOGGED IN GO TO ABOUT](https://github.com/pythonpydev/total_bankroll/issues/3)
-*   [#2: SOLID FILL COLOURS FOR CHART KEYS](https://github.com/pythonpydev/total_bankroll/issues/2)
+*   [#15: Reformat site template so that there is a central container with two columns either side that could be used for advertising, news feed, additional buttons etc.](https://github.com/pythonpydev/total_bankroll/issues/15)
+*   [#14: Cross-Site Scripting (XSS)](https://github.com/pythonpydev/total_bankroll/issues/14)
+*   [#13: SQL Injection in Raw SQL](https://github.com/pythonpydev/total_bankroll/issues/13)
+*   [#12: Error Handling](https://github.com/pythonpydev/total_bankroll/issues/12)
+*   [#11: Dependency Vulnerabilities](https://github.com/pythonpydev/total_bankroll/issues/11)
+*   [#10: Clickjacking](https://github.com/pythonpydev/total_bankroll/issues/10)
+*   [#9: On poker sites and assets, original amount should be first deposited amount. could have recent change and overall change too?](https://github.com/pythonpydev/total_bankroll/issues/9)
+*   [#8: Look at buying URL](https://github.com/pythonpydev/total_bankroll/issues/8)
+*   [#7: Add table for cash game blinds](https://github.com/pythonpydev/total_bankroll/issues/7)
+*   [#6: Add recommended stakes for cash and tournament based on bankroll](https://github.com/pythonpydev/total_bankroll/issues/6)
+*   [#5: Add buy me a coffee link](https://github.com/pythonpydev/total_bankroll/issues/5)
+*   [#2: Solid fill colours for chart keys](https://github.com/pythonpydev/total_bankroll/issues/2)
 
 ## Access Github Issues Lists
 

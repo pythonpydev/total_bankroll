@@ -81,7 +81,10 @@
                 })
                 .then(data => {
                     pokerSitesLineChart.data.labels = data.labels;
-                    pokerSitesLineChart.data.datasets = data.datasets;
+                    pokerSitesLineChart.data.datasets = data.datasets.map(dataset => ({
+                        ...dataset,
+                        backgroundColor: dataset.borderColor // Set background color of legend box to match line color
+                    }));
                     pokerSitesLineChart.update();
                 })
                 .catch(error => {
