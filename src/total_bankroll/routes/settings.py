@@ -16,7 +16,6 @@ import os
 
 settings_bp = Blueprint("settings", __name__)
 reset_db_bp = Blueprint("delete_db", __name__, url_prefix="/settings")
-export_db_bp = Blueprint("export_db", __name__, url_prefix="/settings")
 import_db_bp = Blueprint("import_db", __name__, url_prefix="/settings")
 
 class UpdateEmailForm(FlaskForm):
@@ -81,47 +80,7 @@ def reset_database():
                 conn.close()
     return redirect(url_for("settings.settings_page"))
 
-@export_db_bp.route("/confirm_export_database", methods=["GET"])
-def confirm_export_database():
-    """Show confirmation dialog for database export."""
-    return render_template("confirm_export_database.html")
 
-@export_db_bp.route("/export_database", methods=["POST"])
-def export_database():
-    """Export the database to a CSV file."""
-    conn = None
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-
-        tables = ["sites", "assets", "site_history", "asset_history", "deposits", "drawings", "currency"]
-        output = io.StringIO()
-        writer = csv.writer(output)
-
-        for table_name in tables:
-            cur.execute(f"SELECT * FROM {table_name};")
-            rows = cur.fetchall()
-
-            if rows:
-                writer.writerow([f"Table: {table_name}"])
-                writer.writerow(rows[0].keys())
-                for row in rows:
-                    writer.writerow(list(row.values()))
-                writer.writerow([])
-
-        cur.close()
-
-        response = make_response(output.getvalue())
-        response.headers["Content-Disposition"] = "attachment; filename=database_export.csv"
-        response.headers["Content-type"] = "text/csv"
-        return response
-
-    except Exception as e:
-        flash(f"Error exporting database: {e}", "danger")
-        return redirect(url_for("settings.settings_page"))
-    finally:
-        if conn:
-            conn.close()
 
 @import_db_bp.route("/confirm_import_database", methods=["GET"])
 def confirm_import_database():

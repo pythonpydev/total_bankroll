@@ -73,7 +73,7 @@ def perform_export_database():
     conn = get_db()
     cur = conn.cursor()
     try:
-        tables = ['assets', 'deposits', 'drawings', 'sites', 'asset_history', 'site_history'] # Tables to export
+        tables = ['sites', 'assets', 'deposits', 'drawings', 'site_history', 'asset_history'] # Tables to export
         output = io.BytesIO() # Changed to BytesIO
         text_wrapper = io.TextIOWrapper(output, encoding='utf-8', newline='') # Store TextIOWrapper
         writer = csv.writer(text_wrapper) # Pass TextIOWrapper to csv.writer
@@ -125,6 +125,8 @@ def perform_import_database():
             cur.execute("DELETE FROM deposits WHERE user_id = %s", (current_user.id,))
             cur.execute("DELETE FROM drawings WHERE user_id = %s", (current_user.id,))
             cur.execute("DELETE FROM sites WHERE user_id = %s", (current_user.id,))
+            cur.execute("DELETE FROM asset_history WHERE user_id = %s", (current_user.id,))
+            cur.execute("DELETE FROM site_history WHERE user_id = %s", (current_user.id,))
             conn.commit()
 
             stream = io.StringIO(file.stream.read().decode("UTF8"))
@@ -144,24 +146,31 @@ def perform_import_database():
                     # This part needs to be highly dynamic and careful with data types
                     # For simplicity, assuming all values can be inserted as strings/numbers directly
                     # In a real app, you'd map headers to columns and convert types
-                    if current_table == 'assets':
-                        # Assuming order: id, name, amount, last_updated, currency, user_id
-                        # We will ignore id from CSV and let DB auto-increment
-                        # We will use current_user.id for user_id
-                        cur.execute(f"INSERT INTO assets (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)",
-                                    (row[1], row[2], row[3], row[4], current_user.id))
-                    elif current_table == 'deposits':
-                        # Assuming order: id, date, amount, deposited_at, last_updated, currency, user_id
-                        cur.execute(f"INSERT INTO deposits (date, amount, deposited_at, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
-                                    (row[1], row[2], row[3], row[4], row[5], current_user.id))
-                    elif current_table == 'drawings':
-                        # Assuming order: id, date, amount, withdrawn_at, last_updated, currency, user_id
-                        cur.execute(f"INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
-                                    (row[1], row[2], row[3], row[4], row[5], current_user.id))
-                    elif current_table == 'sites':
-                        # Assuming order: id, name, amount, last_updated, currency, user_id
-                        cur.execute(f"INSERT INTO sites (name, amount, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s)",
-                                    (row[1], row[2], row[3], row[4], current_user.id))
+                    # Dynamically build the INSERT statement
+                    # Exclude 'id' column from insert
+                    columns_to_insert = headers
+                    
+                    # Find the index of the columns to insert
+                    column_indices = [headers.index(h) for h in columns_to_insert]
+
+                    # Create a tuple of values to insert
+                    values_to_insert = [row[i] for i in column_indices]
+
+                    # Add user_id to the columns and values if it's not already there
+                    if 'user_id' not in columns_to_insert:
+                        columns_to_insert.append('user_id')
+                        values_to_insert.append(current_user.id)
+                    else:
+                        # If user_id is in the CSV, make sure it matches the current user
+                        user_id_index = headers.index('user_id')
+                        if int(row[user_id_index]) != current_user.id:
+                            # Skip rows that don't belong to the current user
+                            continue
+                    
+                    # Create the INSERT statement
+                    query = f"INSERT INTO {current_table} ({', '.join(columns_to_insert)}) VALUES ({', '.join(['%s'] * len(columns_to_insert))})"
+                    
+                    cur.execute(query, tuple(values_to_insert))
             conn.commit()
             return redirect(url_for('home.home'))
         except Exception as e:
