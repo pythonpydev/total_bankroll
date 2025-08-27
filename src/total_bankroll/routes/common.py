@@ -73,7 +73,7 @@ def perform_export_database():
     conn = get_db()
     cur = conn.cursor()
     try:
-        tables = ['assets', 'deposits', 'drawings', 'sites'] # Tables to export
+        tables = ['assets', 'deposits', 'drawings', 'sites', 'asset_history', 'site_history'] # Tables to export
         output = io.BytesIO() # Changed to BytesIO
         text_wrapper = io.TextIOWrapper(output, encoding='utf-8', newline='') # Store TextIOWrapper
         writer = csv.writer(text_wrapper) # Pass TextIOWrapper to csv.writer
