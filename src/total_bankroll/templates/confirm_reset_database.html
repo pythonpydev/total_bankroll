@@ -1,20 +1,70 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="page-section bg-primary" id="confirm_export_database">
+<section class="page-section bg-primary" id="confirm_reset_database">
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-8 text-center">
                 <h2 class="text-white mt-0">Confirm Reset Database</h2>
                 <hr class="divider divider-light" />
                 <p class="text-white-75 mb-4">Are you sure you want to reset the database? All your data will be deleted and this cannot be undone.</p>
-                <form action="{{ url_for('common.perform_reset_database') }}" method="post">
+                <form id="resetForm" action="{{ url_for('common.perform_reset_database') }}" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="submit" class="btn btn-light btn-xl">Yes, Reset Database</button>
+                    <button type="button" id="resetButton" class="btn btn-light btn-xl">Yes, Reset Database</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Reset Complete Modal -->
+<div class="modal fade" id="resetCompleteModal" tabindex="-1" aria-labelledby="resetCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resetCompleteModalLabel">Reset Database</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Database reset complete!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="okButton">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('resetButton').addEventListener('click', function() {
+    const form = document.getElementById('resetForm');
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrf_token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var myModal = new bootstrap.Modal(document.getElementById('resetCompleteModal'), {});
+            myModal.show();
+
+            document.getElementById('okButton').addEventListener('click', function() {
+                window.location.href = "{{ url_for('settings.settings_page') }}";
+            });
+        } else {
+            alert('An error occurred while resetting the database.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while resetting the database.');
+    });
+});
+</script>
 {% endblock %}

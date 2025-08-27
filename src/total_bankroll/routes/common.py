@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, current_app, send_file, jsonify
 from flask_security import current_user
 from ..db import get_db, init_db_tables
 import csv
@@ -56,7 +56,7 @@ def perform_reset_database():
         cur.execute("DELETE FROM drawings WHERE user_id = %s", (current_user.id,))
         conn.commit()
 
-        return redirect(url_for('home.home')) # Redirect to home page after reset
+        return jsonify(success=True) # Redirect to home page after reset
     except Exception as e:
         conn.rollback()
         return f"Error resetting database: {e}", 500
@@ -172,7 +172,7 @@ def perform_import_database():
                     
                     cur.execute(query, tuple(values_to_insert))
             conn.commit()
-            return redirect(url_for('home.home'))
+            return jsonify(success=True)
         except Exception as e:
             conn.rollback()
             return f"Error importing database: {e}", 500

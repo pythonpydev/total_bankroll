@@ -8,13 +8,49 @@
                 <h2 class="text-white mt-0">Confirm Export Database</h2>
                 <hr class="divider divider-light" />
                 <p class="text-white-75 mb-4">Are you sure you want to export all database data to a CSV file? This will download a file to your computer.</p>
-                <form action="{{ url_for('common.perform_export_database') }}" method="post">
+                <form id="exportForm" action="{{ url_for('common.perform_export_database') }}" method="post" target="export_iframe">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="submit" class="btn btn-light btn-xl">Yes, Export Database</button>
+                    <button type="button" id="exportButton" class="btn btn-light btn-xl">Yes, Export Database</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<iframe name="export_iframe" style="display: none;"></iframe>
+
+<!-- Export Complete Modal -->
+<div class="modal fade" id="exportCompleteModal" tabindex="-1" aria-labelledby="exportCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exportCompleteModalLabel">Export</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Export complete!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="okButton">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('exportButton').addEventListener('click', function() {
+    // Submit the form to the iframe to trigger the download
+    document.getElementById('exportForm').submit();
+
+    // Show the modal
+    var myModal = new bootstrap.Modal(document.getElementById('exportCompleteModal'), {});
+    myModal.show();
+
+    // Redirect to settings page when OK button is clicked
+    document.getElementById('okButton').addEventListener('click', function() {
+        window.location.href = "{{ url_for('settings.settings_page') }}";
+    });
+});
+</script>
 {% endblock %}

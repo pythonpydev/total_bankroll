@@ -8,16 +8,72 @@
                 <h2 class="text-white mt-0">Import Database</h2>
                 <hr class="divider divider-light" />
                 <p class="text-white-75 mb-4">Select a CSV file to import into the database. This will overwrite your existing data.</p>
-                <form action="{{ url_for('common.perform_import_database') }}" method="post" enctype="multipart/form-data">
+                <form id="importForm" action="{{ url_for('common.perform_import_database') }}" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <input class="form-control" type="file" id="formFile" name="file" accept=".csv">
                     </div>
-                    <button type="submit" class="btn btn-light btn-xl">Import Database</button>
+                    <button type="button" id="importButton" class="btn btn-light btn-xl">Import Database</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Import Complete Modal -->
+<div class="modal fade" id="importCompleteModal" tabindex="-1" aria-labelledby="importCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importCompleteModalLabel">Import Database</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Database import complete!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="okButton">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('importButton').addEventListener('click', function() {
+    const form = document.getElementById('importForm');
+    const formData = new FormData(form);
+    const fileInput = document.getElementById('formFile');
+
+    if (fileInput.files.length === 0) {
+        alert('Please select a file to import.');
+        return;
+    }
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrf_token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var myModal = new bootstrap.Modal(document.getElementById('importCompleteModal'), {});
+            myModal.show();
+
+            document.getElementById('okButton').addEventListener('click', function() {
+                window.location.href = "{{ url_for('settings.settings_page') }}";
+            });
+        } else {
+            alert('An error occurred while importing the database.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while importing the database.');
+    });
+});
+</script>
 {% endblock %}
