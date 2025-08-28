@@ -33,7 +33,8 @@
             </thead>
             <tbody>
                 {% for row in cash_stakes_table[1:] %}
-                <tr>
+                {% set current_stake = row[1] + '/' + row[2] %}
+                <tr {% if current_stake == recommended_stake %}class="table-success fw-bold"{% endif %}>
                     {% for cell in row %}
                     <td>{{ cell }}</td>
                     {% endfor %}
