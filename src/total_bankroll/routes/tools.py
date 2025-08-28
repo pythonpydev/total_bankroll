@@ -37,6 +37,7 @@ def poker_stakes_page():
 
     recommended_stake = "N/A"
     stake_explanation = ""
+    next_stake_level = ""
 
     # Iterate through stakes from largest to smallest
     for i in range(len(cash_stakes_table) - 1, 0, -1):
@@ -63,15 +64,49 @@ def poker_stakes_page():
                 f"for the smallest available stakes ({smallest_stake_row[1]}/{smallest_stake_row[2]}). "
                 f"Consider depositing more funds to comfortably play at these stakes."
             )
+            next_stake_level = f"{smallest_stake_row[1]}/{smallest_stake_row[2]}"
         else:
             # This case should ideally not be reached if the loop covers all stakes
             recommended_stake = "N/A"
             stake_explanation = "Could not determine recommended stakes. Please check bankroll data."
 
+    # Calculate next stake message
+    next_stake_message = ""
+    if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes":
+        # Find the index of the recommended stake
+        recommended_stake_index = -1
+        for i, row in enumerate(cash_stakes_table):
+            if i > 0 and f"{row[1]}/{row[2]}" == recommended_stake:
+                recommended_stake_index = i
+                break
+        print(f"Recommended Stake Index: {recommended_stake_index}")
+
+        if recommended_stake_index != -1 and recommended_stake_index < len(cash_stakes_table) - 1:
+            print("Inside next_stake_level assignment block.")
+            next_stake_row = cash_stakes_table[recommended_stake_index + 1]
+            next_stake_sb = next_stake_row[1]
+            next_stake_bb = next_stake_row[2]
+            next_stake_level = f"{next_stake_sb}/{next_stake_bb}"
+            next_stake_max_buy_in = parse_currency_to_decimal(next_stake_row[4])
+            
+            required_bankroll_for_next_stake = 30 * next_stake_max_buy_in
+            additional_bankroll_needed = required_bankroll_for_next_stake - total_bankroll
+
+            if additional_bankroll_needed > 0:
+                next_stake_message = (
+                    f"To move up to {next_stake_sb}/{next_stake_bb} stakes, you need to win an additional "
+                    f"${additional_bankroll_needed:.2f} to reach a bankroll of ${required_bankroll_for_next_stake:.2f}."
+                )
+            else:
+                next_stake_message = (
+                    f"You have enough bankroll to play at {next_stake_sb}/{next_stake_bb} stakes or higher!"
+                )
     return render_template(
         'poker_stakes.html',
         total_bankroll=total_bankroll,
         cash_stakes_table=cash_stakes_table,
         recommended_stake=recommended_stake,
-        stake_explanation=stake_explanation
+        stake_explanation=stake_explanation,
+        next_stake_message=next_stake_message,
+        next_stake_level=next_stake_level
     )
