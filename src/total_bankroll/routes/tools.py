@@ -104,7 +104,15 @@ def poker_stakes_page():
     # Calculate move down message
     move_down_message = ""
     move_down_stake_level = ""
-    if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes":
+
+    # Get smallest stake max buy-in for comparison
+    smallest_stake_row = cash_stakes_table[1]
+    smallest_max_buy_in_for_check = parse_currency_to_decimal(smallest_stake_row[4])
+
+    if total_bankroll <= 30 * smallest_max_buy_in_for_check:
+        move_down_message = ""
+        move_down_stake_level = ""
+    elif recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes":
         # Find the index of the recommended stake
         recommended_stake_index = -1
         for i, row in enumerate(cash_stakes_table):

@@ -15,6 +15,7 @@ def confirm_delete(item_type, item_id):
 def perform_delete(item_type, item_id):
     try:
         if item_type == 'site':
+            SiteHistory.query.filter_by(site_id=item_id, user_id=current_user.id).delete()
             Sites.query.filter_by(id=item_id, user_id=current_user.id).delete()
             db.session.commit()
             return redirect(url_for('poker_sites.poker_sites_page'))

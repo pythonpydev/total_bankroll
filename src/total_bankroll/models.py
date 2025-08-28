@@ -92,3 +92,11 @@ class Currency(db.Model):
     code = db.Column(db.String(3), nullable=False)
     symbol = db.Column(db.String(5), nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class CashStakes(db.Model):
+    __tablename__ = 'cash_stakes'
+    id = db.Column(db.Integer, primary_key=True)
+    small_blind = db.Column(db.Numeric(10, 2), nullable=False)
+    big_blind = db.Column(db.Numeric(10, 2), nullable=False)
+    min_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
+    max_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
