@@ -217,6 +217,7 @@ def create_app():
     from .routes.common import common_bp
     from .routes.add_withdrawal import add_withdrawal_bp
     from .routes.add_deposit import add_deposit_bp
+    from .routes.tools import tools_bp
 
     app.register_blueprint(auth_bp, url_prefix='/security')
     app.register_blueprint(home_bp)
@@ -231,6 +232,7 @@ def create_app():
     app.register_blueprint(common_bp)
     app.register_blueprint(add_withdrawal_bp)
     app.register_blueprint(add_deposit_bp)
+    app.register_blueprint(tools_bp)
 
     return app
 
