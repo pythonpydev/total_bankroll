@@ -22,6 +22,10 @@
         <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
         <p class="text-muted mb-4">{{ stake_explanation }}</p>
 
+        {% if move_down_message %}
+        <p class="text-muted mb-4"><span class="text-info">{{ move_down_message }}</span></p>
+        {% endif %}
+
         {% if next_stake_message %}
         <p class="text-muted mb-4"><span class="text-danger">{{ next_stake_message }}</span></p>
         {% endif %}
@@ -38,7 +42,7 @@
             <tbody>
                 {% for row in cash_stakes_table[1:] %}
                 {% set current_stake = row[1] + '/' + row[2] %}
-                <tr {% if current_stake == next_stake_level %}class="table-danger fw-bold"{% elif current_stake == recommended_stake %}class="table-success fw-bold"{% endif %}>
+                <tr {% if current_stake == next_stake_level %}class="table-danger fw-bold"{% elif current_stake == move_down_stake_level %}class="table-info fw-bold"{% elif current_stake == recommended_stake %}class="table-success fw-bold"{% endif %}>
                     {% for cell in row %}
                     <td>{{ cell }}</td>
                     {% endfor %}

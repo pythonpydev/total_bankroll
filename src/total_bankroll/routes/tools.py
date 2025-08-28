@@ -101,6 +101,42 @@ def poker_stakes_page():
                 next_stake_message = (
                     f"You have enough bankroll to play at {next_stake_sb}/{next_stake_bb} stakes or higher!"
                 )
+    # Calculate move down message
+    move_down_message = ""
+    move_down_stake_level = ""
+    if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes":
+        # Find the index of the recommended stake
+        recommended_stake_index = -1
+        for i, row in enumerate(cash_stakes_table):
+            if i > 0 and f"{row[1]}/{row[2]}" == recommended_stake:
+                recommended_stake_index = i
+                break
+
+        if recommended_stake_index > 1: # Ensure there's a stake to move down to
+            move_down_stake_row = cash_stakes_table[recommended_stake_index - 1]
+            move_down_sb = move_down_stake_row[1]
+            move_down_bb = move_down_stake_row[2]
+            move_down_stake_level = f"{move_down_sb}/{move_down_bb}"
+            
+            # The threshold to move down is 30x the max buy-in of the *lower* stake
+            move_down_threshold_max_buy_in = parse_currency_to_decimal(move_down_stake_row[4])
+            required_bankroll_to_stay_at_current_stake = 30 * move_down_threshold_max_buy_in
+            
+            amount_can_lose = total_bankroll - required_bankroll_to_stay_at_current_stake
+
+            if amount_can_lose < 0:
+                # This case means current bankroll is already below the threshold for the lower stake
+                # This should ideally be covered by recommended_stake logic, but as a safeguard
+                move_down_message = (
+                    f"You are currently playing above your recommended stakes. "
+                    f"You should move down to {move_down_sb}/{move_down_bb} stakes."
+                )
+            else:
+                move_down_message = (
+                    f"You will need to move down to {move_down_sb}/{move_down_bb} stakes if you lose "
+                    f"${amount_can_lose:.2f} to drop to a bankroll of ${required_bankroll_to_stay_at_current_stake:.2f}."
+                )
+
     return render_template(
         'poker_stakes.html',
         total_bankroll=total_bankroll,
@@ -108,5 +144,7 @@ def poker_stakes_page():
         recommended_stake=recommended_stake,
         stake_explanation=stake_explanation,
         next_stake_message=next_stake_message,
-        next_stake_level=next_stake_level
+        next_stake_level=next_stake_level,
+        move_down_message=move_down_message,
+        move_down_stake_level=move_down_stake_level
     )
