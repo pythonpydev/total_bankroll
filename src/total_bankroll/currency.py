@@ -2,12 +2,13 @@ import os
 import click
 import requests
 from flask import current_app
-import pymysql
 from flask.cli import with_appcontext
+from .extensions import db
 
+from .models import Currency
 def fetch_exchange_rates(api_key):
     """Fetch live exchange rates from ExchangeRate-API."""
-    url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/USD"
+    url = f"https://v6.exchangerate-api.com/v6/{api_key} /latest/USD"
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()  # Raise an exception for bad status codes
@@ -18,7 +19,6 @@ def fetch_exchange_rates(api_key):
     except (requests.RequestException, ValueError) as e:
         current_app.logger.error(f"Failed to fetch exchange rates: {e}")
         return None
-
 def get_fallback_currencies():
     """Return static currency data from CSV as fallback."""
     return [
@@ -35,19 +35,16 @@ def get_fallback_currencies():
         ('Norwegian Krone', 10.1817, 'NOK', 'kr'),
         ('Danish Krone', 6.3742, 'DKK', 'kr'),
     ]
-
-def insert_initial_currency_data(db_connection):
+def insert_initial_currency_data():
     """Insert or update currency data with live exchange rates or fallback to static data."""
-    cur = db_connection.cursor()
-    cur.execute("SELECT COUNT(*) FROM currency")
-    result = cur.fetchone()
+    print("insert_initial_currency_data called")
+    print(f"Currency table count: {db.session.query(Currency).count()}")
     
     # Check if table is empty
-    if result and list(result.values())[0] == 0:
+    if db.session.query(Currency).count() == 0:
         # Fetch live exchange rates
         api_key = os.getenv("EXCHANGE_RATE_API_KEY")  # Store API key in environment variable
         rates = fetch_exchange_rates(api_key)
-        
         if rates:
             # Map API rates to your currency list
             currency_mapping = {
@@ -64,40 +61,27 @@ def insert_initial_currency_data(db_connection):
                 'NOK': ('Norwegian Krone', 'kr'),
                 'DKK': ('Danish Krone', 'kr'),
             }
-            currencies = [
-                (name, rates.get(code, 1.0), code, symbol)
-                for code, (name, symbol) in currency_mapping.items()
-                if code in rates
-            ]
+            currencies_to_add = []
+            for code, (name, symbol) in currency_mapping.items():
+                if code in rates:  
+                    currencies_to_add.append(Currency(name=name, rate=rates.get(code, 1.0), code=code, symbol=symbol))
         else:
             # Fallback to static CSV data
             current_app.logger.warning("Using fallback currency data from CSV")
-            currencies = [
-                (name, rate, code, symbol)
-                for name, rate, code, symbol in get_fallback_currencies()
-            ]
-
+            currencies_to_add = []
+            for name, rate, code, symbol in get_fallback_currencies():
+                currencies_to_add.append(Currency(name=name, rate=rate, code=code, symbol=symbol))
         # Insert data into the database
         try:
-            cur.executemany(
-                """
-                INSERT INTO currency (name, rate, code, symbol, updated_at)
-                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
-                """,
-                currencies
-            )
-            db_connection.commit()
-            current_app.logger.info(f"Inserted {cur.rowcount} currencies into the database")
-        except pymysql.Error as e:
-            current_app.logger.error(f"Database error: {e}")
-            db_connection.rollback()
-    
-    cur.close()
-
+            db.session.add_all(currencies_to_add)
+            db.session.commit()
+            current_app.logger.info(f"Inserted {len (currencies_to_add)} currencies into the database")
+        except Exception as e:
+            current_app.logger.error(f"Database error: {e}" )
+            db.session.rollback()
 @click.command('init-currency')
 @with_appcontext
 def init_currency_command():
     """Add initial currency data to the database."""
-    from ..db import get_db
-    insert_initial_currency_data(get_db())
+    insert_initial_currency_data()
     click.echo('Initialized the currency data.')

@@ -12,6 +12,7 @@ import logging
 from flask_security import current_user
 from datetime import datetime
 from .extensions import db, mail, csrf
+from flask_migrate import Migrate
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -56,8 +57,11 @@ def create_app():
 
     db.init_app(app)
     mail.init_app(app)
+    migrate = Migrate(app, db)
 
     from .models import User, OAuth
+    from .currency import init_currency_command
+    app.cli.add_command(init_currency_command)
 
     # Initialize Flask-Security
     user_datastore = SQLAlchemyUserDatastore(db, User, None)

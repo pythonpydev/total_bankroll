@@ -1,6 +1,8 @@
 import pymysql, pymysql.cursors
 from flask import g, current_app
 from .currency import insert_initial_currency_data
+from .extensions import db
+from .models import Currency
 
 def get_db():
     if "db" not in g:
@@ -15,22 +17,7 @@ def get_db():
                 autocommit=False
             )
 
-            # Check if tables exist, if not initialize them
-            cursor = g.db.cursor()
-            cursor.execute("SHOW TABLES")
-            tables = cursor.fetchall()
-            cursor.close()
-
-            if not tables:  # No tables exist, initialize database
-                _init_db_tables(g.db, current_app)
-            else:
-                # Check if currency table is empty and populate if needed
-                cursor = g.db.cursor()
-                cursor.execute("SELECT COUNT(*) FROM currency")
-                count = cursor.fetchone()["COUNT(*)"]
-                if count == 0:
-                    insert_initial_currency_data(g.db)
-                cursor.close()
+            
 
         except Exception as e:
             # If there's an error, make sure we don't leave a broken connection
@@ -66,8 +53,7 @@ def get_db():
                     cursorclass=pymysql.cursors.DictCursor,
                     autocommit=False
                 )
-                # Initialize tables after creating the database
-                _init_db_tables(g.db, current_app)
+                
             else:
                 raise err
 
@@ -83,23 +69,14 @@ def close_db(e=None):
             # Connection was already closed or doesn't have _closed attribute
             pass
 
-def init_db_tables(db_connection, app):
-    cursor = db_connection.cursor()
-    try:
-        with app.open_resource('schema.sql') as f:
-            sql_script = f.read().decode('utf8')
-            # Execute each statement separately
-            statements = [stmt.strip() for stmt in sql_script.split(';') if stmt.strip()]
-            for statement in statements:
-                cursor.execute(statement)
-        db_connection.commit()
-        insert_initial_currency_data(db_connection)
-    except Exception as e:
-        db_connection.rollback()
-        raise e
-    finally:
-        cursor.close()
+
 
 def init_app(app):
     app.teardown_appcontext(close_db)
-    # No need to add init_db_command to cli anymore
+    db.init_app(app) # Initialize SQLAlchemy with the app
+    with app.app_context():
+        print("init_app called, app context active.")
+        db.create_all() # Create all tables defined in SQLAlchemy models
+        if db.session.query(Currency).first() is None:
+            print("Currency table is empty in db.py. Calling insert_initial_currency_data().")
+            insert_initial_currency_data()

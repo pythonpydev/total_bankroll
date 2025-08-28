@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, send_file, jsonify
 from flask_security import current_user
-from ..db import get_db, init_db_tables
+from ..extensions import db
+from ..models import Sites, Assets, Drawings, Deposits, SiteHistory, AssetHistory, Currency
 import csv
 import io
 
@@ -12,33 +13,28 @@ def confirm_delete(item_type, item_id):
 
 @common_bp.route('/perform_delete/<item_type>/<int:item_id>', methods=['POST'])
 def perform_delete(item_type, item_id):
-    conn = get_db()
-    cur = conn.cursor()
     try:
         if item_type == 'site':
-            cur.execute("DELETE FROM sites WHERE id = %s AND user_id = %s", (item_id, current_user.id))
-            conn.commit()
+            Sites.query.filter_by(id=item_id, user_id=current_user.id).delete()
+            db.session.commit()
             return redirect(url_for('poker_sites.poker_sites_page'))
         elif item_type == 'asset':
-            cur.execute("DELETE FROM assets WHERE id = %s AND user_id = %s", (item_id, current_user.id))
-            conn.commit()
+            Assets.query.filter_by(id=item_id, user_id=current_user.id).delete()
+            db.session.commit()
             return redirect(url_for('assets.assets_page'))
         elif item_type == 'withdrawal':
-            cur.execute("DELETE FROM drawings WHERE id = %s AND user_id = %s", (item_id, current_user.id))
-            conn.commit()
+            Drawings.query.filter_by(id=item_id, user_id=current_user.id).delete()
+            db.session.commit()
             return redirect(url_for('withdrawal.withdrawal'))
         elif item_type == 'deposit':
-            cur.execute("DELETE FROM deposits WHERE id = %s AND user_id = %s", (item_id, current_user.id))
-            conn.commit()
+            Deposits.query.filter_by(id=item_id, user_id=current_user.id).delete()
+            db.session.commit()
             return redirect(url_for('deposit.deposit'))
         else:
             return "Invalid item type", 400
     except Exception as e:
-        conn.rollback()
+        db.session.rollback()
         return f"Error deleting record: {e}", 500
-    finally:
-        cur.close()
-        # conn.close() # Handled by teardown_appcontext
 
 @common_bp.route('/confirm_reset_database')
 def confirm_reset_database():
@@ -46,23 +42,20 @@ def confirm_reset_database():
 
 @common_bp.route('/perform_reset_database', methods=['POST'])
 def perform_reset_database():
-    conn = get_db()
-    cur = conn.cursor()
     try:
         # Delete records for the current user from relevant tables
-        cur.execute("DELETE FROM sites WHERE user_id = %s", (current_user.id,))
-        cur.execute("DELETE FROM assets WHERE user_id = %s", (current_user.id,))
-        cur.execute("DELETE FROM deposits WHERE user_id = %s", (current_user.id,))
-        cur.execute("DELETE FROM drawings WHERE user_id = %s", (current_user.id,))
-        conn.commit()
+        Sites.query.filter_by(user_id=current_user.id).delete()
+        Assets.query.filter_by(user_id=current_user.id).delete()
+        Deposits.query.filter_by(user_id=current_user.id).delete()
+        Drawings.query.filter_by(user_id=current_user.id).delete()
+        SiteHistory.query.filter_by(user_id=current_user.id).delete()
+        AssetHistory.query.filter_by(user_id=current_user.id).delete()
+        db.session.commit()
 
-        return jsonify(success=True) # Redirect to home page after reset
+        return jsonify(success=True)
     except Exception as e:
-        conn.rollback()
+        db.session.rollback()
         return f"Error resetting database: {e}", 500
-    finally:
-        cur.close()
-        # conn.close() # Handled by teardown_appcontext
 
 @common_bp.route('/confirm_export_database')
 def confirm_export_database():
