@@ -47,15 +47,15 @@ The application has a number of security features in place:
 
 While the application has a good security foundation, there are several areas that could be improved:
 
-1.  **SQL Injection in Raw SQL:** The application uses raw SQL in the `bankroll.sql` file to define the schema. While the application itself uses SQLAlchemy, which protects against SQL injection, any future raw SQL queries added to the application could be vulnerable if not properly parameterized. **Recommendation:** Migrate all table definitions to SQLAlchemy models to ensure a consistent and secure way of interacting with the database.
+1.  **SQL Injection in Raw SQL:** This vulnerability has been addressed by migrating all database table definitions and interactions to SQLAlchemy ORM, managed by Flask-Migrate. This ensures that all database operations are properly parameterized, significantly reducing the risk of SQL injection.
 
-2.  **Cross-Site Scripting (XSS):** Jinja2, the templating engine used by Flask, automatically escapes data by default, which helps to prevent XSS attacks. However, it's important to be careful not to disable this feature (e.g., by using the `|safe` filter) unless absolutely necessary. **Recommendation:** Review all templates to ensure that the `|safe` filter is only used on trusted data.
+2.  **Cross-Site Scripting (XSS):** Jinja2, the templating engine used by Flask, automatically escapes data by default, which helps to prevent XSS attacks. A review of the application's templates (`src/total_bankroll/templates/`) found no instances where the `|safe` filter was explicitly used, indicating that auto-escaping is consistently applied for application-rendered data. This mitigates the risk of XSS through this vector.
 
-3.  **Dependency Vulnerabilities:** The `requirements.txt` file does not pin dependencies to specific versions. This means that `pip install -r requirements.txt` could install a newer version of a library with a known vulnerability. **Recommendation:** Use a tool like `pip-tools` to compile a `requirements.txt` file with pinned versions, and regularly scan for vulnerabilities using a tool like `pip-audit`.
+3.  **Dependency Vulnerabilities:** This has been addressed. The `requirements.txt` file now pins dependencies to specific versions using `pip-tools` (generated from `requirements.in`). Regular vulnerability scanning can be performed using `pip-audit`. A recent scan found no known vulnerabilities.
 
 4.  **Error Handling:** The application currently runs in debug mode in development, which can leak sensitive information in error messages. While this is fine for development, it's important to ensure that debug mode is disabled in production. **Recommendation:** Double-check that `FLASK_ENV` is set to `production` in the PythonAnywhere environment to disable debug mode.
 
-5.  **Clickjacking:** The application does not currently have a Content Security Policy (CSP) or the `X-Frame-Options` header set. This could make it vulnerable to clickjacking attacks. **Recommendation:** Implement a strict CSP and set the `X-Frame-Options` header to `DENY` or `SAMEORIGIN`.
+5.  **Clickjacking:** The `X-Frame-Options` header has been set to `SAMEORIGIN` in `src/total_bankroll/__init__.py`. This helps mitigate clickjacking attacks by preventing the site from being embedded in iframes on other origins. Further enhancement could include implementing a Content Security Policy (CSP).
 
 ## GitHub Issues
 

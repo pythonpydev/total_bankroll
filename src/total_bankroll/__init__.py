@@ -63,6 +63,11 @@ def create_app():
     from .currency import init_currency_command
     app.cli.add_command(init_currency_command)
 
+    @app.after_request
+    def add_security_headers(response):
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        return response
+
     # Initialize Flask-Security
     user_datastore = SQLAlchemyUserDatastore(db, User, None)
     security = Security(app, user_datastore)
