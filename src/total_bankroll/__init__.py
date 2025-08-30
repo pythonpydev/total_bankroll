@@ -1,4 +1,5 @@
 import os
+__version__ = "0.1.0"
 from flask import Flask, session
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
