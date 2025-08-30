@@ -6,24 +6,21 @@
     <form id="addDepositForm" action="{{ url_for('add_deposit.add_deposit') }}" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="mb-3">
-            <label for="date" class="form-label">Date:</label>
-            <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required autofocus>
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
         </div>
         <div class="mb-3">
-            <label for="amount" class="form-label">Amount:</label>
-            <input type="number" class="form-control" id="amount" name="amount" step="any" min="0" required>
+            <label for="amount" class="form-label">Amount</label>
+            <input type="number" step="any" class="form-control" id="amount" name="amount" min="0" required>
         </div>
+        
         <div class="mb-3">
-            <label for="currency" class="form-label">Currency:</label>
-            <select class="form-select" id="currency" name="currency" required>
+            <label for="currency" class="form-label">Currency</label>
+            <select class="form-select" id="currency" name="currency">
                 {% for currency in currencies %}
-                    <option value="{{ currency.name }}" {% if currency.name == 'US Dollar' %}selected{% endif %}>{{ currency.name }}</option>
+                    <option value="{{ currency.code }}">{{ currency.name }}</option>
                 {% endfor %}
             </select>
-        </div>
-        <div class="mb-3">
-            <label for="deposited_at" class="form-label">Deposited At:</label>
-            <input type="number" class="form-control" id="deposited_at" name="deposited_at" step="any" min="0" value="{{ "%.2f" | format(total_profit) }}" required>
         </div>
     </form>
 </div>

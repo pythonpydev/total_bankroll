@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, request, url_for
+from flask import Blueprint, render_template, redirect, request, url_for, current_app
 from flask_security import login_required, current_user
-import pymysql
-from ..db import get_db
 from datetime import datetime
 from decimal import Decimal
+from sqlalchemy import func
+from ..extensions import db
+from ..models import Drawings, Currency, SiteHistory, Sites, AssetHistory, Assets
 
 withdrawal_bp = Blueprint("withdrawal", __name__)
 
@@ -11,95 +12,76 @@ withdrawal_bp = Blueprint("withdrawal", __name__)
 @login_required
 def withdrawal():
     """Withdrawal page."""
-    conn = get_db()
-    cur = conn.cursor()
+    # Get currency symbols
+    currency_symbols = {row.code: row.symbol for row in db.session.query(Currency.code, Currency.symbol).all()}
+    current_app.logger.debug(f"currency_symbols dictionary: {currency_symbols}")
 
-    try:
-        # Get currency symbols
-        cur.execute("SELECT name, symbol FROM currency")
-        currency_symbols = {row['name']: row['symbol'] for row in cur.fetchall()}
+    # Get current poker site totals from site_history
+    current_poker_total = db.session.query(func.sum(SiteHistory.amount / Currency.rate)).\
+        join(Sites, SiteHistory.site_id == Sites.id).\
+        join(Currency, SiteHistory.currency == Currency.name).\
+        filter(SiteHistory.user_id == current_user.id).\
+        filter(SiteHistory.recorded_at == db.session.query(func.max(SiteHistory.recorded_at)).\
+               filter_by(site_id=SiteHistory.site_id, user_id=current_user.id).scalar_subquery()).\
+        scalar() or Decimal(0)
 
-        # Get current poker site totals from site_history
-        cur.execute("""
-            SELECT SUM(sh.amount) AS current_total
-            FROM sites s
-            JOIN site_history sh ON s.id = sh.site_id
-            WHERE sh.recorded_at = (
-                SELECT MAX(recorded_at)
-                FROM site_history
-                WHERE site_id = s.id AND user_id = %s
-            ) AND s.user_id = %s
-        """, (current_user.id, current_user.id))
-        poker_sites_data = cur.fetchone()
-        current_poker_total = Decimal(str(poker_sites_data['current_total'])) if poker_sites_data and poker_sites_data['current_total'] is not None else Decimal('0')
+    # Get current asset totals from asset_history
+    current_asset_total = db.session.query(func.sum(AssetHistory.amount / Currency.rate)).\
+        join(Assets, AssetHistory.asset_id == Assets.id).\
+        join(Currency, AssetHistory.currency == Currency.name).\
+        filter(AssetHistory.user_id == current_user.id).\
+        filter(AssetHistory.recorded_at == db.session.query(func.max(AssetHistory.recorded_at)).\
+               filter_by(asset_id=AssetHistory.asset_id, user_id=current_user.id).scalar_subquery()).\
+        scalar() or Decimal(0)
 
-        # Get current asset totals from asset_history
-        cur.execute("""
-            SELECT SUM(ah.amount) AS current_total
-            FROM assets a
-            JOIN asset_history ah ON a.id = ah.asset_id
-            WHERE ah.recorded_at = (
-                SELECT MAX(recorded_at)
-                FROM asset_history
-                WHERE asset_id = a.id AND user_id = %s
-            ) AND a.user_id = %s
-        """, (current_user.id, current_user.id))
-        assets_data = cur.fetchone()
-        current_asset_total = Decimal(str(assets_data['current_total'])) if assets_data and assets_data['current_total'] is not None else Decimal('0')
+    # Get current total of all withdrawals
+    total_withdrawals = db.session.query(func.sum(Drawings.amount / Currency.rate)).\
+        join(Currency, Drawings.currency == Currency.name).\
+        filter(Drawings.user_id == current_user.id).\
+        scalar() or Decimal(0)
 
-        # Get current total of all withdrawals
-        cur.execute("SELECT SUM(amount) as total FROM drawings WHERE user_id = %s", (current_user.id,))
-        total_withdrawals_row = cur.fetchone()
-        total_withdrawals = Decimal(str(total_withdrawals_row['total'])) if total_withdrawals_row and total_withdrawals_row['total'] is not None else Decimal('0')
+    total_net_worth = current_poker_total + current_asset_total - total_withdrawals
 
-        total_net_worth = current_poker_total + current_asset_total - total_withdrawals
+    # Get withdrawals with currency conversion to USD
+    withdrawals_raw = db.session.query(
+        Drawings.id,
+        Drawings.date,
+        Drawings.amount.label('original_amount'),
+        Drawings.last_updated,
+        Drawings.currency,
+        Currency.rate.label('exchange_rate')
+    ).\
+        join(Currency, Drawings.currency == Currency.code).\
+        filter(Drawings.user_id == current_user.id).\
+        order_by(Drawings.date.desc()).all()
+    current_app.logger.debug(f"withdrawals_raw: {withdrawals_raw}")
 
-        # Get withdrawals with currency conversion to USD
-        cur.execute("""
-            SELECT
-                d.id,
-                d.date,
-                CAST(d.amount AS REAL) as original_amount,
-                CAST(d.withdrawn_at AS REAL) as original_withdrawn_at,
-                d.last_updated,
-                COALESCE(d.currency, 'US Dollar') as currency,
-                COALESCE(c.rate, 1.0) as exchange_rate
-            FROM drawings d
-            LEFT JOIN currency c ON d.currency = c.name
-            WHERE d.user_id = %s
-            ORDER BY d.date DESC
-        """, (current_user.id,))
-        withdrawals_raw = cur.fetchall()
+    # Process withdrawals to add USD calculations and currency symbols
+    withdrawal_data = []
+    for withdrawal_item in withdrawals_raw:
+        withdrawal_dict = {
+            'id': withdrawal_item.id,
+            'date': withdrawal_item.date.strftime("%Y-%m-%d"),
+            'original_amount': withdrawal_item.original_amount,
+            'last_updated': withdrawal_item.last_updated,
+            'currency': withdrawal_item.currency if withdrawal_item.currency else "N/A",
+            'amount_usd': (withdrawal_item.original_amount / withdrawal_item.exchange_rate) if withdrawal_item.exchange_rate else Decimal(0),
+            'currency_symbol': currency_symbols.get(withdrawal_item.currency, withdrawal_item.currency)
+        }
+        withdrawal_data.append(withdrawal_dict)
 
-        # Process withdrawals to add USD calculations and currency symbols
-        withdrawal_data = []
-        for withdrawal in withdrawals_raw:
-            withdrawal_dict = dict(withdrawal)
-            withdrawal_dict['amount_usd'] = Decimal(str(withdrawal['original_amount'])) / Decimal(str(withdrawal['exchange_rate']))
-            withdrawal_dict['withdrawn_at_usd'] = Decimal(str(withdrawal['original_withdrawn_at'])) / Decimal(str(withdrawal['exchange_rate']))
-            withdrawal_dict['currency_symbol'] = currency_symbols.get(withdrawal['currency'], withdrawal['currency'])
-            withdrawal_data.append(withdrawal_dict)
+    today = datetime.now().strftime("%Y-%m-%d")
+    currencies = db.session.query(Currency.name).\
+        order_by(
+            db.case(
+                (Currency.name == 'US Dollar', 1),
+                (Currency.name == 'British Pound', 2),
+                (Currency.name == 'Euro', 3),
+                else_=4
+            ),
+            Currency.name
+        ).all()
+    currencies = [c.name for c in currencies]
 
-        today = datetime.now().strftime("%Y-%m-%d")
-        cur.execute("""
-            SELECT name FROM currency
-            ORDER BY
-                CASE name
-                    WHEN 'US Dollar' THEN 1
-                    WHEN 'British Pound' THEN 2
-                    WHEN 'Euro' THEN 3
-                    ELSE 4
-                END,
-                name
-        """)
-        currencies = cur.fetchall()
-
-        cur.close()
-        conn.close()
-        return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
-
-    except Exception as e:
-        cur.close()
-        import traceback
-        traceback.print_exc()
-        return f"Error loading withdrawals: {str(e)}", 500
+    current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
+    return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)

@@ -17,14 +17,11 @@
             <label for="currency" class="form-label">Currency:</label>
             <select class="form-select" id="currency" name="currency" required>
                 {% for currency in currencies %}
-                    <option value="{{ currency.name }}" {% if currency.name == 'US Dollar' %}selected{% endif %}>{{ currency.name }}</option>
+                    <option value="{{ currency.code }}" {% if currency.name == 'US Dollar' %}selected{% endif %}>{{ currency.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="mb-3">
-            <label for="withdrawn_at" class="form-label">Withdrawn At:</label>
-            <input type="number" class="form-control" id="withdrawn_at" name="withdrawn_at" step="any" min="0" value="{{ "%.2f" | format(total_profit) }}" required>
-        </div>
+        
     </form>
 </div>
 <div class="modal-footer">

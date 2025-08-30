@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, redirect, request, url_for
+from flask import Blueprint, render_template, redirect, request, url_for, flash, current_app
 from flask_security import login_required, current_user
-import pymysql
-from ..db import get_db
 from datetime import datetime
+from decimal import Decimal
+from sqlalchemy import func
+from ..extensions import db
+from ..models import Drawings, Currency, SiteHistory, Sites, AssetHistory, Assets, Deposits
 
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 
@@ -10,91 +12,83 @@ add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 @login_required
 def add_withdrawal():
     """Add a withdrawal transaction."""
-    conn = get_db()
-    cur = conn.cursor()
     if request.method == "POST":
-        date = request.form.get("date", "")
+        date_str = request.form.get("date", "")
         amount_str = request.form.get("amount", "")
-        withdrawn_at_str = request.form.get("withdrawn_at", "")
-        currency_name = request.form.get("currency", "USD")
+        currency_name = request.form.get("currency", "US Dollar")
 
-        if not date or not amount_str or not withdrawn_at_str:
-            cur.close()
-            conn.close()
-            return "Date, amount, and withdrawn_at are required", 400
+        if not date_str or not amount_str:
+            flash("Date and amount are required", "danger")
+            return redirect(url_for("withdrawal.withdrawal"))
 
         try:
-            amount = round(float(amount_str), 2)
-            withdrawn_at = round(float(withdrawn_at_str), 2)
+            date = datetime.strptime(date_str, "%Y-%m-%d")
+            amount = round(Decimal(amount_str), 2)
             if amount <= 0:
-                cur.close()
-                conn.close()
-                return "Amount must be positive", 400
+                flash("Amount must be positive", "danger")
+                return redirect(url_for("withdrawal.withdrawal"))
         except ValueError:
-            cur.close()
-            conn.close()
-            return "Invalid amount or withdrawn_at format", 400
+            flash("Invalid date or amount format", "danger")
+            return redirect(url_for("withdrawal.withdrawal"))
 
-        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute("INSERT INTO drawings (date, amount, withdrawn_at, last_updated, currency, user_id) VALUES (%s, %s, %s, %s, %s, %s)", (date, amount, withdrawn_at, last_updated, currency_name, current_user.id))
-        conn.commit()
-        cur.close()
-        conn.close()
+        new_drawing = Drawings(
+            date=date,
+            amount=amount,
+            last_updated=datetime.utcnow(),
+            currency=currency_name,
+            user_id=current_user.id
+        )
+        current_app.logger.debug(f"Adding withdrawal for user_id: {current_user.id}")
+        db.session.add(new_drawing)
+        db.session.commit()
+        flash("Withdrawal added successfully!", "success")
         return redirect(url_for("withdrawal.withdrawal"))
     else:
         today = datetime.now().strftime("%Y-%m-%d")
-        cur.execute("""
-            SELECT name FROM currency
-            ORDER BY
-                CASE name
-                    WHEN 'US Dollar' THEN 1
-                    WHEN 'British Pound' THEN 2
-                    WHEN 'Euro' THEN 3
-                    ELSE 4
-                END,
-                name
-        """)
-        currencies = cur.fetchall()
+        
+        currencies = db.session.query(Currency.name, Currency.code).\
+            order_by(\
+                db.case(\
+                    (Currency.name == 'US Dollar', 1),
+                    (Currency.name == 'British Pound', 2),
+                    (Currency.name == 'Euro', 3),
+                    else_=4\
+                ),
+                Currency.name\
+            ).all()
+        currencies = [{'code': c.code, 'name': c.name} for c in currencies]
 
-        # Get current poker site totals
-        cur.execute("""
-            SELECT
-                SUM(sh.amount / c.rate) AS current_total
-            FROM site_history sh
-            JOIN sites s ON sh.site_id = s.id
-            JOIN currency c ON sh.currency = c.name
-            WHERE sh.user_id = %s
-            AND sh.recorded_at = (SELECT MAX(recorded_at) FROM site_history WHERE site_id = sh.site_id AND user_id = %s)
-        """, (current_user.id, current_user.id))
-        poker_sites_data = cur.fetchone()
-        current_poker_total = poker_sites_data['current_total'] if poker_sites_data and poker_sites_data['current_total'] is not None else Decimal(0)
+        # Calculate total bankroll and profit for display
+        current_poker_total = db.session.query(func.sum(SiteHistory.amount / Currency.rate)).\
+            join(Sites, SiteHistory.site_id == Sites.id).\
+            join(Currency, SiteHistory.currency == Currency.name).\
+            filter(SiteHistory.user_id == current_user.id).\
+            filter(SiteHistory.recorded_at == db.session.query(func.max(SiteHistory.recorded_at)).
+                   filter_by(site_id=SiteHistory.site_id, user_id=current_user.id).correlate(SiteHistory).scalar_subquery()).\
+            scalar() or Decimal(0)
+        current_app.logger.debug(f"Current Poker Total: {current_poker_total}")
 
-        # Get current asset totals
-        cur.execute("""
-            SELECT
-                SUM(ah.amount / c.rate) AS current_total
-            FROM asset_history ah
-            JOIN assets a ON ah.asset_id = a.id
-            JOIN currency c ON ah.currency = c.name
-            WHERE ah.user_id = %s
-            AND ah.recorded_at = (SELECT MAX(recorded_at) FROM asset_history WHERE asset_id = ah.asset_id AND user_id = %s)
-        """, (current_user.id, current_user.id))
-        assets_data = cur.fetchone()
-        current_asset_total = assets_data['current_total'] if assets_data and assets_data['current_total'] is not None else Decimal(0)
+        current_asset_total = db.session.query(func.sum(AssetHistory.amount / Currency.rate)).\
+            join(Assets, AssetHistory.asset_id == Assets.id).\
+            join(Currency, AssetHistory.currency == Currency.name).\
+            filter(AssetHistory.user_id == current_user.id).\
+            filter(AssetHistory.recorded_at == db.session.query(func.max(AssetHistory.recorded_at)).
+                   filter_by(asset_id=AssetHistory.asset_id, user_id=current_user.id).correlate(AssetHistory).scalar_subquery()).\
+            scalar() or Decimal(0)
+        current_app.logger.debug(f"Current Asset Total: {current_asset_total}")
 
-        # Get current total of all withdrawals
-        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM drawings d JOIN currency c ON d.currency = c.name WHERE d.user_id = %s", (current_user.id,))
-        total_withdrawals_row = cur.fetchone()
-        total_withdrawals = total_withdrawals_row['total'] if total_withdrawals_row and total_withdrawals_row['total'] is not None else 0
+        total_withdrawals = db.session.query(func.sum(Drawings.amount / Currency.rate)).\
+            join(Currency, Drawings.currency == Currency.name).\
+            filter(Drawings.user_id == current_user.id).\
+            scalar() or Decimal(0)
 
-        # Get current total of all deposits
-        cur.execute("SELECT SUM(d.amount / c.rate) as total FROM deposits d JOIN currency c ON d.currency = c.name WHERE d.user_id = %s", (current_user.id,))
-        total_deposits_row = cur.fetchone()
-        total_deposits = total_deposits_row['total'] if total_deposits_row and total_deposits_row['total'] is not None else 0
+        total_deposits = db.session.query(func.sum(Deposits.amount / Currency.rate)).\
+            join(Currency, Deposits.currency == Currency.name).\
+            filter(Deposits.user_id == current_user.id).\
+            scalar() or Decimal(0)
 
         total_bankroll = current_poker_total + current_asset_total
         total_profit = total_bankroll - total_deposits + total_withdrawals
 
-        cur.close()
-        conn.close()
+        current_app.logger.debug(f"Total Bankroll passed to template: {total_bankroll}")
         return render_template("add_withdrawal.html", today=today, currencies=currencies, total_profit=total_profit, total_bankroll=total_bankroll)

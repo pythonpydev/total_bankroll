@@ -1,9 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app
 from flask_security import login_required, current_user, logout_user
-from ..db import get_db
-from datetime import datetime
-import io
-import csv
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
@@ -13,10 +9,9 @@ from flask_security.utils import hash_password
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 import os
+from datetime import datetime
 
 settings_bp = Blueprint("settings", __name__)
-reset_db_bp = Blueprint("delete_db", __name__, url_prefix="/settings")
-import_db_bp = Blueprint("import_db", __name__, url_prefix="/settings")
 
 class UpdateEmailForm(FlaskForm):
     email = StringField('New Email', validators=[DataRequired(), Email()])
@@ -43,147 +38,6 @@ def confirm_token(token, expiration=3600):
     except Exception as e:
         current_app.logger.error(f"Error confirming token: {str(e)}")
         return False
-
-@reset_db_bp.route("/confirm_reset_database", methods=["GET"])
-def confirm_reset_database():
-    """Show confirmation dialog for database reset."""
-    return render_template("confirm_reset_database.html")
-
-@reset_db_bp.route("/reset_database", methods=["POST"])
-def reset_database():
-    """Reset the database by truncating all tables."""
-    if request.method == "POST":
-        conn = None
-        try:
-            conn = get_db()
-            cur = conn.cursor()
-            # Truncate all tables except currency
-            cur.execute("TRUNCATE TABLE sites;")
-            cur.execute("ALTER TABLE sites AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE assets;")
-            cur.execute("ALTER TABLE assets AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE site_history;")
-            cur.execute("ALTER TABLE site_history AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE asset_history;")
-            cur.execute("ALTER TABLE asset_history AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE deposits;")
-            cur.execute("ALTER TABLE deposits AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE drawings;")
-            cur.execute("ALTER TABLE drawings AUTO_INCREMENT = 1;")
-            conn.commit()
-            cur.close()
-            flash("Database reset successfully!", "success")
-        except Exception as e:
-            flash(f"Error resetting database: {e}", "danger")
-        finally:
-            if conn:
-                conn.close()
-    return redirect(url_for("settings.settings_page"))
-
-
-
-@import_db_bp.route("/confirm_import_database", methods=["GET"])
-def confirm_import_database():
-    """Show confirmation dialog for database import."""
-    return render_template("confirm_import_database.html")
-
-@import_db_bp.route("/import_database", methods=["POST"])
-def import_database():
-    """Import data from a CSV file into the database."""
-    if 'file' not in request.files:
-        flash('No file part', 'danger')
-        return redirect(request.url)
-    file = request.files['file']
-    if file.filename == '':
-        flash('No selected file', 'danger')
-        return redirect(request.url)
-    if file and file.filename.endswith('.csv'):
-        conn = None
-        try:
-            conn = get_db()
-            cur = conn.cursor()
-
-            cur.execute("SET FOREIGN_KEY_CHECKS = 0;")
-            cur.execute("TRUNCATE TABLE sites;")
-            cur.execute("ALTER TABLE sites AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE assets;")
-            cur.execute("ALTER TABLE assets AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE deposits;")
-            cur.execute("ALTER TABLE deposits AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE drawings;")
-            cur.execute("ALTER TABLE drawings AUTO_INCREMENT = 1;")
-            cur.execute("TRUNCATE TABLE currency;")
-            cur.execute("ALTER TABLE currency AUTO_INCREMENT = 1;")
-            cur.execute("SET FOREIGN_KEY_CHECKS = 1;")
-            conn.commit()
-
-            stream = io.StringIO(file.stream.read().decode("UTF8"))
-            csv_reader = csv.reader(stream)
-
-            current_table = None
-            headers = []
-            data_to_insert = [] # Initialize data_to_insert here
-
-            for row in csv_reader:
-                # Skip completely empty rows or rows with only commas
-                if not any(field.strip() for field in row):
-                    continue
-
-                if row[0].startswith("Table:"):
-                    # If we were processing a table, insert its data
-                    if current_table and data_to_insert:
-                        insert_data_into_table(cur, current_table, headers, data_to_insert)
-                        data_to_insert = [] # Reset for next table
-
-                    current_table = row[0].split(":")[1].strip()
-                    headers = [] # Reset headers for new table
-                elif current_table and not headers:
-                    # This is the header row for the current table
-                    headers = row
-                elif current_table:
-                    # This is a data row
-                    data_to_insert.append(row)
-
-            # Insert data for the last table after the loop finishes
-            if current_table and data_to_insert:
-                insert_data_into_table(cur, current_table, headers, data_to_insert)
-
-            conn.commit()
-            cur.close()
-            flash("Database imported successfully!", "success")
-        except Exception as e:
-            flash(f"Error importing database: {e}", "danger")
-        finally:
-            if conn:
-                conn.close()
-    else:
-        flash('Invalid file type. Please upload a CSV file.', 'danger')
-    return redirect(url_for("settings.settings_page"))
-
-def insert_data_into_table(cur, table_name, headers, data):
-    if not headers or not data:
-        return
-
-    # Filter out empty headers
-    valid_headers = [h for h in headers if h.strip()]
-    if not valid_headers: # If no valid headers, return
-        return
-
-    columns = ", ".join([f'`{h}`' for h in valid_headers])
-    placeholders = ", ".join(["%s"] * len(valid_headers))
-    insert_sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-
-    for row_data in data:
-        # Filter out empty fields from row_data corresponding to valid headers
-        filtered_row_data = [field for i, field in enumerate(row_data) if i < len(headers) and headers[i].strip()]
-
-        if len(filtered_row_data) == len(valid_headers):
-            try:
-                cur.execute(insert_sql, filtered_row_data)
-            except Exception as e:
-                current_app.logger.error(f"Error executing INSERT for {table_name} with data {row_data}: {e}")
-        else:
-            print(f"Skipping row due to column mismatch in table {table_name}: {row_data} (Expected {len(valid_headers)} columns, got {len(filtered_row_data)}) ")
 
 @settings_bp.route("/settings")
 @login_required

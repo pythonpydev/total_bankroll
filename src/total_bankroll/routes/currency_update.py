@@ -1,19 +1,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app
 from flask_security import login_required
 import requests
-import pymysql
-from ..db import get_db
+from ..extensions import db
+from ..models import Currency
 
 currency_update_bp = Blueprint("currency_update", __name__)
 
 @currency_update_bp.route("/currencies")
 @login_required
 def currencies_page():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT name, code, symbol, rate, updated_at FROM currency ORDER BY name")
-    currencies = cur.fetchall()
-    cur.close()
+    currencies = db.session.query(Currency).order_by(Currency.name).all()
     return render_template("currencies.html", currencies=currencies)
 
 @currency_update_bp.route("/update_exchange_rates", methods=["POST"])
@@ -47,26 +43,17 @@ def update_exchange_rates():
             return redirect(url_for("currency_update.currencies_page"))
 
         # Get existing currency codes from the database
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("SELECT code FROM currency")
-        existing_codes = {row["code"] for row in cur.fetchall()}
+        existing_currencies = {c.code: c for c in db.session.query(Currency).all()}
 
         # Update rates for existing currencies
         updated_count = 0
         for code, rate in rates.items():
-            if code in existing_codes:
-                cur.execute(
-                    "UPDATE currency SET rate = %s, updated_at = CURRENT_TIMESTAMP WHERE code = %s",
-                    (rate, code)
-                )
-                current_app.logger.info(f"Updated {code} with rate {rate}")
-                updated_count += cur.rowcount
-
-        conn.commit()
-        cur.close()
-        # Note: Avoid closing conn if get_db() manages it in the app context
-        # conn.close()
+            if code in existing_currencies:
+                currency_to_update = existing_currencies[code]
+                currency_to_update.rate = rate
+                updated_count += 1
+        
+        db.session.commit()
 
         if updated_count > 0:
             flash(f"Successfully updated {updated_count} exchange rates!", "success")
@@ -76,12 +63,9 @@ def update_exchange_rates():
     except requests.exceptions.RequestException as e:
         current_app.logger.error(f"Error fetching exchange rates: {e}")
         flash(f"Error fetching exchange rates: {e}", "danger")
-    except pymysql.Error as e:
-        current_app.logger.error(f"Database error: {e}")
-        flash(f"Database error occurred: {e}", "danger")
-        conn.rollback()
     except Exception as e:
         current_app.logger.error(f"Unexpected error: {e}")
         flash(f"An unexpected error occurred: {e}", "danger")
+        db.session.rollback()
 
     return redirect(url_for("currency_update.currencies_page"))

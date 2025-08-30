@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, jsonify, current_app
 from flask_security import current_user, login_required
-from ..db import get_db
+from ..extensions import db
 from datetime import datetime, timedelta
 from decimal import Decimal
+from sqlalchemy import text
 
 charts_bp = Blueprint("charts", __name__)
 
@@ -86,30 +87,28 @@ def bankroll_bar_chart_page():
 @login_required
 def get_bankroll_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            # Get currency rates
+            result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in result.mappings()}
 
-        # Get currency rates
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            # Get all site history
+            sites_sql = text("""
+                SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
+                FROM site_history sh
+                JOIN sites s ON sh.site_id = s.id
+                WHERE sh.user_id = :user_id
+            """)
+            sites_data = conn.execute(sites_sql, {'user_id': current_user.id}).mappings().all()
 
-        # Get all site history
-        cur.execute("""
-            SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
-            FROM site_history sh
-            JOIN sites s ON sh.site_id = s.id
-            WHERE sh.user_id = %s
-        """, (current_user.id,))
-        sites_data = cur.fetchall()
-
-        # Get all asset history
-        cur.execute("""
-            SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
-            FROM asset_history ah
-            JOIN assets a ON ah.asset_id = a.id
-            WHERE ah.user_id = %s
-        """, (current_user.id,))
-        assets_data = cur.fetchall()
+            # Get all asset history
+            assets_sql = text("""
+                SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
+                FROM asset_history ah
+                JOIN assets a ON ah.asset_id = a.id
+                WHERE ah.user_id = :user_id
+            """)
+            assets_data = conn.execute(assets_sql, {'user_id': current_user.id}).mappings().all()
 
         all_data_points = []
         for row in sites_data:
@@ -174,7 +173,6 @@ def get_bankroll_data():
             'tension': 0.1
         }]
 
-        cur.close()
         return jsonify({
             'datasets': datasets
         })
@@ -186,25 +184,23 @@ def get_bankroll_data():
 @login_required
 def get_poker_sites_historical_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            # Get currency rates
+            result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in result.mappings()}
 
-        # Get currency rates
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            # Get all site history
+            sql = text("""
+                SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
+                FROM site_history sh
+                JOIN sites s ON sh.site_id = s.id
+                WHERE sh.user_id = :user_id
+                ORDER BY sh.recorded_at
+            """)
+            sites_data = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
-        # Get all site history
-        cur.execute("""
-            SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
-            FROM site_history sh
-            JOIN sites s ON sh.site_id = s.id
-            WHERE sh.user_id = %s
-            ORDER BY sh.recorded_at
-        """, (current_user.id,))
-        sites_data = cur.fetchall()
-
-        if not sites_data:
-            return jsonify({'labels': [], 'datasets': []})
+            if not sites_data:
+                return jsonify({'labels': [], 'datasets': []})
 
         # Group data by site
         site_data_points = {}
@@ -222,8 +218,8 @@ def get_poker_sites_historical_data():
             dates.add(date)
 
         # Sort dates for labels
-        labels = sorted([date.isoformat() for date in dates])
-
+        sorted_dates = sorted(list(dates))
+        labels = [d.isoformat() for d in sorted_dates]
         # Create datasets for each site
         datasets = []
         colors = [
@@ -242,7 +238,7 @@ def get_poker_sites_historical_data():
             # Create data array aligned with labels
             data = []
             point_index = 0
-            for date in sorted(dates):
+            for date in sorted_dates:
                 if point_index < len(points_sorted) and points_sorted[point_index]['date'] == date:
                     data.append(float(round(points_sorted[point_index]['amount_usd'], 2)))  # Convert to float for JSON
                     point_index += 1
@@ -262,10 +258,11 @@ def get_poker_sites_historical_data():
             })
             color_index += 1
 
-        cur.close()
         return jsonify({
             'labels': labels,
-            'datasets': datasets
+            'datasets': datasets,
+            'min_date': labels[0] if labels else None,
+            'max_date': labels[-1] if labels else None
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_poker_sites_historical_data: {e}")
@@ -275,23 +272,21 @@ def get_poker_sites_historical_data():
 @login_required
 def get_assets_historical_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            sql = text("""
+                SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
+                FROM asset_history ah
+                JOIN assets a ON ah.asset_id = a.id
+                WHERE ah.user_id = :user_id
+                ORDER BY ah.recorded_at
+            """)
+            assets_data = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
-        cur.execute("""
-            SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
-            FROM asset_history ah
-            JOIN assets a ON ah.asset_id = a.id
-            WHERE ah.user_id = %s
-            ORDER BY ah.recorded_at
-        """, (current_user.id,))
-        assets_data = cur.fetchall()
-
-        if not assets_data:
-            return jsonify({'labels': [], 'datasets': []})
+            if not assets_data:
+                return jsonify({'labels': [], 'datasets': []})
 
         asset_data_points = {}
         dates = set()
@@ -307,8 +302,8 @@ def get_assets_historical_data():
             })
             dates.add(date)
 
-        labels = sorted([date.isoformat() for date in dates])
-
+        sorted_dates = sorted(list(dates))
+        labels = [d.isoformat() for d in sorted_dates]
         datasets = []
         colors = [
             'rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)',
@@ -320,7 +315,7 @@ def get_assets_historical_data():
             points_sorted = sorted(points, key=lambda x: x['date'])
             data = []
             point_index = 0
-            for date in sorted(dates):
+            for date in sorted_dates:
                 if point_index < len(points_sorted) and points_sorted[point_index]['date'] == date:
                     data.append(float(round(points_sorted[point_index]['amount_usd'], 2)))
                     point_index += 1
@@ -339,10 +334,11 @@ def get_assets_historical_data():
             })
             color_index += 1
 
-        cur.close()
         return jsonify({
             'labels': labels,
-            'datasets': datasets
+            'datasets': datasets,
+            'min_date': labels[0] if labels else None,
+            'max_date': labels[-1] if labels else None
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_assets_historical_data: {e}")
@@ -352,20 +348,18 @@ def get_assets_historical_data():
 @login_required
 def get_assets_pie_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
-
-        cur.execute("""
-            SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
-            FROM asset_history ah
-            JOIN assets a ON ah.asset_id = a.id
-            WHERE ah.user_id = %s
-            ORDER BY ah.recorded_at DESC
-        """, (current_user.id,))
-        assets_data = cur.fetchall()
+            sql = text("""
+                SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
+                FROM asset_history ah
+                JOIN assets a ON ah.asset_id = a.id
+                WHERE ah.user_id = :user_id
+                ORDER BY ah.recorded_at DESC
+            """)
+            assets_data = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
         latest_asset_values = {}
         for row in assets_data:
@@ -379,7 +373,6 @@ def get_assets_pie_data():
         labels = [value['name'] for value in latest_asset_values.values()]
         data = [float(round(value['amount_usd'], 2)) for value in latest_asset_values.values()]
 
-        cur.close()
         return jsonify({'labels': labels, 'datasets': [{'data': data}]})
 
     except Exception as e:
@@ -390,54 +383,54 @@ def get_assets_pie_data():
 @login_required
 def get_profit_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            # Get all site history
+            sites_sql = text("""
+                SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
+                FROM site_history sh
+                JOIN sites s ON sh.site_id = s.id
+                WHERE sh.user_id = :user_id
+            """)
+            sites_data = conn.execute(sites_sql, {'user_id': current_user.id}).mappings().all()
 
-        # Get all site history
-        cur.execute("""
-            SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
-            FROM site_history sh
-            JOIN sites s ON sh.site_id = s.id
-            WHERE sh.user_id = %s
-        """, (current_user.id,))
-        sites_data = cur.fetchall()
+            # Get all asset history
+            assets_sql = text("""
+                SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
+                FROM asset_history ah
+                JOIN assets a ON ah.asset_id = a.id
+                WHERE ah.user_id = :user_id
+            """)
+            assets_data = conn.execute(assets_sql, {'user_id': current_user.id}).mappings().all()
 
-        # Get all asset history
-        cur.execute("""
-            SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
-            FROM asset_history ah
-            JOIN assets a ON ah.asset_id = a.id
-            WHERE ah.user_id = %s
-        """, (current_user.id,))
-        assets_data = cur.fetchall()
+            # Get all deposits
+            deposits_sql = text("""
+                SELECT amount, currency, date
+                FROM deposits
+                WHERE user_id = :user_id
+            """)
+            deposits_data = conn.execute(deposits_sql, {'user_id': current_user.id}).mappings().all()
 
-        # Get all deposits
-        cur.execute("""
-            SELECT amount, currency, date
-            FROM deposits
-            WHERE user_id = %s
-        """, (current_user.id,))
-        deposits_data = cur.fetchall()
-
-        # Get all withdrawals
-        cur.execute("""
-            SELECT amount, currency, date
-            FROM drawings
-            WHERE user_id = %s
-        """, (current_user.id,))
-        withdrawals_data = cur.fetchall()
+            # Get all withdrawals
+            withdrawals_sql = text("""
+                SELECT amount, currency, date
+                FROM drawings
+                WHERE user_id = :user_id
+            """)
+            withdrawals_data = conn.execute(withdrawals_sql, {'user_id': current_user.id}).mappings().all()
 
         all_financial_events = []
 
-        # Add site history as bankroll changes
+        # Add site history
         for row in sites_data:
             amount_usd = Decimal(str(row['amount'])) / currency_rates.get(row['currency'], Decimal('1.0'))
             all_financial_events.append({
                 'date': row['recorded_at'],
-                'type': 'bankroll_change',
+                'type': 'bankroll_update',
+                'name': row['name'],
+                'entity_type': 'site',
                 'amount_usd': amount_usd
             })
 
@@ -446,7 +439,9 @@ def get_profit_data():
             amount_usd = Decimal(str(row['amount'])) / currency_rates.get(row['currency'], Decimal('1.0'))
             all_financial_events.append({
                 'date': row['recorded_at'],
-                'type': 'bankroll_change',
+                'type': 'bankroll_update',
+                'name': row['name'],
+                'entity_type': 'asset',
                 'amount_usd': amount_usd
             })
 
@@ -478,9 +473,7 @@ def get_profit_data():
         current_bankroll = Decimal('0')
         total_deposits = Decimal('0')
         total_withdrawals = Decimal('0')
-        
-        # Initialize latest_bankroll_values to track the latest value for each site/asset
-        latest_bankroll_values = {}
+        latest_bankroll_values = {} # To track latest value for each site/asset
 
         # Determine min and max dates
         min_day = all_financial_events_sorted[0]['date'].date()
@@ -500,17 +493,16 @@ def get_profit_data():
                     total_deposits += event['amount_usd']
                 elif event['type'] == 'withdrawal':
                     total_withdrawals += event['amount_usd']
-                elif event['type'] == 'bankroll_change':
-                    # For bankroll changes, we need to update the latest value for that specific site/asset
-                    # This part is tricky as the current structure doesn't differentiate between sites/assets
-                    # For simplicity, let's assume 'bankroll_change' events represent the total bankroll at that point
-                    # This might need refinement if the user wants profit per site/asset
-                    current_bankroll = event['amount_usd'] # This assumes the event amount is the total bankroll
+                elif event['type'] == 'bankroll_update':
+                    key = (event['name'], event['entity_type'])
+                    new_value = event['amount_usd']
+                    old_value = latest_bankroll_values.get(key, Decimal('0'))
+                    current_bankroll += new_value - old_value
+                    latest_bankroll_values[key] = new_value
                     
                 event_index += 1
 
             # Calculate profit for the current day
-            # Profit = (Current Bankroll + Total Withdrawals) - Total Deposits
             profit_for_day = (current_bankroll + total_withdrawals) - total_deposits
             
             profit_data.append({
@@ -528,7 +520,6 @@ def get_profit_data():
             'tension': 0.1
         }]
 
-        cur.close()
         return jsonify({
             'datasets': datasets
         })
@@ -541,22 +532,20 @@ def get_profit_data():
 @login_required
 def get_withdrawals_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            sql = text("""
+                SELECT amount, currency, date
+                FROM drawings
+                WHERE user_id = :user_id
+                ORDER BY date
+            """)
+            withdrawals_raw = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
-        cur.execute("""
-            SELECT amount, currency, date
-            FROM drawings
-            WHERE user_id = %s
-            ORDER BY date
-        """, (current_user.id,))
-        withdrawals_raw = cur.fetchall()
-
-        if not withdrawals_raw:
-            return jsonify({'labels': [], 'datasets': []})
+            if not withdrawals_raw:
+                return jsonify({'labels': [], 'datasets': []})
 
         withdrawals_by_date = {}
         dates = set()
@@ -580,7 +569,6 @@ def get_withdrawals_data():
             'tension': 0.1
         }]
 
-        cur.close()
         return jsonify({
             'labels': labels,
             'datasets': datasets
@@ -593,22 +581,20 @@ def get_withdrawals_data():
 @login_required
 def get_deposits_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
+            sql = text("""
+                SELECT amount, currency, date
+                FROM deposits
+                WHERE user_id = :user_id
+                ORDER BY date
+            """)
+            deposits_raw = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
-        cur.execute("""
-            SELECT amount, currency, date
-            FROM deposits
-            WHERE user_id = %s
-            ORDER BY date
-        """, (current_user.id,))
-        deposits_raw = cur.fetchall()
-
-        if not deposits_raw:
-            return jsonify({'labels': [], 'datasets': []})
+            if not deposits_raw:
+                return jsonify({'labels': [], 'datasets': []})
 
         deposits_by_date = {}
         dates = set()
@@ -632,7 +618,6 @@ def get_deposits_data():
             'tension': 0.1
         }]
 
-        cur.close()
         return jsonify({
             'labels': labels,
             'datasets': datasets
@@ -675,20 +660,18 @@ def profit_bar_chart_page():
 @login_required
 def get_poker_sites_pie_data():
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        with db.session.connection() as conn:
+            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
+            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
-        cur.execute("SELECT name, rate FROM currency")
-        currency_rates = {row['name']: Decimal(str(row['rate'])) for row in cur.fetchall()}
-
-        cur.execute("""
-            SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
-            FROM site_history sh
-            JOIN sites s ON sh.site_id = s.id
-            WHERE sh.user_id = %s
-            ORDER BY sh.recorded_at DESC
-        """, (current_user.id,))
-        sites_data = cur.fetchall()
+            sql = text("""
+                SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name
+                FROM site_history sh
+                JOIN sites s ON sh.site_id = s.id
+                WHERE sh.user_id = :user_id
+                ORDER BY sh.recorded_at DESC
+            """)
+            sites_data = conn.execute(sql, {'user_id': current_user.id}).mappings().all()
 
         latest_site_values = {}
         for row in sites_data:
@@ -702,7 +685,6 @@ def get_poker_sites_pie_data():
         labels = [value['name'] for value in latest_site_values.values()]
         data = [float(round(value['amount_usd'], 2)) for value in latest_site_values.values()]
 
-        cur.close()
         return jsonify({'labels': labels, 'datasets': [{'data': data}]})
 
     except Exception as e:

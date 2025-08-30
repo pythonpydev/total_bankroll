@@ -1,4 +1,6 @@
 import os
+os.environ['FLASK_ENV'] = 'production'
+
 os.environ['SECRET_KEY'] = '98d204857f00202e3ce068ba68395611'
 
 # Exchange Rate API Key (from exchangerate-api.com)

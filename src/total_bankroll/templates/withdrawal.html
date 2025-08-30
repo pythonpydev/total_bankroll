@@ -28,7 +28,6 @@
                             <tr>
                                 <th scope="col">Date</th>
                                 <th scope="col">Amount (USD)</th>
-                                <th scope="col">Withdrawn At</th>
                                 <th scope="col">Original Currency</th>
                                 <th scope="col">Original Amount</th>      
                                 <th scope="col">Actions</th>
@@ -39,7 +38,6 @@
                                 <tr>
                                     <td>{{ withdrawal_item.date }}</td>
                                     <td>${{ "%.2f" | format(withdrawal_item.amount_usd) }}</td>
-                                    <td>${{ "%.2f" | format(withdrawal_item.withdrawn_at_usd) }}</td>
                                     <td>{{ withdrawal_item.currency }}</td>
                                     <td>{{ withdrawal_item.currency_symbol }}{{ "%.2f" | format(withdrawal_item.original_amount) }}</td>
                                     <td>

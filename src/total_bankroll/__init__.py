@@ -214,6 +214,8 @@ def create_app():
     from .routes.about import about_bp
     from .routes.charts import charts_bp
     from .routes.settings import settings_bp
+    from .routes.reset_db import reset_db_bp
+    from .routes.import_db import import_db_bp
     from .routes.common import common_bp
     from .routes.add_withdrawal import add_withdrawal_bp
     from .routes.add_deposit import add_deposit_bp
@@ -229,6 +231,8 @@ def create_app():
     app.register_blueprint(about_bp)
     app.register_blueprint(charts_bp, url_prefix='/charts')
     app.register_blueprint(settings_bp)
+    app.register_blueprint(reset_db_bp)
+    app.register_blueprint(import_db_bp)
     app.register_blueprint(common_bp)
     app.register_blueprint(add_withdrawal_bp)
     app.register_blueprint(add_deposit_bp)

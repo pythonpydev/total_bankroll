@@ -21,9 +21,6 @@ classifiers = [
 Homepage = "https://github.com/pythonpydev/total_bankroll"
 Repository = "https://github.com/pythonpydev/total_bankroll"
 
-[project.scripts]
-total_bankroll = "total_bankroll.main:main"
-
 [tool.black]
 line-length = 88
 target-version = ["py38"]

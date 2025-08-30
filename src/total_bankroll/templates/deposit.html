@@ -28,7 +28,6 @@
                             <tr>
                                 <th scope="col">Date</th>
                                 <th scope="col">Amount (USD)</th>
-                                <th scope="col">Deposited At (USD)</th>
                                 <th scope="col">Original Currency</th>
                                 <th scope="col">Original Amount</th>
                                 <th scope="col">Actions</th>
@@ -39,9 +38,8 @@
                                 <tr>
                                     <td>{{ deposit_item.date }}</td>
                                     <td>${{ "%.2f" | format(deposit_item.amount_usd) }}</td>
-                                    <td>${{ "%.2f" | format(deposit_item.deposited_at_usd) }}</td>
-                                    <td>{{ deposit_item.currency }}</td>
-                                    <td>{{ deposit_item.currency_symbol }}{{ "%.2f" | format(deposit_item.original_amount) }}</td>                                    
+                                    <td>{{ deposit_item.currency_name }}</td>
+                                    <td>{{ deposit_item.currency_symbol }}{{ "%.2f" | format(deposit_item.original_amount) }}</td>
                                     <td>
                                         <a href="#" class="btn btn-sm btn-danger delete-modal-btn" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='deposit', item_id=deposit_item.id) }}">Delete</a>
                                     </td>
