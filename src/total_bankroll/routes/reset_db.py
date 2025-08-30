@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, request, url_for, flash
-from flask_security import login_required
+from flask import Blueprint, render_template, redirect, request, url_for, flash, jsonify
+from flask_security import login_required, current_user
 from ..extensions import db
 from ..models import Sites, Assets, SiteHistory, AssetHistory, Deposits, Drawings
 
@@ -14,19 +14,18 @@ def confirm_reset_database():
 @reset_db_bp.route("/reset_database", methods=["POST"])
 @login_required
 def reset_database():
-    """Reset the database by truncating all tables."""
-    if request.method == "POST":
-        try:
-            # Truncate all tables except currency
-            db.session.query(SiteHistory).delete()
-            db.session.query(AssetHistory).delete()
-            db.session.query(Sites).delete()
-            db.session.query(Assets).delete()
-            db.session.query(Deposits).delete()
-            db.session.query(Drawings).delete()
-            db.session.commit()
-            flash("Database reset successfully!", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error resetting database: {e}", "danger")
-    return redirect(url_for("settings.settings_page"))
+    """Reset the database by deleting all of the current user's data."""
+    try:
+        user_id = current_user.id
+        # Delete user-specific data
+        db.session.query(SiteHistory).filter_by(user_id=user_id).delete()
+        db.session.query(AssetHistory).filter_by(user_id=user_id).delete()
+        db.session.query(Sites).filter_by(user_id=user_id).delete()
+        db.session.query(Assets).filter_by(user_id=user_id).delete()
+        db.session.query(Deposits).filter_by(user_id=user_id).delete()
+        db.session.query(Drawings).filter_by(user_id=user_id).delete()
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Your data has been reset successfully!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error resetting database: {e}'}), 500

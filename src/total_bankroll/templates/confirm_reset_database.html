@@ -5,10 +5,10 @@
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Confirm Reset Database</h2>
+                <h2 class="text-white mt-0">Confirm Data Reset</h2>
                 <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Are you sure you want to reset the database? All your data will be deleted and this cannot be undone.</p>
-                <form id="resetForm" action="{{ url_for('common.perform_reset_database') }}" method="post">
+                <p class="text-white-75 mb-4">Are you sure you want to reset your data? All your sites, assets, deposits, and withdrawals will be deleted. This cannot be undone.</p>
+                <form id="resetForm" action="{{ url_for('reset_db.reset_database') }}" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="button" id="resetButton" class="btn btn-light btn-xl">Yes, Reset Database</button>
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
@@ -23,11 +23,11 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="resetCompleteModalLabel">Reset Database</h5>
+        <h5 class="modal-title" id="resetCompleteModalLabel">Reset Status</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Database reset complete!
+        <!-- Message will be inserted here -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="okButton">OK</button>
@@ -50,20 +50,24 @@ document.getElementById('resetButton').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            var myModal = new bootstrap.Modal(document.getElementById('resetCompleteModal'), {});
-            myModal.show();
+        const modal = new bootstrap.Modal(document.getElementById('resetCompleteModal'));
+        const modalBody = document.getElementById('resetCompleteModal').querySelector('.modal-body');
+        modalBody.textContent = data.message;
+        modal.show();
 
+        if (data.success) {
             document.getElementById('okButton').addEventListener('click', function() {
                 window.location.href = "{{ url_for('settings.settings_page') }}";
             });
         } else {
-            alert('An error occurred while resetting the database.');
+            document.getElementById('okButton').addEventListener('click', function() {
+                modal.hide();
+            });
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while resetting the database.');
+        alert('A client-side error occurred. Please check the console for details.');
     });
 });
 </script>
