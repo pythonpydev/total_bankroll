@@ -15,7 +15,7 @@ poker_sites_bp = Blueprint("poker_sites", __name__)
 @login_required
 def poker_sites_page():
     """Poker Sites page."""
-    currency_data = db.session.query(Currency.name, Currency.rate, Currency.symbol, Currency.code).all()
+    currency_data = db.session.query(Currency).all()
     currency_rates = {row.code: Decimal(str(row.rate)) for row in currency_data}
     currency_symbols = {row.code: row.symbol for row in currency_data}
     currency_names = {row.code: row.name for row in currency_data}
@@ -88,7 +88,7 @@ def add_site():
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
-        currency_code = request.form.get("currency", "USD")
+        currency_input = request.form.get("currency", "USD")
 
         if not name or not amount_str:
             flash("Name and amount are required", "danger")
@@ -102,6 +102,13 @@ def add_site():
         except ValueError:
             flash("Invalid amount format", "danger")
             return redirect(url_for("poker_sites.poker_sites_page"))
+
+        # Robustly find currency code whether name or code is submitted
+        currency = db.session.query(Currency).filter((Currency.code == currency_input) | (Currency.name == currency_input)).first()
+        if not currency:
+            flash(f"Invalid currency '{currency_input}' specified.", "danger")
+            return redirect(url_for("poker_sites.poker_sites_page"))
+        currency_code = currency.code
 
         # Insert into sites table
         new_site = Sites(name=name, user_id=current_user.id)
