@@ -12,9 +12,10 @@ assets_bp = Blueprint("assets", __name__)
 @login_required
 def assets_page():
     """Assets page."""
-    currency_data = db.session.query(Currency.name, Currency.rate, Currency.symbol).all()
-    currency_rates = {row.name: Decimal(str(row.rate)) for row in currency_data}
-    currency_symbols = {row.name: row.symbol for row in currency_data}
+    currency_data = db.session.query(Currency.name, Currency.rate, Currency.symbol, Currency.code).all()
+    currency_rates = {row.code: Decimal(str(row.rate)) for row in currency_data}
+    currency_symbols = {row.code: row.symbol for row in currency_data}
+    currency_names = {row.code: row.name for row in currency_data}
 
     # Get all assets for the user
     assets = db.session.query(Assets).filter_by(user_id=current_user.id).order_by(Assets.name).all()
@@ -32,18 +33,18 @@ def assets_page():
 
         current_amount = Decimal(0)
         previous_amount = Decimal(0)
-        currency_name = "US Dollar"
-        previous_currency_name = "US Dollar"
+        currency_code = "USD"
+        previous_currency_code = "USD"
 
         if len(history_records) > 0:
             current_amount = history_records[0].amount
-            currency_name = history_records[0].currency
+            currency_code = history_records[0].currency
         if len(history_records) > 1:
             previous_amount = history_records[1].amount
-            previous_currency_name = history_records[1].currency
+            previous_currency_code = history_records[1].currency
 
-        rate = currency_rates.get(currency_name, Decimal('1.0'))
-        previous_rate = currency_rates.get(previous_currency_name, Decimal('1.0'))
+        rate = currency_rates.get(currency_code, Decimal('1.0'))
+        previous_rate = currency_rates.get(previous_currency_code, Decimal('1.0'))
 
         current_amount_usd = current_amount / rate
         previous_amount_usd = previous_amount / previous_rate
@@ -53,12 +54,12 @@ def assets_page():
             'name': asset.name,
             'current_amount': current_amount,
             'previous_amount': previous_amount,
-            'currency': currency_name,
-            'previous_currency': previous_currency_name,
+            'currency': currency_names.get(currency_code, currency_code),
+            'previous_currency': currency_names.get(previous_currency_code, previous_currency_code),
             'current_amount_usd': current_amount_usd,
             'previous_amount_usd': previous_amount_usd,
-            'currency_symbol': currency_symbols.get(currency_name, currency_name),
-            'previous_currency_symbol': currency_symbols.get(previous_currency_name, previous_currency_name)
+            'currency_symbol': currency_symbols.get(currency_code, currency_code),
+            'previous_currency_symbol': currency_symbols.get(previous_currency_code, previous_currency_code)
         })
         total_current += current_amount_usd
         total_previous += previous_amount_usd
@@ -83,7 +84,7 @@ def add_asset():
     if request.method == "POST":
         name = request.form.get("name", "").title()
         amount_str = request.form.get("amount", "")
-        currency_name = request.form.get("currency", "US Dollar")
+        currency_code = request.form.get("currency", "USD")
 
         if not name or not amount_str:
             flash("Name and amount are required", "danger")
@@ -107,7 +108,7 @@ def add_asset():
         new_asset_history = AssetHistory(
             asset_id=new_asset.id,
             amount=amount,
-            currency=currency_name,
+            currency=currency_code,
             recorded_at=datetime.utcnow(),
             user_id=current_user.id
         )
@@ -141,7 +142,7 @@ def update_asset(asset_id):
 
     if request.method == "POST":
         amount_str = request.form.get("amount", "")
-        currency_name = request.form.get("currency", "US Dollar")
+        currency_code = request.form.get("currency", "USD")
 
         if not amount_str:
             flash("Amount is required", "danger")
@@ -159,7 +160,7 @@ def update_asset(asset_id):
         new_asset_history = AssetHistory(
             asset_id=asset.id,
             amount=amount,
-            currency=currency_name,
+            currency=currency_code,
             recorded_at=datetime.utcnow(),
             user_id=current_user.id
         )
@@ -175,7 +176,7 @@ def update_asset(asset_id):
             first()
         
         current_amount = current_amount_row.amount if current_amount_row else Decimal(0)
-        current_currency = current_amount_row.currency if current_amount_row else "US Dollar"
+        current_currency = current_amount_row.currency if current_amount_row else "USD"
 
         # Get previous amount (second most recent entry)
         previous_amount_row = db.session.query(AssetHistory).\
