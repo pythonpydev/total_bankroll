@@ -80,13 +80,13 @@ def get_user_bankroll_data(user_id):
 
     # Get current total of all withdrawals
     total_withdrawals = (db.session.query(db.func.sum(Drawings.amount / Currency.rate))
-        .join(Currency, Drawings.currency == Currency.name)
+        .join(Currency, Drawings.currency == Currency.code)
         .filter(Drawings.user_id == user_id)
         .scalar() or Decimal('0'))
 
     # Get current total of all deposits
     total_deposits = (db.session.query(db.func.sum(Deposits.amount / Currency.rate))
-        .join(Currency, Deposits.currency == Currency.name)
+        .join(Currency, Deposits.currency == Currency.code)
         .filter(Deposits.user_id == user_id)
         .scalar() or Decimal('0'))
 
