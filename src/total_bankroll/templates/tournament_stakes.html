@@ -58,7 +58,7 @@
         </form>
         <h2 class="mt-0">Tournament Stakes Recommendations</h2>
         <hr class="divider" />
-        <p class="text-muted mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
+        <p class="lead fw-bold text-dark p-3 bg-light border rounded shadow-sm mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
         {% if tournament_bankroll_recommendation and tournament_bankroll_recommendation != "0 to 0 buy-ins" %}
         <div class="alert alert-success mt-4" role="alert">
             <h4 class="alert-heading">Recommended Bankroll Size</h4>
@@ -71,10 +71,9 @@
         {% if recommended_tournament_stake != "N/A" %}
         <div class="text-center">
             <h3 class="mt-5">Recommended Tournament Stakes: {{ recommended_tournament_stake }}</h3>
-            <p class="text-muted mb-4">{{ stake_explanation }}</p>
-
-            {% if move_down_message %}<p class="text-muted mb-4"><span class="text-info">{{ move_down_message }}</span></p>{% endif %}
-            {% if next_stake_message %}<p class="text-muted mb-4"><span class="text-danger">{{ next_stake_message }}</span></p>{% endif %}
+            <p class="bg-success text-white fw-bold p-3 rounded mb-4">{{ stake_explanation }}</p>
+            {% if move_down_message %}<p class="bg-primary text-white fw-bold p-3 rounded mb-4">{{ move_down_message }}</p>{% endif %}
+            {% if next_stake_message %}<p class="bg-danger text-white fw-bold p-3 rounded mb-4">{{ next_stake_message }}</p>{% endif %}
         </div>
         {% elif stake_explanation %}
             <p class="text-muted mb-4 text-center">{{ stake_explanation }}</p>

@@ -65,14 +65,14 @@
         {% endif %}
         <h2 class="mt-0">Cash Game Stakes Recommendations</h2>
         <hr class="divider" />
-        <p class="text-muted mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
+        <p class="lead fw-bold text-dark p-3 bg-light border rounded shadow-sm mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
         
         {% if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes" %}
         <div class="text-center">
             <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
-            <p class="text-muted mb-4">{{ stake_explanation }}</p>
-            {% if move_down_message %}<p class="text-muted mb-4"><span class="text-info">{{ move_down_message }}</span></p>{% endif %}
-            {% if next_stake_message %}<p class="text-muted mb-4"><span class="text-danger">{{ next_stake_message }}</span></p>{% endif %}
+            <p class="bg-success text-white fw-bold p-3 rounded mb-4">{{ stake_explanation }}</p>
+            {% if move_down_message %}<p class="bg-primary text-white fw-bold p-3 rounded mb-4">{{ move_down_message }}</p>{% endif %}
+            {% if next_stake_message %}<p class="bg-danger text-white fw-bold p-3 rounded mb-4">{{ next_stake_message }}</p>{% endif %}
         </div>
         {% elif stake_explanation %}
             <p class="text-muted mb-4 text-center">{{ stake_explanation }}</p>
