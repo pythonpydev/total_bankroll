@@ -1,0 +1,20 @@
+<h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on {{ site_data.name }}</h3>
+<p class="text-muted mb-4">{{ site_data.description }}</p>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="table-header-dark">
+            <tr>
+                <th>Buy-In</th>
+                <th>Examples/Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in site_data.buy_ins %}
+            <tr {% set buy_in_str = item.buy_in %}{% if buy_in_str == recommended_tournament_stake %}class="bg-success text-white fw-bold"{% elif buy_in_str == next_stake_level %}class="bg-danger text-white fw-bold"{% elif buy_in_str == move_down_stake_level %}class="bg-primary text-white fw-bold"{% endif %}>
+                <td>{{ item.buy_in }}</td>
+                <td>{{ item.notes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

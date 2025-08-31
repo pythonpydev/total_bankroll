@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request
+import json
+import os
+from flask import Blueprint, render_template, request, current_app
 from flask_security import current_user, login_required
 from decimal import Decimal
 from ..utils import get_user_bankroll_data
@@ -329,6 +331,12 @@ def tournament_stakes_page():
 
     site_filter = request.args.get('site_filter', 'all')
 
+    # Load tournament buy-in data from JSON
+    json_path = os.path.join(current_app.root_path, 'data', 'tournament_buy_ins.json')
+    with open(json_path, 'r') as f:
+        tournament_buy_ins = json.load(f)
+
+
     # Map form values to display values for the algorithm
     game_type_map = {
         'limit_holdem': "Limit Hold’Em",
@@ -371,16 +379,23 @@ def tournament_stakes_page():
     total_bankroll = bankroll_data['total_bankroll']
 
     # --- Tournament Stake Recommendation Logic ---
-    all_buyins_str = [
-        '$0.01', '$0.25', '$0.55', '$1', '$1.10', '$2.20', '$2.50', '$3.30', '$5', '$5.50', 
-        '$10', '$10.50', '$11', '$15', '$20', '$22', '$25', '$27', '$31.50', '$50', '$54', 
-        '$55', '$100', '$108', '$109', '$110', '$150', '$162', '$215', '$300', '$320', 
-        '$400', '$500', '$525', '$530', '$777', '$800', '$840', '$1,000', '$1,050', 
-        '$1,100', '$1,500', '$2,100', '$2,500', '$5,000', '$5,200', '$5,300', '$10,000', 
-        '$10,300', '$20,000', '$25,000', '$30,000', '$50,000', '$100,000'
-    ]
-    tournament_stakes_list_dec = [Decimal(s.replace('$', '').replace(',', '')) for s in all_buyins_str]
+    # Dynamically build the list of all tournament buy-ins from the JSON data
+    all_buyins_map = {}  # Use a map to store {Decimal: str} to handle sorting and keep original format
+    for site_data in tournament_buy_ins.values():
+        for item in site_data.get('buy_ins', []):
+            buy_in_str = item.get('buy_in')
+            if not buy_in_str:
+                continue
+            try:
+                buy_in_dec = Decimal(buy_in_str.replace('$', '').replace(',', ''))
+                if buy_in_dec not in all_buyins_map:
+                    all_buyins_map[buy_in_dec] = buy_in_str
+            except Exception:
+                current_app.logger.warning(f"Could not parse buy-in '{buy_in_str}' to Decimal.")
+                continue
 
+    tournament_stakes_list_dec = sorted(all_buyins_map.keys())
+    all_buyins_str = [all_buyins_map[d] for d in tournament_stakes_list_dec]
     recommended_tournament_stake = "N/A"
     stake_explanation = ""
     next_stake_level = ""
@@ -461,5 +476,6 @@ def tournament_stakes_page():
                            next_stake_message=next_stake_message,
                            move_down_stake_level=move_down_stake_level,
                            move_down_message=move_down_message,
-                           site_filter=site_filter
+                           site_filter=site_filter,
+                           tournament_buy_ins=tournament_buy_ins
                            )
