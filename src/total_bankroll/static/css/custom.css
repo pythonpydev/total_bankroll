@@ -1,0 +1,13 @@
+/* Custom styles for table row and message highlighting */
+.table tr.bg-primary > td, p.p-3.rounded.bg-primary {
+    background-color: #0d6efd !important;
+}
+.table tr.bg-success > td, p.p-3.rounded.bg-success {
+    background-color: #198754 !important;
+}
+.table tr.bg-danger > td, p.p-3.rounded.bg-danger {
+    background-color: #dc3545 !important;
+}
+.table tr.text-white > td, p.p-3.rounded.text-white {
+    color: #fff !important;
+}

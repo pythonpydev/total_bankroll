@@ -17,21 +17,8 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
-        <style>
-            /* Added to ensure table row highlighting works */
-            .table tr.bg-primary > td, .p-3.rounded.bg-primary {
-                background-color: #0d6efd !important;
-            }
-            .table tr.bg-success > td, .p-3.rounded.bg-success {
-                background-color: #198754 !important;
-            }
-            .table tr.bg-danger > td, .p-3.rounded.bg-danger {
-                background-color: #dc3545 !important;
-            }
-            .table tr.text-white > td, .p-3.rounded.text-white {
-                color: #fff !important;
-            }
-        </style>
+        <!-- Custom CSS for application-specific overrides -->
+        <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet" />
         <!-- Font Awesome-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     </head>
