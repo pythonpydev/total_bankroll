@@ -89,7 +89,7 @@
             </thead>
             <tbody>
                 {% for row in cash_stakes_table[1:] %}
-                {% set current_stake = row[1] + '/' + row[2] %}
+                {% set current_stake = row[0] + '/' + row[1] %}
                 <tr {% if current_stake == recommended_stake %}class="bg-success text-white fw-bold"{% elif current_stake == next_stake_level %}class="bg-danger text-white fw-bold"{% elif current_stake == move_down_stake_level %}class="bg-primary text-white fw-bold"{% endif %}>
                     {% for cell in row %}
                     <td>{{ cell }}</td>

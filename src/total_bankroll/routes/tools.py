@@ -147,12 +147,12 @@ def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_s
     recommended_stake_index = -1
     for i in range(len(cash_stakes_table) - 1, 0, -1):
         stake_row = cash_stakes_table[i]
-        max_buy_in = parse_currency_to_decimal(stake_row[4])
+        max_buy_in = parse_currency_to_decimal(stake_row[3])
         if total_bankroll >= buy_in_multiple * max_buy_in:
-            recommendations["recommended_stake"] = f"{stake_row[1]}/{stake_row[2]}"
+            recommendations["recommended_stake"] = f"{stake_row[0]}/{stake_row[1]}"
             recommendations["stake_explanation"] = (
                 f"Based on your bankroll of ${total_bankroll:.2f}, you have {total_bankroll / max_buy_in:.1f} "
-                f"buy-ins for {stake_row[1]}/{stake_row[2]} stakes. With the recommended {buy_in_multiple:.0f} "
+                f"buy-ins for {stake_row[0]}/{stake_row[1]} stakes. With the recommended {buy_in_multiple:.0f} "
                 f"buy-in rule, you can comfortably play at these stakes."
             )
             recommended_stake_index = i
@@ -160,15 +160,15 @@ def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_s
     else:
         # Handle case where bankroll is below the smallest stake
         smallest_stake_row = cash_stakes_table[1]
-        smallest_min_buy_in = parse_currency_to_decimal(smallest_stake_row[3])
+        smallest_min_buy_in = parse_currency_to_decimal(smallest_stake_row[2])
         if total_bankroll < buy_in_multiple * smallest_min_buy_in:
             recommendations["recommended_stake"] = "Below Smallest Stakes"
             recommendations["stake_explanation"] = (
                 f"Your bankroll of ${total_bankroll:.2f} is less than {buy_in_multiple:.0f} times the minimum buy-in "
-                f"for the smallest available stakes ({smallest_stake_row[1]}/{smallest_stake_row[2]}). "
+                f"for the smallest available stakes ({smallest_stake_row[0]}/{smallest_stake_row[1]}). "
                 f"Consider depositing more funds to comfortably play at these stakes."
             )
-            recommendations["next_stake_level"] = f"{smallest_stake_row[1]}/{smallest_stake_row[2]}"
+            recommendations["next_stake_level"] = f"{smallest_stake_row[0]}/{smallest_stake_row[1]}"
 
     if recommended_stake_index == -1:
         return recommendations
@@ -176,8 +176,8 @@ def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_s
     # Calculate "move up" message
     if recommended_stake_index < len(cash_stakes_table) - 1:
         next_stake_row = cash_stakes_table[recommended_stake_index + 1]
-        recommendations["next_stake_level"] = f"{next_stake_row[1]}/{next_stake_row[2]}"
-        next_stake_max_buy_in = parse_currency_to_decimal(next_stake_row[4])
+        recommendations["next_stake_level"] = f"{next_stake_row[0]}/{next_stake_row[1]}"
+        next_stake_max_buy_in = parse_currency_to_decimal(next_stake_row[3])
         required_bankroll = buy_in_multiple * next_stake_max_buy_in
         additional_needed = required_bankroll - total_bankroll
         if additional_needed > 0:
@@ -189,14 +189,18 @@ def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_s
     # Calculate "move down" message
     if recommended_stake_index > 1:
         move_down_stake_row = cash_stakes_table[recommended_stake_index - 1]
-        recommendations["move_down_stake_level"] = f"{move_down_stake_row[1]}/{move_down_stake_row[2]}"
-        move_down_threshold_max_buy_in = parse_currency_to_decimal(move_down_stake_row[4])
-        required_bankroll_to_stay = buy_in_multiple * move_down_threshold_max_buy_in
-        amount_can_lose = total_bankroll - required_bankroll_to_stay
+        recommendations["move_down_stake_level"] = f"{move_down_stake_row[0]}/{move_down_stake_row[1]}"
+        
+        # Corrected logic for move down threshold
+        current_stake_row = cash_stakes_table[recommended_stake_index]
+        current_max_buy_in = parse_currency_to_decimal(current_stake_row[3])
+        move_down_bankroll_threshold = buy_in_multiple * current_max_buy_in
+        amount_can_lose = total_bankroll - move_down_bankroll_threshold
+
         if amount_can_lose >= 0:
             recommendations["move_down_message"] = (
                 f"You will need to move down to {recommendations['move_down_stake_level']} stakes if you lose "
-                f"${amount_can_lose:.2f} to drop to a bankroll of ${required_bankroll_to_stay:.2f}."
+                f"${amount_can_lose:.2f} to drop to a bankroll of ${move_down_bankroll_threshold:.2f}."
             )
 
     return recommendations
@@ -224,11 +228,10 @@ def poker_stakes_page():
         cash_stakes_data = json.load(f)
 
     # Reconstruct the table in the list-of-lists format expected by the template
-    headers = ["ID", "Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In"]
+    headers = ["Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In"]
     cash_stakes_table = [headers]
     for stake in cash_stakes_data['stakes']:
         cash_stakes_table.append([
-            stake['id'],
             stake['small_blind'],
             stake['big_blind'],
             stake['min_buy_in'],

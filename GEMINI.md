@@ -1,8 +1,8 @@
-# Total Bankroll Application - Gemini Overview
+# StakeEasy.net Application - Gemini Overview
 
 ## Project Overview
 
-This project is a Flask-based web application designed to help users track their poker bankroll. It allows users to manage funds across different poker sites, track assets, and record deposits and withdrawals. The application supports multiple currencies and provides data visualization through charts.
+This project is a Flask-based web application, StakeEasy.net, designed to help users track their poker bankroll. It allows users to manage funds across different poker sites, track assets, and record deposits and withdrawals. The application supports multiple currencies and provides data visualization through charts.
 
 ## Technology Stack
 
