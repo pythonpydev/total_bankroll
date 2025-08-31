@@ -1,0 +1,17 @@
+{
+  "stakes": [
+    { "id": 1, "small_blind": "$0.01", "big_blind": "$0.02", "min_buy_in": "$0.80", "max_buy_in": "$2.00" },
+    { "id": 2, "small_blind": "$0.02", "big_blind": "$0.05", "min_buy_in": "$2.00", "max_buy_in": "$5.00" },
+    { "id": 3, "small_blind": "$0.05", "big_blind": "$0.10", "min_buy_in": "$4.00", "max_buy_in": "$10.00" },
+    { "id": 4, "small_blind": "$0.10", "big_blind": "$0.25", "min_buy_in": "$10.00", "max_buy_in": "$25.00" },
+    { "id": 5, "small_blind": "$0.25", "big_blind": "$0.50", "min_buy_in": "$20.00", "max_buy_in": "$50.00" },
+    { "id": 6, "small_blind": "$0.50", "big_blind": "$1.00", "min_buy_in": "$40.00", "max_buy_in": "$100.00" },
+    { "id": 7, "small_blind": "$1.00", "big_blind": "$2.00", "min_buy_in": "$80.00", "max_buy_in": "$200.00" },
+    { "id": 8, "small_blind": "$2.00", "big_blind": "$5.00", "min_buy_in": "$200.00", "max_buy_in": "$500.00" },
+    { "id": 9, "small_blind": "$5.00", "big_blind": "$10.00", "min_buy_in": "$400.00", "max_buy_in": "$1,000.00" },
+    { "id": 10, "small_blind": "$10.00", "big_blind": "$20.00", "min_buy_in": "$800.00", "max_buy_in": "$2,000.00" },
+    { "id": 11, "small_blind": "$25.00", "big_blind": "$50.00", "min_buy_in": "$2,000.00", "max_buy_in": "$5,000.00" },
+    { "id": 12, "small_blind": "$50.00", "big_blind": "$100.00", "min_buy_in": "$4,000.00", "max_buy_in": "$10,000.00" },
+    { "id": 13, "small_blind": "$100.00", "big_blind": "$200.00", "min_buy_in": "$8,000.00", "max_buy_in": "$20,000.00" }
+  ]
+}

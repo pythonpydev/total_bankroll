@@ -136,22 +136,22 @@ def poker_stakes_page():
     bankroll_data = get_user_bankroll_data(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
 
-    cash_stakes_table = [
-        ["ID", "Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In"],
-        [1, "$0.01", "$0.02", "$0.80", "$2.00"],
-        [2, "$0.02", "$0.05", "$2.00", "$5.00"],
-        [3, "$0.05", "$0.10", "$4.00", "$10.00"],
-        [4, "$0.10", "$0.25", "$10.00", "$25.00"],
-        [5, "$0.25", "$0.50", "$20.00", "$50.00"],
-        [6, "$0.50", "$1.00", "$40.00", "$100.00"],
-        [7, "$1.00", "$2.00", "$80.00", "$200.00"],
-        [8, "$2.00", "$5.00", "$200.00", "$500.00"],
-        [9, "$5.00", "$10.00", "$400.00", "$1,000.00"],
-        [10, "$10.00", "$20.00", "$800.00", "$2,000.00"],
-        [11, "$25.00", "$50.00", "$2,000.00", "$5,000.00"],
-        [12, "$50.00", "$100.00", "$4,000.00", "$10,000.00"],
-        [13, "$100.00", "$200.00", "$8,000.00", "$20,000.00"],
-    ]
+    # Load cash game stakes data from JSON
+    cash_stakes_json_path = os.path.join(current_app.root_path, 'data', 'cash_game_stakes.json')
+    with open(cash_stakes_json_path, 'r') as f:
+        cash_stakes_data = json.load(f)
+
+    # Reconstruct the table in the list-of-lists format expected by the template
+    headers = ["ID", "Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In"]
+    cash_stakes_table = [headers]
+    for stake in cash_stakes_data['stakes']:
+        cash_stakes_table.append([
+            stake['id'],
+            stake['small_blind'],
+            stake['big_blind'],
+            stake['min_buy_in'],
+            stake['max_buy_in']
+        ])
 
     # Function to parse currency string to Decimal
     def parse_currency_to_decimal(currency_str):
