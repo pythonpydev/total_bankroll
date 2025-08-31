@@ -17,6 +17,21 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
+        <style>
+            /* Added to ensure table row highlighting works */
+            .table tr.bg-primary > td {
+                background-color: #0d6efd !important;
+            }
+            .table tr.bg-success > td {
+                background-color: #198754 !important;
+            }
+            .table tr.bg-danger > td {
+                background-color: #dc3545 !important;
+            }
+            .table tr.text-white > td {
+                color: #fff !important;
+            }
+        </style>
         <!-- Font Awesome-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     </head>
