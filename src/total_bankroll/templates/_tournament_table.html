@@ -6,6 +6,8 @@
             <tr>
                 <th>Buy-In</th>
                 <th>Examples/Notes</th>
+                <th>Bankroll Required</th>
+                <th>Additional $ Required</th>
             </tr>
         </thead>
         <tbody>
@@ -13,6 +15,8 @@
             <tr {% set buy_in_str = item.buy_in %}{% if buy_in_str == recommended_tournament_stake %}class="bg-success text-white fw-bold"{% elif buy_in_str == next_stake_level %}class="bg-danger text-white fw-bold"{% elif buy_in_str == move_down_stake_level %}class="bg-primary text-white fw-bold"{% endif %}>
                 <td>{{ item.buy_in }}</td>
                 <td>{{ item.notes }}</td>
+                <td>{{ item.bankroll_required }}</td>
+                <td>{{ item.additional_required }}</td>
             </tr>
             {% endfor %}
         </tbody>

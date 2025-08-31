@@ -2,10 +2,14 @@ import json
 import os
 from flask import Blueprint, render_template, request, current_app
 from flask_security import current_user, login_required
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from ..utils import get_user_bankroll_data
 
 tools_bp = Blueprint('tools', __name__)
+
+def parse_currency_to_decimal(currency_str):
+    """Helper to parse currency string to Decimal."""
+    return Decimal(str(currency_str).replace('$', '').replace(',', ''))
 
 @tools_bp.route('/tools')
 def tools_page():
@@ -126,10 +130,6 @@ def _get_buy_in_multiple_from_recommendation(recommendation_str):
 
 def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_stakes_table):
     """Calculates all recommendation messages for cash games."""
-    # Function to parse currency string to Decimal
-    def parse_currency_to_decimal(currency_str):
-        return Decimal(currency_str.replace('$', '').replace(',', ''))
-
     recommendations = {
         "recommended_stake": "N/A",
         "stake_explanation": "",
@@ -228,14 +228,26 @@ def poker_stakes_page():
         cash_stakes_data = json.load(f)
 
     # Reconstruct the table in the list-of-lists format expected by the template
-    headers = ["Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In"]
+    headers = ["Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In", "Bankroll Required", "Additional $ Required"]
     cash_stakes_table = [headers]
     for stake in cash_stakes_data['stakes']:
+        max_buy_in = parse_currency_to_decimal(stake['max_buy_in'])
+        
+        bankroll_required = Decimal('0.0')
+        if buy_in_multiple > 0:
+            bankroll_required = max_buy_in * buy_in_multiple
+            
+        additional_required = bankroll_required - total_bankroll
+        if additional_required < 0:
+            additional_required = Decimal('0.0')
+
         cash_stakes_table.append([
             stake['small_blind'],
             stake['big_blind'],
             stake['min_buy_in'],
-            stake['max_buy_in']
+            stake['max_buy_in'],
+            f"${bankroll_required:,.2f}",
+            f"${additional_required:,.2f}"
         ])
 
     # Calculate all recommendation messages
@@ -282,6 +294,33 @@ def tournament_stakes_page():
 
     bankroll_data = get_user_bankroll_data(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
+
+    # --- Add new columns to tournament_buy_ins data ---
+    for site_key, site_data in tournament_buy_ins.items():
+        if 'buy_ins' in site_data:
+            for item in site_data['buy_ins']:
+                buy_in_str = item.get('buy_in')
+                if not buy_in_str:
+                    item['bankroll_required'] = '$0.00'
+                    item['additional_required'] = '$0.00'
+                    continue
+                
+                try:
+                    buy_in_dec = parse_currency_to_decimal(buy_in_str)
+                    
+                    bankroll_required = Decimal('0.0')
+                    if mean_buy_ins > 0:
+                        bankroll_required = buy_in_dec * mean_buy_ins
+                    
+                    additional_required = bankroll_required - total_bankroll
+                    if additional_required < 0:
+                        additional_required = Decimal('0.0')
+                    
+                    item['bankroll_required'] = f"${bankroll_required:,.2f}"
+                    item['additional_required'] = f"${additional_required:,.2f}"
+                except (ValueError, InvalidOperation):
+                    item['bankroll_required'] = 'N/A'
+                    item['additional_required'] = 'N/A'
 
     # --- Tournament Stake Recommendation Logic ---
     # Dynamically build the list of all tournament buy-ins from the JSON data
