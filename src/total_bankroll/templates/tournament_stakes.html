@@ -16,6 +16,7 @@
 <section class="page-section" id="tournament_stakes_content">
     <div class="container px-4 px-lg-5 text-center">
         <form method="GET" action="{{ url_for('tools.tournament_stakes_page') }}">
+            <input type="hidden" name="site_filter" value="{{ site_filter }}">
             <div class="row justify-content-center align-items-end g-3 mb-5">
                 <div class="col-sm-6 col-lg-2">
                     <label for="game_type" class="form-label fw-bold">Game Type</label>
@@ -80,6 +81,25 @@
         {% endif %}
 
         <div class="text-start mt-5">
+            <form method="GET" action="{{ url_for('tools.tournament_stakes_page') }}" class="row g-3 align-items-end mb-4 justify-content-center">
+                <input type="hidden" name="game_type" value="{{ game_type }}">
+                <input type="hidden" name="skill_level" value="{{ skill_level }}">
+                <input type="hidden" name="risk_tolerance" value="{{ risk_tolerance }}">
+                <input type="hidden" name="game_environment" value="{{ game_environment }}">
+                <div class="col-auto">
+                    <label for="site_filter" class="form-label fw-bold">Select poker site</label>
+                    <select class="form-select" id="site_filter" name="site_filter">
+                        <option value="all" {% if site_filter == 'all' %}selected{% endif %}>All</option>
+                        <option value="pokerstars" {% if site_filter == 'pokerstars' %}selected{% endif %}>PokerStars</option>
+                        <option value="gg" {% if site_filter == 'gg' %}selected{% endif %}>GG Poker</option>
+                        <option value="partypoker" {% if site_filter == 'partypoker' %}selected{% endif %}>PartyPoker</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Go!</button>
+                </div>
+            </form>
+            {% if site_filter == 'all' or site_filter == 'pokerstars' %}
             <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on PokerStars</h3>
             <p class="text-muted mb-4">Based on current tournament schedules, series like MicroMillions, SCOOP, WCOOP, and daily/weekly events as of August 2025. Buy-ins are listed as distinct values from lowest to highest, with examples where available. Low-stakes events dominate, with high-rollers in major series.</p>
             <div class="table-responsive">
@@ -123,7 +143,9 @@
                     </tbody>
                 </table>
             </div>
+            {% endif %}
 
+            {% if site_filter == 'all' or site_filter == 'gg' %}
             <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on GGPoker</h3>
             <p class="text-muted mb-4">Drawing from schedules like GG World Festival, WSOP Online, Bounty Hunters, GGMasters, and daily guarantees as of August 2025. Features innovative formats like bounties and mysteries, with buy-ins from micros to ultra-high rollers.</p>
             <div class="table-responsive">
@@ -170,7 +192,9 @@
                     </tbody>
                 </table>
             </div>
+            {% endif %}
 
+            {% if site_filter == 'all' or site_filter == 'partypoker' %}
             <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on PartyPoker</h3>
             <p class="text-muted mb-4">From schedules including Daily Legends, Monster Series, Powerfest, KO Series, and weekly events like Sunday Party as of August 2025. Emphasizes value with low-to-mid stakes and progressive knockouts.</p>
             <div class="table-responsive">
@@ -204,6 +228,7 @@
                     </tbody>
                 </table>
             </div>
+            {% endif %}
         </div>
     </div>
 </section>

@@ -118,6 +118,7 @@ def poker_stakes_page():
     risk_tolerance = request.args.get('risk_tolerance', 'conservative')
     game_environment = request.args.get('game_environment', 'online')
 
+    site_filter = request.args.get('site_filter', 'all')
     # Map form values to display values for the algorithm
     game_type_map = {
         'limit_holdem': "Limit Hold’Em",
@@ -326,6 +327,8 @@ def tournament_stakes_page():
     risk_tolerance = request.args.get('risk_tolerance', 'conservative')
     game_environment = request.args.get('game_environment', 'online')
 
+    site_filter = request.args.get('site_filter', 'all')
+
     # Map form values to display values for the algorithm
     game_type_map = {
         'limit_holdem': "Limit Hold’Em",
@@ -457,5 +460,6 @@ def tournament_stakes_page():
                            next_stake_level=next_stake_level,
                            next_stake_message=next_stake_message,
                            move_down_stake_level=move_down_stake_level,
-                           move_down_message=move_down_message
+                           move_down_message=move_down_message,
+                           site_filter=site_filter
                            )
