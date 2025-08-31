@@ -15,6 +15,46 @@
 
 <section class="page-section" id="poker_stakes_content">
     <div class="container px-4 px-lg-5 text-center">
+        <form method="GET" action="{{ url_for('tools.poker_stakes_page') }}">
+            <div class="row justify-content-center align-items-end g-3 mb-5">
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_type" class="form-label fw-bold">Game Type</label>
+                    <select class="form-select" id="game_type" name="game_type">
+                        <option value="na" {% if game_type == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="limit_holdem" {% if game_type == 'limit_holdem' %}selected{% endif %}>Limit Hold’Em</option>
+                        <option value="nlhe" {% if game_type == 'nlhe' %}selected{% endif %}>NLHE</option>
+                        <option value="plo" {% if game_type == 'plo' %}selected{% endif %}>PLO</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="skill_level" class="form-label fw-bold">Skill Level</label>
+                    <select class="form-select" id="skill_level" name="skill_level">
+                        <option value="na" {% if skill_level == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="soft" {% if skill_level == 'soft' %}selected{% endif %}>Soft Games</option>
+                        <option value="tough" {% if skill_level == 'tough' %}selected{% endif %}>Tough Games</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="risk_tolerance" class="form-label fw-bold">Risk Tolerance</label>
+                    <select class="form-select" id="risk_tolerance" name="risk_tolerance">
+                        <option value="na" {% if risk_tolerance == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="conservative" {% if risk_tolerance == 'conservative' %}selected{% endif %}>Conservative</option>
+                        <option value="aggressive" {% if risk_tolerance == 'aggressive' %}selected{% endif %}>Aggressive</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_environment" class="form-label fw-bold">Game Environment</label>
+                    <select class="form-select" id="game_environment" name="game_environment">
+                        <option value="na" {% if game_environment == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="live" {% if game_environment == 'live' %}selected{% endif %}>Live Poker</option>
+                        <option value="online" {% if game_environment == 'online' %}selected{% endif %}>Online Poker</option>
+                    </select>
+                </div>
+                <div class="col-sm-12 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100">Update</button>
+                </div>
+            </div>
+        </form>
         <h2 class="mt-0">Poker Stakes Recommendations</h2>
         <hr class="divider" />
         <p class="text-muted mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from flask_security import current_user
 from decimal import Decimal
 from ..utils import get_user_bankroll_data
@@ -11,6 +11,12 @@ def tools_page():
 
 @tools_bp.route('/poker_stakes')
 def poker_stakes_page():
+    # Get filter values from request, with defaults
+    game_type = request.args.get('game_type', 'nlhe')
+    skill_level = request.args.get('skill_level', 'tough')
+    risk_tolerance = request.args.get('risk_tolerance', 'conservative')
+    game_environment = request.args.get('game_environment', 'online')
+
     bankroll_data = get_user_bankroll_data(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
 
@@ -154,5 +160,10 @@ def poker_stakes_page():
         next_stake_message=next_stake_message,
         next_stake_level=next_stake_level,
         move_down_message=move_down_message,
-        move_down_stake_level=move_down_stake_level
+        move_down_stake_level=move_down_stake_level,
+        # Pass filter values to template
+        game_type=game_type,
+        skill_level=skill_level,
+        risk_tolerance=risk_tolerance,
+        game_environment=game_environment
     )
