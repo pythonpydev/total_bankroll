@@ -11,31 +11,9 @@ tools_bp = Blueprint('tools', __name__)
 def tools_page():
     return render_template('tools.html')
 
-def calculate_bankroll_range(game_type, skill_level, risk_tolerance, game_environment):
-    """Calculates the recommended bankroll range in big blinds based on user inputs."""
-    # Define mappings for each factor to (low, high) tuples
-    game_type_ranges = {
-        "Limit Hold’Em": (20, 30),
-        "NLHE": (30, 50),
-        "PLO": (50, 100),
-        "NA": (0, 0)
-    }
-    skill_level_ranges = {
-        "Soft Games": (20, 30),
-        "Tough Games": (50, 100),
-        "NA": (0, 0)
-    }
-    risk_tolerance_ranges = {
-        "Conservative": (50, 100),
-        "Aggressive": (20, 30),
-        "NA": (0, 0)
-    }
-    game_environment_ranges = {
-        "Live Poker": (20, 30),
-        "Online Poker": (40, 60),
-        "NA": (0, 0)
-    }
-    
+def _calculate_weighted_range(game_type, skill_level, risk_tolerance, game_environment, 
+                              game_type_ranges, skill_level_ranges, risk_tolerance_ranges, game_environment_ranges, unit_string):
+    """Generic function to calculate a weighted bankroll range."""
     # Retrieve low and high for each selection
     low_gt, high_gt = game_type_ranges.get(game_type, (0, 0))
     low_sl, high_sl = skill_level_ranges.get(skill_level, (0, 0))
@@ -59,57 +37,47 @@ def calculate_bankroll_range(game_type, skill_level, risk_tolerance, game_enviro
         average_low = 0
         average_high = 0
     
-    return f"{average_low} to {average_high} big blinds"
+    return f"{average_low} to {average_high} {unit_string}"
+
+def calculate_bankroll_range(game_type, skill_level, risk_tolerance, game_environment):
+    """Calculates the recommended bankroll range in big blinds based on user inputs."""
+    game_type_ranges = {
+        "Limit Hold’Em": (20, 30), "NLHE": (30, 50), "PLO": (50, 100), "NA": (0, 0)
+    }
+    skill_level_ranges = {
+        "Soft Games": (20, 30), "Tough Games": (50, 100), "NA": (0, 0)
+    }
+    risk_tolerance_ranges = {
+        "Conservative": (50, 100), "Aggressive": (20, 30), "NA": (0, 0)
+    }
+    game_environment_ranges = {
+        "Live Poker": (20, 30), "Online Poker": (40, 60), "NA": (0, 0)
+    }
+    return _calculate_weighted_range(
+        game_type, skill_level, risk_tolerance, game_environment,
+        game_type_ranges, skill_level_ranges, risk_tolerance_ranges, game_environment_ranges,
+        "big blinds"
+    )
 
 def calculate_tournament_bankroll_range(game_type, skill_level, risk_tolerance, game_environment):
     """Calculates the recommended tournament bankroll range in number of buy-ins."""
-    # Define mappings for each factor to (low, high) buy-in tuples
     game_type_ranges = {
-        "Limit Hold’Em": (40, 60),
-        "NLHE": (60, 100),
-        "PLO": (100, 200),
-        "NA": (0, 0)
+        "Limit Hold’Em": (40, 60), "NLHE": (60, 100), "PLO": (100, 200), "NA": (0, 0)
     }
     skill_level_ranges = {
-        "Soft Games": (40, 60),
-        "Tough Games": (100, 200),
-        "NA": (0, 0)
+        "Soft Games": (40, 60), "Tough Games": (100, 200), "NA": (0, 0)
     }
     risk_tolerance_ranges = {
-        "Conservative": (100, 200),
-        "Aggressive": (40, 60),
-        "NA": (0, 0)
+        "Conservative": (100, 200), "Aggressive": (40, 60), "NA": (0, 0)
     }
     game_environment_ranges = {
-        "Live Poker": (40, 60),
-        "Online Poker": (80, 120),
-        "NA": (0, 0)
+        "Live Poker": (40, 60), "Online Poker": (80, 120), "NA": (0, 0)
     }
-    
-    # Retrieve low and high for each selection
-    low_gt, high_gt = game_type_ranges.get(game_type, (0, 0))
-    low_sl, high_sl = skill_level_ranges.get(skill_level, (0, 0))
-    low_rt, high_rt = risk_tolerance_ranges.get(risk_tolerance, (0, 0))
-    low_ge, high_ge = game_environment_ranges.get(game_environment, (0, 0))
-    
-    # Set weights, 0 for NA selections
-    weight_gt = 2 if game_type != "NA" else 0
-    weight_sl = 3 if skill_level != "NA" else 0
-    weight_rt = 4 if risk_tolerance != "NA" else 0
-    weight_ge = 1 if game_environment != "NA" else 0
-    total_weight = weight_gt + weight_sl + weight_rt + weight_ge
-    
-    # Calculate weighted averages
-    if total_weight > 0:
-        weighted_low = (low_gt * weight_gt) + (low_sl * weight_sl) + (low_rt * weight_rt) + (low_ge * weight_ge)
-        weighted_high = (high_gt * weight_gt) + (high_sl * weight_sl) + (high_rt * weight_rt) + (high_ge * weight_ge)
-        average_low = round(weighted_low / total_weight)
-        average_high = round(weighted_high / total_weight)
-    else:
-        average_low = 0
-        average_high = 0
-    
-    return f"{average_low} to {average_high} buy-ins"
+    return _calculate_weighted_range(
+        game_type, skill_level, risk_tolerance, game_environment,
+        game_type_ranges, skill_level_ranges, risk_tolerance_ranges, game_environment_ranges,
+        "buy-ins"
+    )
 
 @tools_bp.route('/poker_stakes')
 @login_required
