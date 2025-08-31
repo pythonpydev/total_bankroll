@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="tournament_stakes_intro">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Tournament Stakes</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">This page will provide recommendations for tournament stakes based on your bankroll.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="tournament_stakes_content">
+    <div class="container px-4 px-lg-5 text-center">
+        <form method="GET" action="{{ url_for('tools.tournament_stakes_page') }}">
+            <div class="row justify-content-center align-items-end g-3 mb-5">
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_type" class="form-label fw-bold">Game Type</label>
+                    <select class="form-select" id="game_type" name="game_type">
+                        <option value="na" {% if game_type == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="limit_holdem" {% if game_type == 'limit_holdem' %}selected{% endif %}>Limit Hold’Em</option>
+                        <option value="nlhe" {% if game_type == 'nlhe' %}selected{% endif %}>NLHE</option>
+                        <option value="plo" {% if game_type == 'plo' %}selected{% endif %}>PLO</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="skill_level" class="form-label fw-bold">Skill Level</label>
+                    <select class="form-select" id="skill_level" name="skill_level">
+                        <option value="na" {% if skill_level == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="soft" {% if skill_level == 'soft' %}selected{% endif %}>Soft Games</option>
+                        <option value="tough" {% if skill_level == 'tough' %}selected{% endif %}>Tough Games</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="risk_tolerance" class="form-label fw-bold">Risk Tolerance</label>
+                    <select class="form-select" id="risk_tolerance" name="risk_tolerance">
+                        <option value="na" {% if risk_tolerance == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="conservative" {% if risk_tolerance == 'conservative' %}selected{% endif %}>Conservative</option>
+                        <option value="aggressive" {% if risk_tolerance == 'aggressive' %}selected{% endif %}>Aggressive</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_environment" class="form-label fw-bold">Game Environment</label>
+                    <select class="form-select" id="game_environment" name="game_environment">
+                        <option value="na" {% if game_environment == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="live" {% if game_environment == 'live' %}selected{% endif %}>Live Poker</option>
+                        <option value="online" {% if game_environment == 'online' %}selected{% endif %}>Online Poker</option>
+                    </select>
+                </div>
+                <div class="col-sm-12 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100">Update</button>
+                </div>
+            </div>
+        </form>
+        <h2 class="mt-0">Tournament Stakes Recommendations</h2>
+        <hr class="divider" />
+        <p class="text-muted mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
+        {% if tournament_bankroll_recommendation and tournament_bankroll_recommendation != "0 to 0 buy-ins" %}
+        <div class="alert alert-success mt-4" role="alert">
+            <h4 class="alert-heading">Recommended Bankroll Size</h4>
+            <p>Based on your selections, a bankroll of <strong>{{ tournament_bankroll_recommendation }}</strong> is recommended for your chosen tournament type.</p>
+            <hr>
+            <p class="mb-0">This suggests an average tournament buy-in of <strong>${{ "%.2f" | format(recommended_buy_in) }}</strong>.</p>
+        </div>
+        {% endif %}
+
+        {% if recommended_tournament_stake != "N/A" %}
+        <div class="text-start">
+            <h3 class="mt-5">Recommended Tournament Stakes: {{ recommended_tournament_stake }}</h3>
+            <p class="text-muted mb-4">{{ stake_explanation }}</p>
+
+            {% if move_down_message %}<p class="text-muted mb-4"><span class="text-info">{{ move_down_message }}</span></p>{% endif %}
+            {% if next_stake_message %}<p class="text-muted mb-4"><span class="text-danger">{{ next_stake_message }}</span></p>{% endif %}
+        </div>
+        {% elif stake_explanation %}
+            <p class="text-muted mb-4">{{ stake_explanation }}</p>
+        {% endif %}
+
+        <div class="text-start mt-5">
+            <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on PokerStars</h3>
+            <p class="text-muted mb-4">Based on current tournament schedules, series like MicroMillions, SCOOP, WCOOP, and daily/weekly events as of August 2025. Buy-ins are listed as distinct values from lowest to highest, with examples where available. Low-stakes events dominate, with high-rollers in major series.</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-header-dark">
+                        <tr>
+                            <th>Buy-In</th>
+                            <th>Examples/Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr {% set buy_in_str = '$0.01' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$0.01</td><td>Micro-stakes satellites and qualifiers for larger events.</td></tr>
+                        <tr {% set buy_in_str = '$1.10' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1.10</td><td>MicroMillions entry-level tournaments; daily micros with small guarantees.</td></tr>
+                        <tr {% set buy_in_str = '$2.20' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2.20</td><td>SCOOP low-tier events; affordable daily MTTs.</td></tr>
+                        <tr {% set buy_in_str = '$3.30' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$3.30</td><td>Saturday Micro; Jet Set Season low-stakes.</td></tr>
+                        <tr {% set buy_in_str = '$5' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5</td><td>Winter Series lowest buy-in; daily turbos and freerolls qualifiers.</td></tr>
+                        <tr {% set buy_in_str = '$5.50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5.50</td><td>WCOOP direct buy-ins; Spin & Go multipliers.</td></tr>
+                        <tr {% set buy_in_str = '$10' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10</td><td>Winter Series mid-low; daily Bigs with $10K Gtd.</td></tr>
+                        <tr {% set buy_in_str = '$11' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$11</td><td>Nightly Stars; Sunday Special satellites.</td></tr>
+                        <tr {% set buy_in_str = '$20' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$20</td><td>Winter Series; rebuy tournaments.</td></tr>
+                        <tr {% set buy_in_str = '$22' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$22</td><td>Medium-tier Stars Season; Sunday MTT satellites.</td></tr>
+                        <tr {% set buy_in_str = '$27' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$27</td><td>Daily MTTs (e.g., $25 + $2 fee).</td></tr>
+                        <tr {% set buy_in_str = '$50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$50</td><td>SCOOP low-tier freezeouts; high-stakes dailies.</td></tr>
+                        <tr {% set buy_in_str = '$55' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$55</td><td>Power Path Express; high-roller satellites.</td></tr>
+                        <tr {% set buy_in_str = '$109' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$109</td><td>Sunday Warm-Up; SCOOP Main Event; Sunday Million satellites.</td></tr>
+                        <tr {% set buy_in_str = '$110' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$110</td><td>High-tier Stars Season events.</td></tr>
+                        <tr {% set buy_in_str = '$162' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$162</td><td>Nightly $100K Gtd.</td></tr>
+                        <tr {% set buy_in_str = '$215' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$215</td><td>Sunday Million (weekly $1M Gtd); EPT satellites.</td></tr>
+                        <tr {% set buy_in_str = '$320' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$320</td><td>High-roller dailies.</td></tr>
+                        <tr {% set buy_in_str = '$530' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$530</td><td>EPT satellites; WCOOP mid-high events.</td></tr>
+                        <tr {% set buy_in_str = '$1,050' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,050</td><td>SCOOP/WCOOP high-tier; Sunday High Roller; Jet Set Season top events.</td></tr>
+                        <tr {% set buy_in_str = '$1,100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,100</td><td>PokerStars Open (approx USD from €1,100); NAPT Open.</td></tr>
+                        <tr {% set buy_in_str = '$2,100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2,100</td><td>Super Tuesday ($10K–$20K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$5,200' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5,200</td><td>EPT High Roller.</td></tr>
+                        <tr {% set buy_in_str = '$5,300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5,300</td><td>NAPT Las Vegas Main Event ($3M Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$10,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10,000</td><td>BSOP Super High Roller; EPT Super High Roller qualifiers.</td></tr>
+                        <tr {% set buy_in_str = '$10,300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10,300</td><td>Super High Roller (up to $1M Gtd); WSOP/PCA satellites.</td></tr>
+                        <tr {% set buy_in_str = '$20,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$20,000</td><td>BSOP Millions Super High Roller events.</td></tr>
+                        <tr {% set buy_in_str = '$30,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$30,000</td><td>BSOP Millions Super High Roller multi-day.</td></tr>
+                        <tr {% set buy_in_str = '$50,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$50,000</td><td>BSOP Millions top Super High Roller.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on GGPoker</h3>
+            <p class="text-muted mb-4">Drawing from schedules like GG World Festival, WSOP Online, Bounty Hunters, GGMasters, and daily guarantees as of August 2025. Features innovative formats like bounties and mysteries, with buy-ins from micros to ultra-high rollers.</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-header-dark">
+                        <tr>
+                            <th>Buy-In</th>
+                            <th>Examples/Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr {% set buy_in_str = '$0.25' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$0.25</td><td>T$ Builder rake-free micros; All-in or Fold.</td></tr>
+                        <tr {% set buy_in_str = '$1' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1</td><td>Daily Bounty Hunters; Spin & Gold; Omaholic MTTs.</td></tr>
+                        <tr {% set buy_in_str = '$2.50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2.50</td><td>Bounty Hunter low-stakes.</td></tr>
+                        <tr {% set buy_in_str = '$5' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5</td><td>Mini Global MILLION$ ($300K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$10.50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10.50</td><td>Mystery Bounty ($1M Gtd in mini MILLION$).</td></tr>
+                        <tr {% set buy_in_str = '$11' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$11</td><td>Sunday Hundred Grand ($101K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$15' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$15</td><td>Bounty Hunter dailies.</td></tr>
+                        <tr {% set buy_in_str = '$25' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$25</td><td>Daily Special; low-tier GG World Festival events.</td></tr>
+                        <tr {% set buy_in_str = '$31.50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$31.50</td><td>Bounty Hunter mid-stakes.</td></tr>
+                        <tr {% set buy_in_str = '$50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$50</td><td>GGMasters satellites; standard NLHE Weekender ($250K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$54' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$54</td><td>PLO Weekender ($100K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$100</td><td>Global MILLION$ ($1M Gtd weekly); FLIP & GO NLH ($1M Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$108' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$108</td><td>Mystery Bounty Kick-Off ($100K Top Bounty).</td></tr>
+                        <tr {% set buy_in_str = '$150' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$150</td><td>GGMasters ($300K Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$215' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$215</td><td>Mystery Millions ($1M Top Bounty); Bounty Hunters.</td></tr>
+                        <tr {% set buy_in_str = '$300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$300</td><td>Gladiators of Poker ($3M Gtd); WSOP Circuit Ladies Event.</td></tr>
+                        <tr {% set buy_in_str = '$320' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$320</td><td>Bounty No-Limit Hold'em.</td></tr>
+                        <tr {% set buy_in_str = '$400' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$400</td><td>COLOSSUS ($4M Gtd); PLOSSUS ($1M Gtd Bounty).</td></tr>
+                        <tr {% set buy_in_str = '$500' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$500</td><td>WSOP Kick-Off Bounty; Ladies Championship; Mini Main Event ($4M Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$525' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$525</td><td>Superstack Turbo Bounty; Super KICKOFF Bounty HR.</td></tr>
+                        <tr {% set buy_in_str = '$777' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$777</td><td>LUCKY SEVENS Bounty 7-Handed.</td></tr>
+                        <tr {% set buy_in_str = '$800' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$800</td><td>Ultra Deepstack No-Limit Hold'em.</td></tr>
+                        <tr {% set buy_in_str = '$840' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$840</td><td>Bounty Pot-Limit Omaha.</td></tr>
+                        <tr {% set buy_in_str = '$1,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,000</td><td>DOUBLE CHANCE NLH; 5-Card Pot-Limit Omaha; Daily High Roller.</td></tr>
+                        <tr {% set buy_in_str = '$1,050' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,050</td><td>Mystery Bounty Pot-Limit Omaha; Tuesday Classic High Roller.</td></tr>
+                        <tr {% set buy_in_str = '$1,500' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,500</td><td>MONSTER STACK NLH; MILLIONAIRE MAKER ($1M for 1st); GGWF Main Event ($8M Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$2,100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2,100</td><td>Bounty NLH Championship; 6-Handed Bounty NLH.</td></tr>
+                        <tr {% set buy_in_str = '$2,500' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2,500</td><td>Turbo NLH Championship; Super MILLION$ satellites.</td></tr>
+                        <tr {% set buy_in_str = '$5,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5,000</td><td>6-Handed NLH Championship; Short Deck Championship; WSOP Online Main Event ($25M Gtd); PLO High Roller.</td></tr>
+                        <tr {% set buy_in_str = '$10,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10,000</td><td>PLO Championship; Heads Up NLH Championship; Super High Roller in GG World Festival.</td></tr>
+                        <tr {% set buy_in_str = '$10,300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10,300</td><td>GGMillion$ High Rollers ($10M Gtd); Super MILLION$ ($6M+ Gtd weekly).</td></tr>
+                        <tr {% set buy_in_str = '$25,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$25,000</td><td>GGMillion$ SHR Championship; PSPC qualifiers.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="mt-5">Typical Poker Tournament Buy-In Amounts on PartyPoker</h3>
+            <p class="text-muted mb-4">From schedules including Daily Legends, Monster Series, Powerfest, KO Series, and weekly events like Sunday Party as of August 2025. Emphasizes value with low-to-mid stakes and progressive knockouts.</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-header-dark">
+                        <tr>
+                            <th>Buy-In</th>
+                            <th>Examples/Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr {% set buy_in_str = '$0.01' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$0.01</td><td>Lowest tournament buy-ins; micro satellites.</td></tr>
+                        <tr {% set buy_in_str = '$0.55' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$0.55</td><td>Monster Series entry-level; McLaren Turbo Series lows.</td></tr>
+                        <tr {% set buy_in_str = '$1.10' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1.10</td><td>Big Bounty Hunter lows.</td></tr>
+                        <tr {% set buy_in_str = '$2.20' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2.20</td><td>Daily Legends starting point.</td></tr>
+                        <tr {% set buy_in_str = '$2.50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$2.50</td><td>Fast Five cash game buy-in (tournament-adjacent); SPINS Overdrive leaderboards.</td></tr>
+                        <tr {% set buy_in_str = '$5' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5</td><td>Fast Five; daily turbos.</td></tr>
+                        <tr {% set buy_in_str = '$10' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10</td><td>Fast Five; SPINS Overdrive.</td></tr>
+                        <tr {% set buy_in_str = '$11' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$11</td><td>The Big Quarter ($150K Gtd); daily MTT missions.</td></tr>
+                        <tr {% set buy_in_str = '$20' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$20</td><td>SPINS Overdrive leaderboards top; rebuy events.</td></tr>
+                        <tr {% set buy_in_str = '$50' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$50</td><td>Mid-stakes Daily Legends.</td></tr>
+                        <tr {% set buy_in_str = '$100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$100</td><td>Fast Five high; Turbo Series.</td></tr>
+                        <tr {% set buy_in_str = '$109' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$109</td><td>Sunday Party ($125K+ Gtd).</td></tr>
+                        <tr {% set buy_in_str = '$110' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$110</td><td>Mid-high Daily Legends.</td></tr>
+                        <tr {% set buy_in_str = '$215' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$215</td><td>Monster Series highs; Big Bounty Hunter top.</td></tr>
+                        <tr {% set buy_in_str = '$300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$300</td><td>WPT Rising Star (events under $300); Ladies Event in series.</td></tr>
+                        <tr {% set buy_in_str = '$1,100' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$1,100</td><td>PartyPoker Tour packages; WPT World Online Championships lows.</td></tr>
+                        <tr {% set buy_in_str = '$5,300' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$5,300</td><td>Potential high-roller or Main Event in live-linked series (e.g., NAPT equivalents).</td></tr>
+                        <tr {% set buy_in_str = '$10,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$10,000</td><td>High-roller events in major series like Powerfest or WPT.</td></tr>
+                        <tr {% set buy_in_str = '$100,000' %}{% if buy_in_str == recommended_tournament_stake %}class="table-success fw-bold"{% elif buy_in_str == next_stake_level %}class="table-danger fw-bold"{% elif buy_in_str == move_down_stake_level %}class="table-info fw-bold"{% endif %}><td>$100,000</td><td>Ultra-high roller buy-ins in special events (rare, but listed in general tournament info).</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

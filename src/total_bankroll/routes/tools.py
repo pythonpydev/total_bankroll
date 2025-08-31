@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-from flask_security import current_user
+from flask_security import current_user, login_required
 from decimal import Decimal
 from ..utils import get_user_bankroll_data
 
@@ -59,7 +59,58 @@ def calculate_bankroll_range(game_type, skill_level, risk_tolerance, game_enviro
     
     return f"{average_low} to {average_high} big blinds"
 
+def calculate_tournament_bankroll_range(game_type, skill_level, risk_tolerance, game_environment):
+    """Calculates the recommended tournament bankroll range in number of buy-ins."""
+    # Define mappings for each factor to (low, high) buy-in tuples
+    game_type_ranges = {
+        "Limit Hold’Em": (40, 60),
+        "NLHE": (60, 100),
+        "PLO": (100, 200),
+        "NA": (0, 0)
+    }
+    skill_level_ranges = {
+        "Soft Games": (40, 60),
+        "Tough Games": (100, 200),
+        "NA": (0, 0)
+    }
+    risk_tolerance_ranges = {
+        "Conservative": (100, 200),
+        "Aggressive": (40, 60),
+        "NA": (0, 0)
+    }
+    game_environment_ranges = {
+        "Live Poker": (40, 60),
+        "Online Poker": (80, 120),
+        "NA": (0, 0)
+    }
+    
+    # Retrieve low and high for each selection
+    low_gt, high_gt = game_type_ranges.get(game_type, (0, 0))
+    low_sl, high_sl = skill_level_ranges.get(skill_level, (0, 0))
+    low_rt, high_rt = risk_tolerance_ranges.get(risk_tolerance, (0, 0))
+    low_ge, high_ge = game_environment_ranges.get(game_environment, (0, 0))
+    
+    # Set weights, 0 for NA selections
+    weight_gt = 2 if game_type != "NA" else 0
+    weight_sl = 3 if skill_level != "NA" else 0
+    weight_rt = 4 if risk_tolerance != "NA" else 0
+    weight_ge = 1 if game_environment != "NA" else 0
+    total_weight = weight_gt + weight_sl + weight_rt + weight_ge
+    
+    # Calculate weighted averages
+    if total_weight > 0:
+        weighted_low = (low_gt * weight_gt) + (low_sl * weight_sl) + (low_rt * weight_rt) + (low_ge * weight_ge)
+        weighted_high = (high_gt * weight_gt) + (high_sl * weight_sl) + (high_rt * weight_rt) + (high_ge * weight_ge)
+        average_low = round(weighted_low / total_weight)
+        average_high = round(weighted_high / total_weight)
+    else:
+        average_low = 0
+        average_high = 0
+    
+    return f"{average_low} to {average_high} buy-ins"
+
 @tools_bp.route('/poker_stakes')
+@login_required
 def poker_stakes_page():
     # Get filter values from request, with defaults
     game_type = request.args.get('game_type', 'nlhe')
@@ -264,3 +315,147 @@ def poker_stakes_page():
         risk_tolerance=risk_tolerance,
         game_environment=game_environment
     )
+
+@tools_bp.route('/tournament_stakes')
+@login_required
+def tournament_stakes_page():
+    """Tournament Stakes page."""
+    # Get filter values from request, with defaults
+    game_type = request.args.get('game_type', 'nlhe')
+    skill_level = request.args.get('skill_level', 'tough')
+    risk_tolerance = request.args.get('risk_tolerance', 'conservative')
+    game_environment = request.args.get('game_environment', 'online')
+
+    # Map form values to display values for the algorithm
+    game_type_map = {
+        'limit_holdem': "Limit Hold’Em",
+        'nlhe': "NLHE",
+        'plo': "PLO",
+        'na': "NA"
+    }
+    skill_level_map = {
+        'soft': "Soft Games",
+        'tough': "Tough Games",
+        'na': "NA"
+    }
+    risk_tolerance_map = {
+        'conservative': "Conservative",
+        'aggressive': "Aggressive",
+        'na': "NA"
+    }
+    game_environment_map = {
+        'live': "Live Poker",
+        'online': "Online Poker",
+        'na': "NA"
+    }
+
+    tournament_bankroll_recommendation = calculate_tournament_bankroll_range(
+        game_type_map.get(game_type), skill_level_map.get(skill_level),
+        risk_tolerance_map.get(risk_tolerance), game_environment_map.get(game_environment)
+    )
+
+    mean_buy_ins = Decimal('0.0')
+    try:
+        parts = tournament_bankroll_recommendation.split()
+        low = int(parts[0])
+        high = int(parts[2])
+        if high > 0:
+            mean_buy_ins = (Decimal(low) + Decimal(high)) / Decimal('2.0')
+    except (ValueError, IndexError):
+        mean_buy_ins = Decimal('0.0')
+
+    bankroll_data = get_user_bankroll_data(current_user.id)
+    total_bankroll = bankroll_data['total_bankroll']
+
+    # --- Tournament Stake Recommendation Logic ---
+    all_buyins_str = [
+        '$0.01', '$0.25', '$0.55', '$1', '$1.10', '$2.20', '$2.50', '$3.30', '$5', '$5.50', 
+        '$10', '$10.50', '$11', '$15', '$20', '$22', '$25', '$27', '$31.50', '$50', '$54', 
+        '$55', '$100', '$108', '$109', '$110', '$150', '$162', '$215', '$300', '$320', 
+        '$400', '$500', '$525', '$530', '$777', '$800', '$840', '$1,000', '$1,050', 
+        '$1,100', '$1,500', '$2,100', '$2,500', '$5,000', '$5,200', '$5,300', '$10,000', 
+        '$10,300', '$20,000', '$25,000', '$30,000', '$50,000', '$100,000'
+    ]
+    tournament_stakes_list_dec = [Decimal(s.replace('$', '').replace(',', '')) for s in all_buyins_str]
+
+    recommended_tournament_stake = "N/A"
+    stake_explanation = ""
+    next_stake_level = ""
+    next_stake_message = ""
+    move_down_message = ""
+    move_down_stake_level = ""
+
+    recommended_buy_in = Decimal('0.0')
+    if mean_buy_ins > 0:
+        recommended_buy_in = total_bankroll / mean_buy_ins
+
+        # Find the recommended tournament stake
+        found_stake_index = -1
+        for i in range(len(tournament_stakes_list_dec) - 1, -1, -1):
+            stake_dec = tournament_stakes_list_dec[i]
+            if stake_dec <= recommended_buy_in:
+                found_stake_index = i
+                break
+        
+        if found_stake_index != -1:
+            current_stake_dec = tournament_stakes_list_dec[found_stake_index]
+            recommended_tournament_stake = all_buyins_str[found_stake_index]
+            
+            num_buy_ins_for_stake = total_bankroll / current_stake_dec if current_stake_dec > 0 else Decimal('inf')
+            
+            stake_explanation = (
+                f"Based on your bankroll of ${total_bankroll:.2f} and the recommended {mean_buy_ins:.0f} buy-in rule, "
+                f"your average buy-in should be ${recommended_buy_in:.2f}. The closest standard buy-in you can play is "
+                f"{recommended_tournament_stake}, for which you have {num_buy_ins_for_stake:.1f} buy-ins."
+            )
+
+            # Move up logic
+            if found_stake_index < len(all_buyins_str) - 1:
+                next_stake_dec = tournament_stakes_list_dec[found_stake_index + 1]
+                next_stake_level = all_buyins_str[found_stake_index + 1]
+                required_bankroll_for_next_stake = next_stake_dec * mean_buy_ins
+                additional_bankroll_needed = required_bankroll_for_next_stake - total_bankroll
+                
+                if additional_bankroll_needed > 0:
+                    next_stake_message = (
+                        f"To move up to {next_stake_level} tournaments, you need to win an additional "
+                        f"${additional_bankroll_needed:.2f} to reach a bankroll of ${required_bankroll_for_next_stake:.2f}."
+                    )
+
+            # Move down logic
+            if found_stake_index > 0:
+                move_down_stake_dec = tournament_stakes_list_dec[found_stake_index - 1]
+                move_down_stake_level = all_buyins_str[found_stake_index - 1]
+                move_down_stake_required_br = move_down_stake_dec * mean_buy_ins
+                amount_can_lose = total_bankroll - move_down_stake_required_br
+                
+                if amount_can_lose > 0:
+                    move_down_message = (
+                        f"You will need to move down to {move_down_stake_level} tournaments if you lose "
+                        f"${amount_can_lose:.2f} to drop to a bankroll of ${move_down_stake_required_br:.2f}."
+                    )
+        else:
+            recommended_tournament_stake = "Below Smallest Stakes"
+            stake_explanation = (
+                f"Your bankroll of ${total_bankroll:.2f} is too small for the lowest available stakes based on the "
+                f"recommended {mean_buy_ins:.0f} buy-in rule. Your average buy-in should be ${recommended_buy_in:.2f}."
+            )
+            next_stake_level = all_buyins_str[0]
+    else:
+        stake_explanation = "Please make selections above to get a stake recommendation."
+
+    return render_template('tournament_stakes.html',
+                           total_bankroll=total_bankroll,
+                           game_type=game_type,
+                           skill_level=skill_level,
+                           risk_tolerance=risk_tolerance,
+                           game_environment=game_environment,
+                           tournament_bankroll_recommendation=tournament_bankroll_recommendation,
+                           recommended_buy_in=recommended_buy_in,
+                           recommended_tournament_stake=recommended_tournament_stake,
+                           stake_explanation=stake_explanation,
+                           next_stake_level=next_stake_level,
+                           next_stake_message=next_stake_message,
+                           move_down_stake_level=move_down_stake_level,
+                           move_down_message=move_down_message
+                           )

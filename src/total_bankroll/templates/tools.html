@@ -21,15 +21,15 @@
             <div class="col-lg-6 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><a href="/poker_stakes"><i class="bi-tools fs-1 text-primary"></i></a></div>
-                    <h3 class="h4 mb-2"><a href="/poker_stakes" class="text-decoration-none text-dark">Poker Stakes</a></h3>
-                    <p class="text-muted mb-0">Recommended cash game and tournament stakes for your current bankroll</p>
+                    <h3 class="h4 mb-2"><a href="/poker_stakes" class="text-decoration-none text-dark">Cash Game Stakes</a></h3>
+                    <p class="text-muted mb-0">Recommended cash game stakes for your current bankroll.</p>
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 text-center">
                 <div class="mt-5">
-                    <div class="mb-2"><i class="bi-tools fs-1 text-primary"></i></div>
-                    <h3 class="h4 mb-2">Tool 2</h3>
-                    <p class="text-muted mb-0">Description of Tool 2.</p>
+                    <div class="mb-2"><a href="{{ url_for('tools.tournament_stakes_page') }}"><i class="bi-tools fs-1 text-primary"></i></a></div>
+                    <h3 class="h4 mb-2"><a href="{{ url_for('tools.tournament_stakes_page') }}" class="text-decoration-none text-dark">Tournament Stakes</a></h3>
+                    <p class="text-muted mb-0">Recommended tournament stakes for your current bankroll.</p>
                 </div>
             </div>
         </div>
