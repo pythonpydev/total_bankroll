@@ -49,17 +49,22 @@
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
                         {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="https://buymeacoffee.com/pydev1" target="_blank" title="Support the developer with a coffee!"><i class="fa-solid fa-mug-hot"></i> Buy me a coffee</a></li>
                         <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
         {% block content %}
-        <div class="container px-4 px-lg-5"><div class="small text-center text-muted">Copyright &copy; 2025 - Total Bankroll</div></div>
         {% endblock %}
         <!-- Footer-->
         <footer class="bg-light py-5">
-            <div class="container px-4 px-lg-5"><div class="small text-center text-muted">Copyright &copy; 2025 - Total Bankroll</div></div>
+            <div class="container px-4 px-lg-5">
+                <div class="d-flex justify-content-center align-items-center">
+                    <a href="https://buymeacoffee.com/pydev1" target="_blank" class="text-muted me-3" title="Support the developer with a coffee!"><i class="fa-solid fa-mug-hot"></i> Buy me a coffee</a>
+                    <div class="small text-muted">Copyright &copy; 2025 - Total Bankroll</div>
+                </div>
+            </div>
         </footer>
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
