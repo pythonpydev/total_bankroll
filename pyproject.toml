@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "total_bankroll"
 version = "0.1.0"
@@ -6,7 +10,17 @@ authors = [{ name = "pythonpydev", email = "pythonpydev1@gmail.com" }]
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "Flask-Bcrypt",
+    "Flask-Dance[sqla]",
+    "Flask-Limiter",
+    "Flask-Mail",
+    "Flask-Migrate",
+    "Flask-Security-Too[common,email]",
+    "Flask-WTF",
+    "PyMySQL",
+    "python-dotenv",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -43,8 +57,3 @@ extend-exclude = '''
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
-python_functions = "test_*"
-
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
