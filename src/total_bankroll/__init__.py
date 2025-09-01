@@ -13,6 +13,7 @@ import logging
 from flask_security import current_user
 from datetime import datetime
 from .extensions import db, mail, csrf
+from . import commands
 from flask_migrate import Migrate
 
 # Configure logging
@@ -63,6 +64,7 @@ def create_app():
     from .models import User, OAuth
     from .currency import init_currency_command
     app.cli.add_command(init_currency_command)
+    commands.register_commands(app)
 
     @app.after_request
     def add_security_headers(response):
@@ -211,7 +213,6 @@ def create_app():
     from .routes.assets import assets_bp
     from .routes.withdrawal import withdrawal_bp
     from .routes.deposit import deposit_bp
-    from .routes.currency_update import currency_update_bp
     from .routes.about import about_bp
     from .routes.charts import charts_bp
     from .routes.settings import settings_bp
@@ -228,7 +229,6 @@ def create_app():
     app.register_blueprint(assets_bp)
     app.register_blueprint(withdrawal_bp)
     app.register_blueprint(deposit_bp)
-    app.register_blueprint(currency_update_bp)
     app.register_blueprint(about_bp)
     app.register_blueprint(charts_bp, url_prefix='/charts')
     app.register_blueprint(settings_bp)
