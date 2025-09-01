@@ -210,41 +210,6 @@ def reset_password(token):
 def google():
     return redirect(url_for('google.login'))
 
-
-@auth_bp.route('/google/authorized')
-def google_authorized():
-    if not google_blueprint.authorized:
-        flash("Google login failed.", "danger")
-        return redirect(url_for("auth.login"))
-
-    resp = google_blueprint.get("/oauth2/v2/userinfo")
-    if not resp.ok:
-        flash("Failed to fetch user info from Google.", "danger")
-        return redirect(url_for("auth.login"))
-
-    info = resp.json()
-    email = info.get("email")
-    if not email:
-        flash("Email not provided by Google.", 'danger')
-        return redirect(url_for("auth.login"))
-
-    user = db.session.query(User).filter_by(email=email).first()
-    if not user:
-        user = User(
-            email=email,
-            is_confirmed=True,
-            confirmed_on=datetime.utcnow(),
-            fs_uniquifier=os.urandom(24).hex(),
-            active=True,
-            created_at=datetime.utcnow()
-        )
-        db.session.add(user)
-        db.session.commit()
-
-    login_user(user)
-    flash("Logged in with Google successfully!", "success")
-    return redirect(url_for('home.home'))
-
 @auth_bp.route('/twitter')
 def twitter():
     flash('Twitter login is not enabled.', 'danger')
@@ -263,14 +228,6 @@ def facebook():
     if not facebook.authorized:
         return redirect(url_for('facebook.login'))
     return redirect(url_for('home.home'))
-
-@auth_bp.route('/facebook/authorized')
-def facebook_auth():
-    if facebook.authorized:
-        flash('Logged in with Facebook successfully!', 'success')
-        return redirect(url_for('home.home'))
-    flash('Facebook login failed.', 'danger')
-    return redirect(url_for('auth.login'))
 
 @auth_bp.route('/logout')
 @login_required

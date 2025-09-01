@@ -6,6 +6,15 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(24).hex())
     EXCHANGE_RATE_API_KEY = os.getenv('EXCHANGE_RATE_API_KEY')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {'pool_recycle': 280}
+    SESSION_PROTECTION = 'strong'
+
+    # --- Flask-Security settings ---
+    SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT', 'default_salt_please_change')
+    SECURITY_PASSWORD_HASH = 'argon2'
+    SECURITY_CONFIRMABLE = True
+    SECURITY_RECOVERABLE = True
 
     # --- Mail settings ---
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')

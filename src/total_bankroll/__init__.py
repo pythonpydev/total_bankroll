@@ -1,6 +1,6 @@
 import os
 __version__ = "0.1.0"
-from flask import Flask, session
+from flask import Flask, session, flash
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_login import LoginManager
@@ -8,7 +8,7 @@ from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.facebook import make_facebook_blueprint
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized
-from .config import config
+from .config import config 
 import logging
 from flask_security import current_user
 from datetime import datetime
@@ -30,32 +30,9 @@ def create_app():
     # App initialization
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
     app.config.from_object(config[os.getenv('FLASK_ENV', 'development')])
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI']
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 280}
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-    app.config['SECURITY_PASSWORD_SALT'] = os.getenv('SECURITY_PASSWORD_SALT', 'default_salt_if_missing')
-    app.config['SECURITY_PASSWORD_HASH'] = 'argon2'
-    app.config['SECURITY_PASSWORD_SINGLE_HASH'] = False  # Added for compatibility
-    app.config['SESSION_PROTECTION'] = 'strong'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+    
     # Initialize CSRFProtect
     csrf.init_app(app)
-
-    # Mail configuration
-    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
-    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-
-    # Flask-Security configuration
-    app.config['SECURITY_CONFIRMABLE'] = True
-    app.config['SECURITY_RECOVERABLE'] = True
-
-    # Log configuration values
 
     db.init_app(app)
     mail.init_app(app)
@@ -99,10 +76,11 @@ def create_app():
     google_bp = make_google_blueprint(
         client_id=os.getenv('GOOGLE_CLIENT_ID'),
         client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-        redirect_to='auth.google_auth',
+        redirect_to='home.home',
         scope=['openid', 'email', 'profile']
     )
     app.register_blueprint(google_bp, url_prefix='/security/google')
+    
 
     # Conditionally register Facebook blueprint
     facebook_enabled = os.getenv('FACEBOOK_CLIENT_ID') and os.getenv('FACEBOOK_CLIENT_SECRET')
@@ -110,7 +88,7 @@ def create_app():
         facebook_bp = make_facebook_blueprint(
             client_id=os.getenv('FACEBOOK_CLIENT_ID'),
             client_secret=os.getenv('FACEBOOK_CLIENT_SECRET'),
-            redirect_to='auth.facebook_auth',
+            redirect_to='home.home',
             scope=['email']
         )
         app.register_blueprint(facebook_bp, url_prefix='/security/facebook')
@@ -122,89 +100,77 @@ def create_app():
     if facebook_enabled:
         facebook_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
 
+    from flask_security import login_user
+
+    def _get_or_create_oauth_user(provider_name, user_info, token, user_datastore):
+        """
+        Finds an existing user or creates a new one for OAuth login.
+        Also creates or updates the OAuth link.
+        """
+        email = user_info.get("email")
+        if not email:
+            flash(f"Email not provided by {provider_name.title()}.", 'danger')
+            return False
+
+        # Find or create user
+        user = user_datastore.find_user(email=email)
+        if not user:
+            user = user_datastore.create_user(
+                email=email,
+                fs_uniquifier=os.urandom(24).hex(),
+                active=True,
+                is_confirmed=True,
+                confirmed_on=datetime.utcnow(),
+                created_at=datetime.utcnow()
+            )
+        
+        # Find or create OAuth link
+        provider_user_id = user_info['id']
+        oauth = OAuth.query.filter_by(provider=provider_name, provider_user_id=provider_user_id).first()
+        if not oauth:
+            oauth = OAuth(provider=provider_name, provider_user_id=provider_user_id, token=token, user=user)
+            db.session.add(oauth)
+        else:
+            oauth.token = token # Update token
+
+        user.last_login_at = datetime.utcnow()
+        db.session.commit()
+        login_user(user)
+        flash(f'Logged in successfully with {provider_name.title()}!', 'success')
+
     # Handle OAuth callbacks
     @oauth_authorized.connect_via(google_bp)
     def google_logged_in(blueprint, token):
         if not token:
             logger.error("Google OAuth token missing")
+            flash("Google login failed.", "danger")
             return False
+
         resp = blueprint.session.get('/oauth2/v2/userinfo')
-        if resp.ok:
-            user_info = resp.json()
-            provider_user_id = user_info['id']
-            email = user_info['email']
-            with db.session.no_autoflush:
-                oauth = OAuth.query.filter_by(provider='google', provider_user_id=provider_user_id).first()
-                if oauth:
-                    oauth.user.last_login_at = datetime.utcnow()
-                    db.session.commit()
-                    login_user(oauth.user)
-                else:
-                    user = user_datastore.find_user(email=email)
-                    if not user:
-                        user = user_datastore.create_user(
-                            email=email,
-                            password_hash=None,
-                            fs_uniquifier=os.urandom(24).hex(),
-                            active=True,
-                            is_confirmed=True,
-                            confirmed_on=datetime.utcnow(),
-                            created_at=datetime.utcnow(),
-                            last_login_at=datetime.utcnow()
-                        )
-                        db.session.commit()
-                    oauth = OAuth(
-                        provider='google',
-                        provider_user_id=provider_user_id,
-                        token=token,
-                        user=user
-                    )
-                    db.session.add(oauth)
-                    db.session.commit()
-                    login_user(user)
-        return False
+        if not resp.ok:
+            logger.error(f"Failed to fetch user info from Google: {resp.text}")
+            flash("Failed to fetch user info from Google.", "danger")
+            return False
+
+        user_info = resp.json()
+        _get_or_create_oauth_user('google', user_info, token, user_datastore)
 
     if facebook_enabled:
         @oauth_authorized.connect_via(facebook_bp)
         def facebook_logged_in(blueprint, token):
             if not token:
                 logger.error("Facebook OAuth token missing")
+                flash("Facebook login failed.", "danger")
                 return False
+
             resp = blueprint.session.get('/me?fields=id,email')
-            if resp.ok:
-                user_info = resp.json()
-                provider_user_id = user_info['id']
-                email = user_info['email']
-                with db.session.no_autoflush:
-                    oauth = OAuth.query.filter_by(provider='facebook', provider_user_id=provider_user_id).first()
-                    if oauth:
-                        oauth.user.last_login_at = datetime.utcnow()
-                        db.session.commit()
-                        login_user(oauth.user)
-                    else:
-                        user = user_datastore.find_user(email=email)
-                        if not user:
-                            user = user_datastore.create_user(
-                                email=email,
-                                password_hash=None,
-                                fs_uniquifier=os.urandom(24).hex(),
-                                active=True,
-                                is_confirmed=True,
-                                confirmed_on=datetime.utcnow(),
-                                created_at=datetime.utcnow(),
-                                last_login_at=datetime.utcnow()
-                            )
-                            db.session.commit()
-                        oauth = OAuth(
-                            provider='facebook',
-                            provider_user_id=provider_user_id,
-                            token=token,
-                            user=user
-                        )
-                        db.session.add(oauth)
-                        db.session.commit()
-                        login_user(user)
-            return False
+            if not resp.ok:
+                logger.error(f"Failed to fetch user info from Facebook: {resp.text}")
+                flash("Failed to fetch user info from Facebook.", "danger")
+                return False
+
+            user_info = resp.json()
+            _get_or_create_oauth_user('facebook', user_info, token, user_datastore)
 
     # Register blueprints
     from .routes.auth import auth_bp
