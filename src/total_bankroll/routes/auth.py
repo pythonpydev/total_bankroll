@@ -3,17 +3,17 @@ from flask_security import login_user, logout_user, login_required, current_user
 from flask_security.utils import hash_password, verify_password
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo
-from itsdangerous import URLSafeTimedSerializer
+from wtforms.validators import DataRequired, Email, EqualTo 
 from ..extensions import db, mail
-from ..models import User
+from ..models import User 
 from flask_mail import Message
 import os
 from sqlalchemy.exc import IntegrityError
 from flask_dance.contrib.google import google as google_blueprint
-from flask_dance.contrib.facebook import facebook
+from flask_dance.contrib.facebook import facebook as facebook_blueprint
 from datetime import datetime
 
+from ..utils import generate_token, confirm_token
 auth_bp = Blueprint('auth', __name__)
 
 class LoginForm(FlaskForm):
@@ -23,7 +23,8 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirm_password', message='Passwords must match.')])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
     submit = SubmitField('Register')
 
 class ForgotPasswordForm(FlaskForm):
@@ -35,100 +36,76 @@ class ResetPasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
-def generate_confirmation_token(email):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
-
-def confirm_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-    try:
-        email = serializer.loads(
-            token,
-            salt=current_app.config['SECURITY_PASSWORD_SALT'],
-            max_age=expiration
-        )
-        return email
-    except Exception as e:
-        current_app.logger.error(f"Error confirming token: {str(e)}")
-        return False
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        session.pop('_flashes', None)
     form = LoginForm()
-    if request.method == 'POST':
-        if not form.validate_on_submit():
-            for field, errors in form.errors.items():
-                for error in errors:
-                    flash(f"Error in {field}: {error}", 'danger')
-            return render_template('security/login_user.html', form=form)
+    if not form.validate_on_submit():
+        return render_template('security/login_user.html', form=form)
 
-        user_datastore = current_app.extensions['security'].datastore
-        user = user_datastore.find_user(email=form.email.data)
-        if user and user.password_hash and verify_password(form.password.data, user.password_hash):
-            if not user.is_confirmed:
-                flash('Please verify your email address before logging in.', 'danger')
-                return redirect(url_for('auth.login'))
-            if user.id is None:
-                flash('Account error: No user ID. Please contact support.', 'danger')
-                return redirect(url_for('auth.login'))
-            user.last_login_at = datetime.utcnow()
-            db.session.commit()
-            login_user(user)
-            flash('Logged in successfully!', 'success')
-            return redirect(url_for('home.home'))
-        else:
-            flash('Invalid email or password.', 'danger')
-            return redirect(url_for('auth.login'))
-            
-    return render_template('security/login_user.html', form=form)
+    user_datastore = current_app.extensions['security'].datastore
+    user = user_datastore.find_user(email=form.email.data)
+
+    if not user or not user.password_hash or not verify_password(form.password.data, user.password_hash):
+        flash('Invalid email or password.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    if not user.is_confirmed:
+        flash('Please verify your email address before logging in.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    if user.id is None:
+        flash('Account error: No user ID. Please contact support.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    user.last_login_at = datetime.utcnow()
+    db.session.commit()
+    login_user(user)
+    flash('Logged in successfully!', 'success')
+    return redirect(url_for('home.home'))
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterForm()
     if request.method == 'GET':
         session.pop('_flashes', None)
-    if form.validate_on_submit():
+    form = RegisterForm()
+    if not form.validate_on_submit():
+        return render_template('security/register_user.html', form=form)
+
+    try:
+        # Create user manually to bypass datastore role issues
+        user = User(
+            email=form.email.data,
+            password_hash=hash_password(form.password.data),
+            fs_uniquifier=os.urandom(24).hex(),
+            active=True,
+            is_confirmed=False,
+            created_at=datetime.utcnow()
+        )
+        db.session.add(user)
+        db.session.commit()
+        token = generate_token(user.email)
+        confirm_url = url_for('auth.confirm_email', token=token, _external=True)
+        msg = Message(
+            'Confirm Your Email',
+            recipients=[user.email],
+            body=f"Please click the link to confirm your email: {confirm_url}\nThe link expires in 1 hour."
+        )
         try:
-            # Create user and commit to database
-            user = User(
-                email=form.email.data,
-                password_hash=hash_password(form.password.data),
-                fs_uniquifier=os.urandom(24).hex(),
-                active=True,
-                created_at=datetime.utcnow(),
-                last_login_at=None,
-                is_confirmed=False
-            )
-            db.session.add(user)
-            db.session.commit()
-            
-            # Send confirmation email
-            token = generate_confirmation_token(user.email)
-            confirm_url = url_for('auth.confirm_email', token=token, _external=True)
-            msg = Message(
-                'Confirm Your Email',
-                recipients=[user.email],
-                body=f"Please click the link to confirm your email: {confirm_url}\nThe link expires in 1 hour."
-            )
-            try:
-                mail.send(msg)
-                flash('Registration successful! Please check your email to verify your account.', 'success')
-            except Exception as e:
-                current_app.logger.error(f"Failed to send confirmation email to {user.email}: {str(e)}")
-                flash('Registration successful, but failed to send confirmation email. Please contact support.', 'warning')
-            return redirect(url_for('auth.login'))
-        except IntegrityError as e:
-            db.session.rollback()
-            current_app.logger.error(f"Database integrity error: {str(e)}")
-            flash('Email already exists. Please use a different email.', 'danger')
+            mail.send(msg)
+            flash('Registration successful! Please check your email to verify your account.', 'success')
         except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error during registration: {str(e)}")
-            flash('Registration failed. Please try again.', 'danger')
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f"Error in {field}: {error}", 'danger')
+            current_app.logger.error(f"Failed to send confirmation email to {user.email}: {str(e)}")
+            flash('Registration successful, but failed to send confirmation email. Please contact support.', 'warning')
+        return redirect(url_for('auth.login'))
+    except IntegrityError:
+        db.session.rollback()
+        flash('Email already exists. Please use a different email.', 'danger')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error during registration: {str(e)}")
+        flash('Registration failed. Please try again.', 'danger')
     return render_template('security/register_user.html', form=form)
 
 @auth_bp.route('/confirm/<token>')
@@ -156,7 +133,7 @@ def forgot_password():
     if form.validate_on_submit():
         user = db.session.query(User).filter_by(email=form.email.data).first()
         if user:
-            token = generate_confirmation_token(user.email)
+            token = generate_token(user.email)
             reset_url = url_for('auth.reset_password', token=token, _external=True)
             msg = Message(
                 'Reset Your Password',
@@ -208,6 +185,8 @@ def reset_password(token):
 
 @auth_bp.route('/google')
 def google():
+    if current_user.is_authenticated:
+        return redirect(url_for('home.home'))
     return redirect(url_for('google.login'))
 
 @auth_bp.route('/twitter')
@@ -225,9 +204,9 @@ def facebook():
     if not os.getenv('FACEBOOK_CLIENT_ID') or not os.getenv('FACEBOOK_CLIENT_SECRET'):
         flash('Facebook login is not enabled.', 'danger')
         return redirect(url_for('auth.login'))
-    if not facebook.authorized:
-        return redirect(url_for('facebook.login'))
-    return redirect(url_for('home.home'))
+    if current_user.is_authenticated:
+        return redirect(url_for('home.home'))
+    return redirect(url_for('facebook.login'))
 
 @auth_bp.route('/logout')
 @login_required

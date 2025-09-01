@@ -6,10 +6,9 @@ from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
 from ..extensions import db, mail, csrf
 from ..models import User
 from flask_security.utils import hash_password
-from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer
-import os
+from flask_mail import Message 
 from datetime import datetime
+from ..utils import generate_token, confirm_token, is_email_taken
 
 settings_bp = Blueprint("settings", __name__)
 
@@ -22,22 +21,8 @@ class UpdatePasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
     submit_password = SubmitField('Save Password')
 
-def generate_confirmation_token(email):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
-
-def confirm_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-    try:
-        email = serializer.loads(
-            token,
-            salt=current_app.config['SECURITY_PASSWORD_SALT'],
-            max_age=expiration
-        )
-        return email
-    except Exception as e:
-        current_app.logger.error(f"Error confirming token: {str(e)}")
-        return False
+class DeleteUserForm(FlaskForm):
+    submit = SubmitField('Yes, delete my account')
 
 @settings_bp.route("/settings")
 @login_required
@@ -49,23 +34,28 @@ def settings_page():
 @login_required
 def delete_user_account():
     """Show confirmation dialog for deleting user account."""
-    return render_template("confirm_delete_user_account.html")
+    form = DeleteUserForm()
+    return render_template("confirm_delete_user_account.html", form=form)
 
 @settings_bp.route("/delete_user_account_confirmed", methods=["POST"])
 @login_required
-@csrf.exempt
 def delete_user_account_confirmed():
     """Deletes the user account."""
-    try:
-        user = current_user
-        db.session.delete(user)
-        db.session.commit()
-        logout_user()
-        flash("User account deleted successfully!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error deleting user account: {e}", "danger")
-    return redirect(url_for("auth.login"))
+    form = DeleteUserForm()
+    if form.validate_on_submit():
+        try:
+            user = current_user
+            db.session.delete(user)
+            db.session.commit()
+            logout_user()
+            flash("User account deleted successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting user account: {e}", "danger")
+        return redirect(url_for("auth.login"))
+    
+    flash("Invalid request. Please try again.", "danger")
+    return redirect(url_for('settings.settings_page'))
 
 @settings_bp.route("/update_account_details")
 @login_required
@@ -86,14 +76,13 @@ def update_email():
             flash('The new email address is the same as your current email address.', 'info')
             return redirect(url_for('settings.update_account_details'))
 
-        # Check if the new email is already taken by another user
-        existing_user = db.session.query(User).filter_by(email=new_email).first()
-        if existing_user and existing_user.id != user.id:
+        # Check if the new email is already taken
+        if is_email_taken(new_email, user.id):
             flash('This email address is already registered to another account.', 'danger')
             return redirect(url_for('settings.update_account_details'))
 
         # Send confirmation email
-        token = generate_confirmation_token(new_email)
+        token = generate_token(new_email)
         confirm_url = url_for('settings.confirm_new_email', token=token, _external=True)
         msg = Message(
             'Confirm Your New Email',
@@ -139,9 +128,8 @@ def confirm_new_email(token):
         flash('This is already your current email address.', 'info')
         return redirect(url_for('settings.settings_page'))
 
-    # Check if the new email is already taken by another user
-    existing_user = db.session.query(User).filter_by(email=email).first()
-    if existing_user and existing_user.id != user.id:
+    # Check if the new email is already taken
+    if is_email_taken(email, user.id):
         flash('This email address is already registered to another account.', 'danger')
         return redirect(url_for('settings.settings_page'))
 

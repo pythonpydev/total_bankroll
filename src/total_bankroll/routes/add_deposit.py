@@ -3,8 +3,9 @@ from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import func
 from flask_security import login_required, current_user
+from ..utils import get_user_bankroll_data, get_sorted_currencies
 from ..extensions import db
-from ..models import Deposits, Currency, SiteHistory, Sites, AssetHistory, Assets, Drawings
+from ..models import Deposits, Currency
 
 add_deposit_bp = Blueprint("add_deposit", __name__)
 
@@ -48,47 +49,9 @@ def add_deposit():
         return redirect(url_for("deposit.deposit"))
     else:
         today = datetime.now().strftime("%Y-%m-%d")
-        
-        currencies = db.session.query(Currency.name, Currency.code).\
-            order_by(\
-                db.case(\
-                    (Currency.name == 'US Dollar', 1),
-                    (Currency.name == 'British Pound', 2),
-                    (Currency.name == 'Euro', 3),
-                    else_=4\
-                ),
-                Currency.name\
-            ).all()
-        currencies = [{'code': c.code, 'name': c.name} for c in currencies]
-
-        # Calculate total bankroll and profit for display
-        current_poker_total = db.session.query(func.sum(SiteHistory.amount / Currency.rate)).\
-            join(Sites, SiteHistory.site_id == Sites.id).\
-            join(Currency, SiteHistory.currency == Currency.code).\
-            filter(SiteHistory.user_id == current_user.id).\
-            filter(SiteHistory.recorded_at == db.session.query(func.max(SiteHistory.recorded_at)).
-                   filter_by(site_id=SiteHistory.site_id, user_id=current_user.id)).\
-            scalar() or Decimal(0)
-
-        current_asset_total = db.session.query(func.sum(AssetHistory.amount / Currency.rate)).\
-            join(Assets, AssetHistory.asset_id == Assets.id).\
-            join(Currency, AssetHistory.currency == Currency.code).\
-            filter(AssetHistory.user_id == current_user.id).\
-            filter(AssetHistory.recorded_at == db.session.query(func.max(AssetHistory.recorded_at)).
-                   filter_by(asset_id=AssetHistory.asset_id, user_id=current_user.id)).\
-            scalar() or Decimal(0)
-
-        total_withdrawals = db.session.query(func.sum(Drawings.amount / Currency.rate)).\
-            join(Currency, Drawings.currency == Currency.code).\
-            filter(Drawings.user_id == current_user.id).\
-            scalar() or Decimal(0)
-
-        total_deposits = db.session.query(func.sum(Deposits.amount / Currency.rate)).\
-            join(Currency, Deposits.currency == Currency.code).\
-            filter(Deposits.user_id == current_user.id).\
-            scalar() or Decimal(0)
-
-        total_bankroll = current_poker_total + current_asset_total
-        total_profit = total_bankroll - total_deposits + total_withdrawals
+        currencies = get_sorted_currencies()
+        # Use the centralized utility function to get bankroll data
+        bankroll_data = get_user_bankroll_data(current_user.id)
+        total_profit = bankroll_data['total_profit']
 
         return render_template("add_deposit.html", today=today, currencies=currencies, total_profit=total_profit)

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, current_app
+from flask import Blueprint, render_template, jsonify, current_app, abort
 from flask_security import current_user, login_required
 from ..extensions import db
 from datetime import datetime, timedelta
@@ -13,75 +13,22 @@ def charts_page():
     """Charts page."""
     return render_template("charts.html")
 
-@charts_bp.route("/poker_sites/line")
-def poker_sites_line_chart_page():
-    """Poker Sites Line Chart page."""
-    return render_template("poker_sites_line_chart.html")
+@charts_bp.route("/<string:entity>/<string:chart_type>")
+@login_required
+def generic_chart_page(entity, chart_type):
+    """Renders a generic chart page for a given entity and chart type."""
+    allowed_entities = ["poker_sites", "assets", "bankroll", "profit", "withdrawals", "deposits"]
+    allowed_chart_types = ["line", "bar", "pie", "polar_area", "radar", "scatter"]
 
-@charts_bp.route("/poker_sites/bar")
-def poker_sites_bar_chart_page():
-    """Poker Sites Bar Chart page."""
-    return render_template("poker_sites_bar_chart.html")
+    if entity not in allowed_entities or chart_type not in allowed_chart_types:
+        abort(404)
 
-@charts_bp.route("/poker_sites/pie")
-def poker_sites_pie_chart_page():
-    """Poker Sites Pie Chart page."""
-    return render_template("poker_sites_pie_chart.html")
-
-@charts_bp.route("/poker_sites/polar_area")
-def poker_sites_polar_area_chart_page():
-    """Poker Sites Polar Area Chart page."""
-    return render_template("poker_sites_polar_area_chart.html")
-
-@charts_bp.route("/poker_sites/radar")
-def poker_sites_radar_chart_page():
-    """Poker Sites Radar Chart page."""
-    return render_template("poker_sites_radar_chart.html")
-
-@charts_bp.route("/poker_sites/scatter")
-def poker_sites_scatter_chart_page():
-    """Poker Sites Scatter Chart page."""
-    return render_template("poker_sites_scatter_chart.html")
-
-@charts_bp.route("/assets/line")
-def assets_line_chart_page():
-    """Assets Line Chart page."""
-    return render_template("assets_line_chart.html")
-
-@charts_bp.route("/assets/bar")
-def assets_bar_chart_page():
-    """Assets Bar Chart page."""
-    return render_template("assets_bar_chart.html")
-
-@charts_bp.route("/assets/scatter")
-def assets_scatter_chart_page():
-    """Assets Scatter Chart page."""
-    return render_template("assets_scatter_chart.html")
-
-@charts_bp.route("/assets/pie")
-def assets_pie_chart_page():
-    """Assets Pie Chart page."""
-    return render_template("assets_pie_chart.html")
-
-@charts_bp.route("/assets/polar_area")
-def assets_polar_area_chart_page():
-    """Assets Polar Area Chart page."""
-    return render_template("assets_polar_area_chart.html")
-
-@charts_bp.route("/assets/radar")
-def assets_radar_chart_page():
-    """Assets Radar Chart page."""
-    return render_template("assets_radar_chart.html")
-
-@charts_bp.route("/bankroll/line")
-def bankroll_line_chart_page():
-    """Bankroll Line Chart page."""
-    return render_template("bankroll_line_chart.html")
-
-@charts_bp.route("/bankroll/bar")
-def bankroll_bar_chart_page():
-    """Bankroll Bar Chart page."""
-    return render_template("bankroll_bar_chart.html")
+    template_name = f"{entity}_{chart_type}_chart.html"
+    try:
+        return render_template(template_name)
+    except Exception:
+        # If a specific template doesn't exist (e.g., profit_pie_chart.html), abort.
+        abort(404)
 
 @charts_bp.route("/bankroll/data")
 @login_required
@@ -89,8 +36,8 @@ def get_bankroll_data():
     try:
         with db.session.connection() as conn:
             # Get currency rates
-            result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in result.mappings()}
+            result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in result.mappings()}
 
             # Get all site history
             sites_sql = text("""
@@ -186,8 +133,8 @@ def get_poker_sites_historical_data():
     try:
         with db.session.connection() as conn:
             # Get currency rates
-            result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in result.mappings()}
+            result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in result.mappings()}
 
             # Get all site history
             sql = text("""
@@ -273,8 +220,8 @@ def get_poker_sites_historical_data():
 def get_assets_historical_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             sql = text("""
                 SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
@@ -349,8 +296,8 @@ def get_assets_historical_data():
 def get_assets_pie_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             sql = text("""
                 SELECT ah.asset_id, ah.amount, ah.currency, ah.recorded_at, a.name
@@ -384,8 +331,8 @@ def get_assets_pie_data():
 def get_profit_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             # Get all site history
             sites_sql = text("""
@@ -533,8 +480,8 @@ def get_profit_data():
 def get_withdrawals_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             sql = text("""
                 SELECT amount, currency, date
@@ -582,8 +529,8 @@ def get_withdrawals_data():
 def get_deposits_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             sql = text("""
                 SELECT amount, currency, date
@@ -626,43 +573,13 @@ def get_deposits_data():
         current_app.logger.error(f"Error in get_deposits_data: {e}")
         return jsonify({'error': str(e)}), 500
 
-@charts_bp.route("/deposits/line")
-def deposits_line_chart_page():
-    """Deposits Line Chart page."""
-    return render_template("deposits_line_chart.html")
-
-@charts_bp.route("/deposits/bar")
-def deposits_bar_chart_page():
-    """Deposits Bar Chart page."""
-    return render_template("deposits_bar_chart.html")
-
-@charts_bp.route("/withdrawals/line")
-def withdrawals_line_chart_page():
-    """Withdrawals Line Chart page."""
-    return render_template("withdrawals_line_chart.html")
-
-@charts_bp.route("/withdrawals/bar")
-def withdrawals_bar_chart_page():
-    """Withdrawals Bar Chart page."""
-    return render_template("withdrawals_bar_chart.html")
-
-@charts_bp.route("/profit/line")
-def profit_line_chart_page():
-    """Profit Line Chart page."""
-    return render_template("profit_line_chart.html")
-
-@charts_bp.route("/profit/bar")
-def profit_bar_chart_page():
-    """Profit Bar Chart page."""
-    return render_template("profit_bar_chart.html")
-
 @charts_bp.route("/poker_sites_pie_data")
 @login_required
 def get_poker_sites_pie_data():
     try:
         with db.session.connection() as conn:
-            currency_result = conn.execute(text("SELECT name, rate FROM currency"))
-            currency_rates = {row['name']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
+            currency_result = conn.execute(text("SELECT code, rate FROM currency"))
+            currency_rates = {row['code']: Decimal(str(row['rate'])) for row in currency_result.mappings()}
 
             sql = text("""
                 SELECT sh.site_id, sh.amount, sh.currency, sh.recorded_at, s.name

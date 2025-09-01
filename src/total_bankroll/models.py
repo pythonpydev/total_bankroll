@@ -6,7 +6,7 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
+    password_hash = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login_at = db.Column(db.DateTime, nullable=True)
@@ -15,7 +15,7 @@ class User(db.Model, UserMixin):
     confirmed_on = db.Column(db.DateTime, nullable=True)
 
     def get_id(self):
-        return str(self.id)
+        return self.fs_uniquifier  # Use fs_uniquifier for Flask-Security
 
 class OAuth(db.Model):
     __tablename__ = 'oauth'

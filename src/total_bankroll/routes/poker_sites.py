@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 import logging
 from sqlalchemy import func
+from ..utils import get_sorted_currencies
 from ..extensions import db
 from ..models import Sites, SiteHistory, Currency
 
@@ -22,29 +23,47 @@ def poker_sites_page():
 
     # Get all sites for the user
     sites = db.session.query(Sites).filter_by(user_id=current_user.id).order_by(Sites.name).all()
+    site_ids = [site.id for site in sites]
+
+    # Efficiently fetch the latest two history records for all sites in one query
+    if site_ids:
+        from sqlalchemy.orm import aliased
+        h2 = aliased(SiteHistory)
+        subq = (
+            db.session.query(
+                SiteHistory,
+                func.row_number()
+                .over(
+                    partition_by=SiteHistory.site_id,
+                    order_by=SiteHistory.recorded_at.desc(),
+                )
+                .label("rn"),
+            )
+            .filter(SiteHistory.site_id.in_(site_ids))
+            .subquery()
+        )
+        all_history_records = db.session.query(subq).filter(subq.c.rn <= 2).all()
+
+        # Group history records by site_id for easy lookup
+        history_by_site = {}
+        for record in all_history_records:
+            if record.site_id not in history_by_site:
+                history_by_site[record.site_id] = []
+            history_by_site[record.site_id].append(record)
+    else:
+        history_by_site = {}
 
     poker_sites_data = []
     total_current = Decimal(0)
     total_previous = Decimal(0)
 
     for site in sites:
-        # Get the latest two history records for each site
-        history_records = db.session.query(SiteHistory).\
-            filter_by(site_id=site.id, user_id=current_user.id).\
-            order_by(SiteHistory.recorded_at.desc()).\
-            limit(2).all()
+        history_records = history_by_site.get(site.id, [])
 
-        current_amount = Decimal(0)
-        previous_amount = Decimal(0)
-        currency_code = "USD"
-        previous_currency_code = "USD"
-
-        if len(history_records) > 0:
-            current_amount = history_records[0].amount
-            currency_code = history_records[0].currency
-        if len(history_records) > 1:
-            previous_amount = history_records[1].amount
-            previous_currency_code = history_records[1].currency
+        current_amount = history_records[0].amount if len(history_records) > 0 else Decimal(0)
+        currency_code = history_records[0].currency if len(history_records) > 0 else "USD"
+        previous_amount = history_records[1].amount if len(history_records) > 1 else Decimal(0)
+        previous_currency_code = history_records[1].currency if len(history_records) > 1 else "USD"
 
         rate = currency_rates.get(currency_code, Decimal('1.0'))
         previous_rate = currency_rates.get(previous_currency_code, Decimal('1.0'))
@@ -67,17 +86,7 @@ def poker_sites_page():
         total_current += current_amount_usd
         total_previous += previous_amount_usd
 
-    currencies = db.session.query(Currency.name, Currency.code).\
-        order_by(
-            db.case(
-                (Currency.name == 'US Dollar', 1),
-                (Currency.name == 'British Pound', 2),
-                (Currency.name == 'Euro', 3),
-                else_=4
-            ),
-            Currency.name
-        ).all()
-
+    currencies = get_sorted_currencies()
     return render_template("poker_sites.html", poker_sites=poker_sites_data, currencies=currencies, total_current=total_current, total_previous=total_previous)
 
 
@@ -129,17 +138,7 @@ def add_site():
         flash("Site added successfully!", "success")
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
-        currencies = db.session.query(Currency.name, Currency.code).\
-            order_by(
-                db.case(
-                    (Currency.name == 'US Dollar', 1),
-                    (Currency.name == 'British Pound', 2),
-                    (Currency.name == 'Euro', 3),
-                    else_=4
-                ),
-                Currency.name
-            ).all()
-        currencies = [{'code': c.code, 'name': c.name} for c in currencies]  # Extract names and codes from objects
+        currencies = get_sorted_currencies()
         logger.debug(f"Currencies fetched: {currencies}")
         return render_template("add_site.html", currencies=currencies)
 
@@ -182,30 +181,17 @@ def update_site(site_id):
         flash("Site updated successfully!", "success")
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
-        # Get current amount and currency from site_history
-        current_amount_row = db.session.query(SiteHistory).\
+        # Get the latest two history records to find current and previous amounts
+        history_records = db.session.query(SiteHistory).\
             filter_by(site_id=site.id, user_id=current_user.id).\
             order_by(SiteHistory.recorded_at.desc()).\
-            first()
-        
-        current_amount = current_amount_row.amount if current_amount_row else Decimal(0)
-        current_currency = current_amount_row.currency if current_amount_row else "USD"
+            limit(2).all()
 
-        # Get previous amount (second most recent entry)
-        previous_amount_row = db.session.query(SiteHistory).\
-            filter_by(site_id=site.id, user_id=current_user.id).\
-            order_by(SiteHistory.recorded_at.desc()).\
-            offset(1).limit(1).first()
-        
-        previous_amount = previous_amount_row.amount if previous_amount_row else Decimal(0)
+        current_amount = history_records[0].amount if len(history_records) > 0 else Decimal(0)
+        current_currency = history_records[0].currency if len(history_records) > 0 else "USD"
+        previous_amount = history_records[1].amount if len(history_records) > 1 else Decimal(0)
 
-        currencies = db.session.query(Currency.name, Currency.code).            order_by(                db.case(                    (Currency.name == 'US Dollar', 1),
-                    (Currency.name == 'British Pound', 2),
-                    (Currency.name == 'Euro', 3),
-                    else_=4                ),
-                Currency.name            ).all()
-        currencies = [{'code': c.code, 'name': c.name} for c in currencies]  # Extract names and codes from objects
-
+        currencies = get_sorted_currencies()
         return render_template("update_site.html", site=site, currencies=currencies, previous_amount=previous_amount, current_amount=current_amount, current_currency=current_currency)
 
 

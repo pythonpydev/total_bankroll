@@ -386,15 +386,16 @@ def tournament_stakes_page():
 
             # Move down logic
             if found_stake_index > 0:
-                move_down_stake_dec = tournament_stakes_list_dec[found_stake_index - 1]
                 move_down_stake_level = all_buyins_str[found_stake_index - 1]
-                move_down_stake_required_br = move_down_stake_dec * mean_buy_ins
-                amount_can_lose = total_bankroll - move_down_stake_required_br
                 
-                if amount_can_lose > 0:
+                # The threshold is based on the bankroll required for the *current* recommended stake.
+                current_stake_required_br = current_stake_dec * mean_buy_ins
+                amount_can_lose = total_bankroll - current_stake_required_br
+                
+                if amount_can_lose > 0: # Only show if they have a buffer
                     move_down_message = (
                         f"You will need to move down to {move_down_stake_level} tournaments if you lose "
-                        f"${amount_can_lose:.2f} to drop to a bankroll of ${move_down_stake_required_br:.2f}."
+                        f"${amount_can_lose:.2f} to drop to a bankroll of ${current_stake_required_br:.2f}."
                     )
         else:
             recommended_tournament_stake = "Below Smallest Stakes"

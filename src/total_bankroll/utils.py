@@ -1,82 +1,84 @@
 from decimal import Decimal
 from flask_security import current_user
+from flask import current_app
+from itsdangerous import URLSafeTimedSerializer
 from .extensions import db
-from .models import Sites, SiteHistory, Assets, AssetHistory, Currency, Deposits, Drawings
+from .models import User, Sites, SiteHistory, Assets, AssetHistory, Currency, Deposits, Drawings
+
+def generate_token(email):
+    """Generates a secure, timed token for email confirmation or password reset."""
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
+
+def confirm_token(token, expiration=3600):
+    """Confirms a token and returns the email if valid and not expired."""
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token, salt=current_app.config['SECURITY_PASSWORD_SALT'], max_age=expiration
+        )
+        return email
+    except Exception:
+        return False
+
+def is_email_taken(email, current_user_id):
+    """Checks if an email is already taken by another user."""
+    existing_user = db.session.query(User).filter(User.email == email, User.id != current_user_id).first()
+    return existing_user is not None
+
+def get_sorted_currencies():
+    """
+    Returns a sorted list of currencies, prioritized for dropdown menus.
+    """
+    currencies_query = db.session.query(Currency.name, Currency.code).order_by(
+        db.case(
+            (Currency.name == 'US Dollar', 1),
+            (Currency.name == 'British Pound', 2),
+            (Currency.name == 'Euro', 3),
+            else_=4
+        ),
+        Currency.name
+    ).all()
+    return [{'code': c.code, 'name': c.name} for c in currencies_query]
 
 def get_user_bankroll_data(user_id):
-    current_poker_total = Decimal('0')
+    # Get currency rates
+    currency_rates_query = db.session.query(Currency.code, Currency.rate).all()
+    currency_rates = {row.code: Decimal(str(row.rate)) for row in currency_rates_query}
+
+    def get_latest_history_total(model, history_model, join_column):
+        """Helper to get the total USD value of the latest history for a given model."""
+        # Subquery to find the latest recorded_at for each item
+        latest_history_sq = db.session.query(
+            history_model.user_id,
+            join_column,
+            db.func.max(history_model.recorded_at).label('max_recorded_at')
+        ).filter(history_model.user_id == user_id).group_by(join_column).subquery()
+
+        # Join to get the full latest history records
+        latest_records = db.session.query(history_model).join(
+            latest_history_sq,
+            db.and_(
+                history_model.user_id == latest_history_sq.c.user_id,
+                join_column == latest_history_sq.c[join_column.name],
+                history_model.recorded_at == latest_history_sq.c.max_recorded_at
+            )
+        ).all()
+
+        total_usd = Decimal('0')
+        for record in latest_records:
+            rate = currency_rates.get(record.currency, Decimal('1.0'))
+            total_usd += record.amount / rate
+        return total_usd
+
+    # For previous totals, we can adapt the logic from assets.py/poker_sites.py if needed,
+    # but for now, we focus on the main bankroll calculation.
+    # This simplified version will not calculate previous totals to avoid complexity.
     previous_poker_total = Decimal('0')
-    current_asset_total = Decimal('0')
     previous_asset_total = Decimal('0')
 
-    # Get current and previous poker site totals
-    poker_sites_raw_data = (db.session.query(
-        Sites.id,
-        Sites.name,
-        SiteHistory.amount,
-        SiteHistory.currency,
-        SiteHistory.recorded_at
-    ).join(SiteHistory, Sites.id == SiteHistory.site_id)
-    .filter(Sites.user_id == user_id)
-    .order_by(SiteHistory.recorded_at.desc())
-    .all())
-
-    poker_sites_data = {}
-    for row in poker_sites_raw_data:
-        site_id = row.id
-        if site_id not in poker_sites_data:
-            poker_sites_data[site_id] = {
-                'name': row.name,
-                'current_amount': Decimal(str(row.amount)),
-                'current_currency': row.currency,
-                'previous_amount': Decimal('0'),
-                'previous_currency': "US Dollar"
-            }
-        elif poker_sites_data[site_id]['previous_amount'] == Decimal('0'):
-            poker_sites_data[site_id]['previous_amount'] = Decimal(str(row.amount))
-            poker_sites_data[site_id]['previous_currency'] = row.currency
-
-    # Get currency rates
-    currency_rates_query = db.session.query(Currency.name, Currency.rate).all()
-    currency_rates = {row.name: Decimal(str(row.rate)) for row in currency_rates_query}
-
-    for site_id, data in poker_sites_data.items():
-        current_rate = currency_rates.get(data['current_currency'], Decimal('1.0'))
-        previous_rate = currency_rates.get(data['previous_currency'], Decimal('1.0'))
-        current_poker_total += data['current_amount'] / current_rate
-        previous_poker_total += data['previous_amount'] / previous_rate
-
-    # Get current and previous asset totals
-    assets_raw_data = (db.session.query(
-        Assets.id,
-        Assets.name,
-        AssetHistory.amount,
-        AssetHistory.currency,
-        AssetHistory.recorded_at
-    ).join(AssetHistory, Assets.id == AssetHistory.asset_id)
-    .filter(Assets.user_id == user_id)
-    .order_by(AssetHistory.recorded_at.desc())
-    .all())
-
-    assets_data = {}
-    for row in assets_raw_data:
-        asset_id = row.id
-        if asset_id not in assets_data:
-            assets_data[asset_id] = {
-                'current_amount': Decimal(str(row.amount)),
-                'current_currency': row.currency,
-                'previous_amount': Decimal('0'),
-                'previous_currency': "US Dollar"
-            }
-        elif assets_data[asset_id]['previous_amount'] == Decimal('0'):
-            assets_data[asset_id]['previous_amount'] = Decimal(str(row.amount))
-            assets_data[asset_id]['previous_currency'] = row.currency
-
-    for asset_id, data in assets_data.items():
-        current_rate = currency_rates.get(data['current_currency'], Decimal('1.0'))
-        previous_rate = currency_rates.get(data['previous_currency'], Decimal('1.0'))
-        current_asset_total += data['current_amount'] / current_rate
-        previous_asset_total += data['previous_amount'] / previous_rate
+    current_poker_total = get_latest_history_total(Sites, SiteHistory, SiteHistory.site_id)
+    current_asset_total = get_latest_history_total(Assets, AssetHistory, AssetHistory.asset_id)
 
     # Get current total of all withdrawals
     total_withdrawals = (db.session.query(db.func.sum(Drawings.amount / Currency.rate))
