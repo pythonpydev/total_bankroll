@@ -3,8 +3,8 @@ __version__ = "0.1.0"
 from flask import Flask, session, flash, redirect, url_for, current_app
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
-from flask_dance.contrib.google import make_google_blueprint
-from flask_dance.contrib.facebook import make_facebook_blueprint
+from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized 
 from .config import config 
@@ -88,7 +88,8 @@ def create_app():
         google_bp = make_google_blueprint(
             client_id=google_client_id,
             client_secret=google_client_secret,
-            scope=['openid', 'email', 'profile']
+            scope=['openid', 'email', 'profile'],
+            storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
         )
         app.register_blueprint(google_bp, url_prefix='/login')
     else:
@@ -100,8 +101,8 @@ def create_app():
         facebook_bp = make_facebook_blueprint(
             client_id=os.getenv('FACEBOOK_CLIENT_ID'),
             client_secret=os.getenv('FACEBOOK_CLIENT_SECRET'),
-            # redirect_to='home.home', # We will handle the redirect manually
-            scope=['email']
+            scope=['email'],
+            storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
         )
         app.register_blueprint(facebook_bp, url_prefix='/login')
     else:
@@ -110,32 +111,25 @@ def create_app():
     import json
     from flask_security import login_user
 
-    def _get_or_create_oauth_user(provider_name, user_info, token, user_datastore):
+    def _login_or_create_oauth_user(provider_name, user_info, user_datastore):
         """
         Finds an existing user or creates a new one for OAuth login.
-        Also creates or updates the OAuth link.
+        Returns the user object on success, or None on failure.
         """
         try:
-            logger.info(f"Starting _get_or_create_oauth_user for provider: {provider_name}")
-            provider_user_id = user_info.get("id")
-            if not provider_user_id:
-                flash(f"User ID not provided by {provider_name.title()}.", 'danger')
-                logger.error(f"User ID missing in OAuth callback from {provider_name}. Info: {user_info}")
-                return False
+            logger.info(f"Starting _login_or_create_oauth_user for provider: {provider_name}")
 
             email = user_info.get("email")
             if not email:
                 flash(f"Email not provided by {provider_name.title()}.", 'danger')
                 logger.error(f"Email missing in OAuth callback from {provider_name}. Info: {user_info}")
-                return False
+                return None
             
             logger.info(f"Looking for user with email: {email}")
-            # Find or create user
             user = user_datastore.find_user(email=email)
             
             if not user:
                 logger.info(f"User not found. Creating new user for {email}.")
-                # Create user manually to bypass datastore role issues
                 user = User(
                     email=email,
                     fs_uniquifier=os.urandom(24).hex(),
@@ -145,43 +139,22 @@ def create_app():
                     created_at=datetime.utcnow()
                 )
                 db.session.add(user)
-                logger.info("New user object added to session. Flushing to get ID.")
-                # Flush to get the user ID for the OAuth object relationship
-                db.session.flush()
-                logger.info(f"New user flushed. ID is {user.id}.")
+                logger.info("New user object added to session.")
             else:
                 logger.info(f"Found existing user with ID: {user.id}")
 
-            # Find or create OAuth link
-            logger.info(f"Looking for OAuth link for provider_user_id: {provider_user_id}")
-            oauth = OAuth.query.filter_by(provider=provider_name, provider_user_id=provider_user_id).first()
-            
-            # Serialize token to JSON string for storage
-            token_json = json.dumps(token)
-
-            if not oauth:
-                logger.info("OAuth link not found. Creating new one.")
-                oauth = OAuth(provider=provider_name, provider_user_id=provider_user_id, token=token_json, user=user)
-                db.session.add(oauth)
-                logger.info("New OAuth object added to session.")
-            else:
-                logger.info("Existing OAuth link found. Updating token.")
-                oauth.token = token_json # Update token
-
             user.last_login_at = datetime.utcnow()
-            logger.info("Committing transaction to database.")
+            logger.info("Committing user transaction to database.")
             db.session.commit()
-            logger.info("Transaction committed. Logging in user.")
+            logger.info("Transaction committed.")
             
-            login_user(user, remember=True)
-            flash(f'Logged in successfully with {provider_name.title()}!', 'success')
-            logger.info(f"User {email} logged in successfully via {provider_name}.")
-            return True
+            return user
         except Exception as e:
-            logger.critical(f"UNCAUGHT EXCEPTION IN _get_or_create_oauth_user: {e}", exc_info=True)
+            logger.critical(f"UNCAUGHT EXCEPTION IN _login_or_create_oauth_user: {e}", exc_info=True)
             db.session.rollback()
             flash("A database error occurred during login.", "danger")
-            return False
+            return None
+
     # Handle OAuth callbacks
     if google_client_id and google_client_secret:
         @oauth_authorized.connect_via(google_bp)
@@ -194,7 +167,7 @@ def create_app():
                     return redirect(url_for("auth.login"))
 
                 logger.info("Fetching user info from Google.")
-                resp = blueprint.session.get('/oauth2/v2/userinfo')
+                resp = google.get('/oauth2/v2/userinfo')
                 if not resp.ok:
                     logger.error(f"Failed to fetch user info from Google: {resp.text}")
                     flash("Failed to fetch user info from Google.", "danger")
@@ -204,9 +177,13 @@ def create_app():
                 logger.info(f"Successfully fetched user info: {user_info.get('email')}")
                 
                 user_datastore = current_app.extensions['security'].datastore
-                logger.info("Calling _get_or_create_oauth_user.")
+                logger.info("Calling _login_or_create_oauth_user.")
+                user = _login_or_create_oauth_user('google', user_info, user_datastore)
                 
-                if _get_or_create_oauth_user('google', user_info, token, user_datastore):
+                if user:
+                    login_user(user, remember=True)
+                    flash(f'Logged in successfully with Google!', 'success')
+                    logger.info(f"User {user.email} logged in successfully via Google.")
                     logger.info("Redirecting to home page.")
                     return redirect(url_for("home.home"))
                 else:
@@ -221,22 +198,33 @@ def create_app():
     if facebook_enabled:
         @oauth_authorized.connect_via(facebook_bp)
         def facebook_logged_in(blueprint, token):
-            if not token:
-                logger.error("Facebook OAuth token missing")
-                flash("Facebook login failed.", "danger")
-                return redirect(url_for("auth.login"))
+            try:
+                logger.info("Entered facebook_logged_in callback.")
+                if not token:
+                    logger.error("Facebook OAuth token missing")
+                    flash("Facebook login failed.", "danger")
+                    return redirect(url_for("auth.login"))
 
-            resp = blueprint.session.get('/me?fields=id,email')
-            if not resp.ok:
-                logger.error(f"Failed to fetch user info from Facebook: {resp.text}")
-                flash("Failed to fetch user info from Facebook.", "danger")
-                return redirect(url_for("auth.login"))
+                resp = facebook.get('/me?fields=id,email')
+                if not resp.ok:
+                    logger.error(f"Failed to fetch user info from Facebook: {resp.text}")
+                    flash("Failed to fetch user info from Facebook.", "danger")
+                    return redirect(url_for("auth.login"))
 
-            user_info = resp.json()
-            user_datastore = current_app.extensions['security'].datastore
-            if _get_or_create_oauth_user('facebook', user_info, token, user_datastore):
-                return redirect(url_for("home.home"))
-            else:
+                user_info = resp.json()
+                user_datastore = current_app.extensions['security'].datastore
+                user = _login_or_create_oauth_user('facebook', user_info, user_datastore)
+
+                if user:
+                    login_user(user, remember=True)
+                    flash(f'Logged in successfully with Facebook!', 'success')
+                    logger.info(f"User {user.email} logged in successfully via Facebook.")
+                    return redirect(url_for("home.home"))
+                else:
+                    return redirect(url_for("auth.login"))
+            except Exception as e:
+                logger.critical(f"UNCAUGHT EXCEPTION IN facebook_logged_in: {e}", exc_info=True)
+                flash("An unexpected error occurred during login. Please try again.", "danger")
                 return redirect(url_for("auth.login"))
 
     register_blueprints(app)
