@@ -70,9 +70,19 @@
         {% if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes" %}
         <div class="text-center">
             <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
-            <p class="bg-success text-white fw-bold p-3 rounded mb-4">{{ stake_explanation }}</p>
-            {% if move_down_message %}<p class="bg-primary text-white fw-bold p-3 rounded mb-4">{{ move_down_message }}</p>{% endif %}
-            {% if next_stake_message %}<p class="bg-danger text-white fw-bold p-3 rounded mb-4">{{ next_stake_message }}</p>{% endif %}
+            <div class="alert alert-success" role="alert">
+                {{ stake_explanation }}
+            </div>
+            {% if move_down_message %}
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-arrow-down-circle-fill"></i> {{ move_down_message }}
+            </div>
+            {% endif %}
+            {% if next_stake_message %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-arrow-up-circle-fill"></i> {{ next_stake_message }}
+            </div>
+            {% endif %}
         </div>
         {% elif stake_explanation %}
             <p class="text-muted mb-4 text-center">{{ stake_explanation }}</p>
