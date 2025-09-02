@@ -1,14 +1,14 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app
 from flask_security import login_required, current_user, logout_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
 from ..extensions import db, mail, csrf
 from ..models import User
 from flask_security.utils import hash_password
 from flask_mail import Message 
 from datetime import datetime
-from ..utils import generate_token, confirm_token, is_email_taken
+from ..utils import generate_token, confirm_token, is_email_taken, get_sorted_currencies
 import re
 
 settings_bp = Blueprint("settings", __name__)
@@ -40,6 +40,10 @@ class UpdatePasswordForm(FlaskForm):
     password = PasswordField('New Password', validators=[DataRequired(), strong_password_check])
     confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
     submit_password = SubmitField('Save Password')
+
+class UpdateDefaultCurrencyForm(FlaskForm):
+    currency = SelectField('Default Currency', choices=[], validators=[DataRequired()])
+    submit_currency = SubmitField('Save Default Currency')
 
 class DeleteUserForm(FlaskForm):
     submit = SubmitField('Yes, delete my account')
@@ -82,7 +86,15 @@ def delete_user_account_confirmed():
 def update_account_details():
     email_form = UpdateEmailForm()
     password_form = UpdatePasswordForm()
-    return render_template("update_account_details.html", email_form=email_form, password_form=password_form)
+    currency_form = UpdateDefaultCurrencyForm()
+
+    # Populate currency choices and set the current default
+    currencies = get_sorted_currencies()
+    currency_form.currency.choices = [(c['code'], c['name']) for c in currencies]
+    if current_user.is_authenticated and hasattr(current_user, 'default_currency_code'):
+        currency_form.currency.data = current_user.default_currency_code
+
+    return render_template("update_account_details.html", email_form=email_form, password_form=password_form, currency_form=currency_form)
 
 @settings_bp.route("/update_email", methods=['POST'])
 @login_required
@@ -131,6 +143,24 @@ def update_password():
         flash('Your password has been updated successfully!', 'success')
     else:
         for field, errors in password_form.errors.items():
+            for error in errors:
+                flash(f"Error in {field}: {error}", 'danger')
+    return redirect(url_for('settings.update_account_details'))
+
+@settings_bp.route("/update_default_currency", methods=['POST'])
+@login_required
+def update_default_currency():
+    currency_form = UpdateDefaultCurrencyForm()
+    currencies = get_sorted_currencies()
+    currency_form.currency.choices = [(c['code'], c['name']) for c in currencies]
+
+    if currency_form.validate_on_submit():
+        user = current_user
+        user.default_currency_code = currency_form.currency.data
+        db.session.commit()
+        flash('Your default currency has been updated successfully!', 'success')
+    else:
+        for field, errors in currency_form.errors.items():
             for error in errors:
                 flash(f"Error in {field}: {error}", 'danger')
     return redirect(url_for('settings.update_account_details'))

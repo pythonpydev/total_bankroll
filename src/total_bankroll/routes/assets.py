@@ -134,7 +134,8 @@ def add_asset():
         return redirect(url_for("assets.assets_page"))
     else:
         currencies = get_sorted_currencies()
-        return render_template("add_asset.html", currencies=currencies)
+        default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
+        return render_template("add_asset.html", currencies=currencies, default_currency=default_currency)
 
 @assets_bp.route("/update_asset/<int:asset_id>", methods=["GET", "POST"])
 @login_required

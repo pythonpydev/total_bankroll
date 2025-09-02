@@ -140,7 +140,8 @@ def add_site():
     else:
         currencies = get_sorted_currencies()
         logger.debug(f"Currencies fetched: {currencies}")
-        return render_template("add_site.html", currencies=currencies)
+        default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
+        return render_template("add_site.html", currencies=currencies, default_currency=default_currency)
 
 
 @poker_sites_bp.route("/update_site/<int:site_id>", methods=["GET", "POST"])

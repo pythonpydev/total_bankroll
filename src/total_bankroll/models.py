@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     is_confirmed = db.Column(db.Boolean, default=False, nullable=False)
     confirmed_on = db.Column(db.DateTime, nullable=True)
+    default_currency_code = db.Column(db.String(3), db.ForeignKey('currency.code'), nullable=False, default='USD')
 
     def get_id(self):
         return self.fs_uniquifier  # Use fs_uniquifier for Flask-Security

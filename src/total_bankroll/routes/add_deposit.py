@@ -53,5 +53,6 @@ def add_deposit():
         # Use the centralized utility function to get bankroll data
         bankroll_data = get_user_bankroll_data(current_user.id)
         total_profit = bankroll_data['total_profit']
+        default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
 
-        return render_template("add_deposit.html", today=today, currencies=currencies, total_profit=total_profit)
+        return render_template("add_deposit.html", today=today, currencies=currencies, total_profit=total_profit, default_currency=default_currency)

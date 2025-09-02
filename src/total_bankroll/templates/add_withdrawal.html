@@ -17,7 +17,7 @@
             <label for="currency" class="form-label">Currency:</label>
             <select class="form-select" id="currency" name="currency" required>
                 {% for currency in currencies %}
-                    <option value="{{ currency.code }}" {% if currency.name == 'US Dollar' %}selected{% endif %}>{{ currency.name }}</option>
+                    <option value="{{ currency.code }}" {% if currency.code == default_currency %}selected{% endif %}>{{ currency.name }}</option>
                 {% endfor %}
             </select>
         </div>

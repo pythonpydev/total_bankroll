@@ -51,6 +51,7 @@ def add_withdrawal():
         bankroll_data = get_user_bankroll_data(current_user.id)
         total_profit = bankroll_data['total_profit']
         total_bankroll = bankroll_data['total_bankroll']
+        default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
 
         current_app.logger.debug(f"Total Bankroll passed to template: {total_bankroll}")
-        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_profit=total_profit, total_bankroll=total_bankroll)
+        return render_template("add_withdrawal.html", today=today, currencies=currencies, total_profit=total_profit, total_bankroll=total_bankroll, default_currency=default_currency)

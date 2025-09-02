@@ -58,6 +58,25 @@
                         </form>
                     </div>
                 </div>
+                
+                <!-- Update Default Currency Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Default Currency</h4>
+                        <p class="text-center text-muted">Set the default currency for new transactions.</p>
+                        <form method="POST" action="{{ url_for('settings.update_default_currency') }}">
+                            {{ currency_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ currency_form.currency(class="form-select", id="currency") }}
+                                <label for="currency">Default Currency</label>
+                                {% for error in currency_form.currency.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ currency_form.submit_currency(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="text-center mt-4">
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-xl">Back to Settings</a>
                 </div>
