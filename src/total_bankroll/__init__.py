@@ -115,6 +115,12 @@ def create_app():
         Finds an existing user or creates a new one for OAuth login.
         Also creates or updates the OAuth link.
         """
+        provider_user_id = user_info.get("id")
+        if not provider_user_id:
+            flash(f"User ID not provided by {provider_name.title()}.", 'danger')
+            logger.error(f"User ID missing in OAuth callback from {provider_name}. Info: {user_info}")
+            return False
+
         email = user_info.get("email")
         if not email:
             flash(f"Email not provided by {provider_name.title()}.", 'danger')
@@ -137,7 +143,6 @@ def create_app():
             db.session.flush()
 
         # Find or create OAuth link
-        provider_user_id = user_info['id']
         oauth = OAuth.query.filter_by(provider=provider_name, provider_user_id=provider_user_id).first()
         
         # Serialize token to JSON string for storage
@@ -153,7 +158,7 @@ def create_app():
         db.session.commit()
         login_user(user, remember=True)
         flash(f'Logged in successfully with {provider_name.title()}!', 'success')
-
+        return True
     # Handle OAuth callbacks
     if google_client_id and google_client_secret:
         @oauth_authorized.connect_via(google_bp)
@@ -170,8 +175,10 @@ def create_app():
 
             user_info = resp.json()
             user_datastore = current_app.extensions['security'].datastore
-            _get_or_create_oauth_user('google', user_info, token, user_datastore)
-            return redirect(url_for("home.home"))
+            if _get_or_create_oauth_user('google', user_info, token, user_datastore):
+                return redirect(url_for("home.home"))
+            else:
+                return redirect(url_for("auth.login"))
 
     if facebook_enabled:
         @oauth_authorized.connect_via(facebook_bp)
@@ -189,8 +196,10 @@ def create_app():
 
             user_info = resp.json()
             user_datastore = current_app.extensions['security'].datastore
-            _get_or_create_oauth_user('facebook', user_info, token, user_datastore)
-            return redirect(url_for("home.home"))
+            if _get_or_create_oauth_user('facebook', user_info, token, user_datastore):
+                return redirect(url_for("home.home"))
+            else:
+                return redirect(url_for("auth.login"))
 
     register_blueprints(app)
 
