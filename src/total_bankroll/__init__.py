@@ -115,69 +115,107 @@ def create_app():
         Finds an existing user or creates a new one for OAuth login.
         Also creates or updates the OAuth link.
         """
-        provider_user_id = user_info.get("id")
-        if not provider_user_id:
-            flash(f"User ID not provided by {provider_name.title()}.", 'danger')
-            logger.error(f"User ID missing in OAuth callback from {provider_name}. Info: {user_info}")
+        try:
+            logger.info(f"Starting _get_or_create_oauth_user for provider: {provider_name}")
+            provider_user_id = user_info.get("id")
+            if not provider_user_id:
+                flash(f"User ID not provided by {provider_name.title()}.", 'danger')
+                logger.error(f"User ID missing in OAuth callback from {provider_name}. Info: {user_info}")
+                return False
+
+            email = user_info.get("email")
+            if not email:
+                flash(f"Email not provided by {provider_name.title()}.", 'danger')
+                logger.error(f"Email missing in OAuth callback from {provider_name}. Info: {user_info}")
+                return False
+            
+            logger.info(f"Looking for user with email: {email}")
+            # Find or create user
+            user = user_datastore.find_user(email=email)
+            
+            if not user:
+                logger.info(f"User not found. Creating new user for {email}.")
+                # Create user manually to bypass datastore role issues
+                user = User(
+                    email=email,
+                    fs_uniquifier=os.urandom(24).hex(),
+                    active=True,
+                    is_confirmed=True,
+                    confirmed_on=datetime.utcnow(),
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(user)
+                logger.info("New user object added to session. Flushing to get ID.")
+                # Flush to get the user ID for the OAuth object relationship
+                db.session.flush()
+                logger.info(f"New user flushed. ID is {user.id}.")
+            else:
+                logger.info(f"Found existing user with ID: {user.id}")
+
+            # Find or create OAuth link
+            logger.info(f"Looking for OAuth link for provider_user_id: {provider_user_id}")
+            oauth = OAuth.query.filter_by(provider=provider_name, provider_user_id=provider_user_id).first()
+            
+            # Serialize token to JSON string for storage
+            token_json = json.dumps(token)
+
+            if not oauth:
+                logger.info("OAuth link not found. Creating new one.")
+                oauth = OAuth(provider=provider_name, provider_user_id=provider_user_id, token=token_json, user=user)
+                db.session.add(oauth)
+                logger.info("New OAuth object added to session.")
+            else:
+                logger.info("Existing OAuth link found. Updating token.")
+                oauth.token = token_json # Update token
+
+            user.last_login_at = datetime.utcnow()
+            logger.info("Committing transaction to database.")
+            db.session.commit()
+            logger.info("Transaction committed. Logging in user.")
+            
+            login_user(user, remember=True)
+            flash(f'Logged in successfully with {provider_name.title()}!', 'success')
+            logger.info(f"User {email} logged in successfully via {provider_name}.")
+            return True
+        except Exception as e:
+            logger.critical(f"UNCAUGHT EXCEPTION IN _get_or_create_oauth_user: {e}", exc_info=True)
+            db.session.rollback()
+            flash("A database error occurred during login.", "danger")
             return False
-
-        email = user_info.get("email")
-        if not email:
-            flash(f"Email not provided by {provider_name.title()}.", 'danger')
-            return False
-
-        # Find or create user
-        user = user_datastore.find_user(email=email)
-        if not user:
-            # Create user manually to bypass datastore role issues
-            user = User(
-                email=email,
-                fs_uniquifier=os.urandom(24).hex(),
-                active=True,
-                is_confirmed=True,
-                confirmed_on=datetime.utcnow(),
-                created_at=datetime.utcnow()
-            )
-            db.session.add(user)
-            # Flush to get the user ID for the OAuth object relationship
-            db.session.flush()
-
-        # Find or create OAuth link
-        oauth = OAuth.query.filter_by(provider=provider_name, provider_user_id=provider_user_id).first()
-        
-        # Serialize token to JSON string for storage
-        token_json = json.dumps(token)
-
-        if not oauth:
-            oauth = OAuth(provider=provider_name, provider_user_id=provider_user_id, token=token_json, user=user)
-            db.session.add(oauth)
-        else:
-            oauth.token = token_json # Update token
-
-        user.last_login_at = datetime.utcnow()
-        db.session.commit()
-        login_user(user, remember=True)
-        flash(f'Logged in successfully with {provider_name.title()}!', 'success')
-        return True
     # Handle OAuth callbacks
     if google_client_id and google_client_secret:
         @oauth_authorized.connect_via(google_bp)
         def google_logged_in(blueprint, token):
-            if not token:
-                flash("Google login failed.", "danger")
-                return redirect(url_for("auth.login"))
+            try:
+                logger.info("Entered google_logged_in callback.")
+                if not token:
+                    flash("Google login failed.", "danger")
+                    logger.warning("Google OAuth token was missing.")
+                    return redirect(url_for("auth.login"))
 
-            resp = blueprint.session.get('/oauth2/v2/userinfo')
-            if not resp.ok:
-                logger.error(f"Failed to fetch user info from Google: {resp.text}")
-                flash("Failed to fetch user info from Google.", "danger")
-                return redirect(url_for("auth.login"))
+                logger.info("Fetching user info from Google.")
+                resp = blueprint.session.get('/oauth2/v2/userinfo')
+                if not resp.ok:
+                    logger.error(f"Failed to fetch user info from Google: {resp.text}")
+                    flash("Failed to fetch user info from Google.", "danger")
+                    return redirect(url_for("auth.login"))
 
-            user_info = resp.json()
-            user_datastore = current_app.extensions['security'].datastore
-            if _get_or_create_oauth_user('google', user_info, token, user_datastore):
-                return redirect(url_for("home.home"))
-            else:
+                user_info = resp.json()
+                logger.info(f"Successfully fetched user info: {user_info.get('email')}")
+                
+                user_datastore = current_app.extensions['security'].datastore
+                logger.info("Calling _get_or_create_oauth_user.")
+                
+                if _get_or_create_oauth_user('google', user_info, token, user_datastore):
+                    logger.info("Redirecting to home page.")
+                    return redirect(url_for("home.home"))
+                else:
+                    logger.warning("OAuth user creation/login failed, redirecting to login page.")
+                    return redirect(url_for("auth.login"))
+            except Exception as e:
+                # This is a critical catch-all to ensure we see the error.
+                logger.critical(f"UNCAUGHT EXCEPTION IN google_logged_in: {e}", exc_info=True)
+                flash("An unexpected error occurred during login. Please try again.", "danger")
                 return redirect(url_for("auth.login"))
 
     if facebook_enabled:
