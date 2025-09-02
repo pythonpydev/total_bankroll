@@ -34,20 +34,48 @@
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto my-2 my-lg-0">
                         {% if current_user.is_authenticated %}
-                            <li class="nav-item"><a class="nav-link" href="/">Bankroll</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('poker_sites.poker_sites_page') }}">Poker Sites</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('assets.assets_page') }}">Assets</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('withdrawal.withdrawal') }}">Withdrawal</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('deposit.deposit') }}">Deposit</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('charts.charts_page') }}">Charts</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/tools">Tools</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.home') }}">Bankroll</a></li>
+                            <!-- Manage Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="manageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
+                                <ul class="dropdown-menu" aria-labelledby="manageDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('poker_sites.poker_sites_page') }}">Poker Sites</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('assets.assets_page') }}">Assets</a></li>
+                                </ul>
+                            </li>
+                            <!-- Transactions Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="transactionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Transactions</a>
+                                <ul class="dropdown-menu" aria-labelledby="transactionsDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('deposit.deposit') }}">Deposit</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('withdrawal.withdrawal') }}">Withdrawal</a></li>
+                                </ul>
+                            </li>
+                            <!-- Analysis Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Analysis</a>
+                                <ul class="dropdown-menu" aria-labelledby="analysisDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('charts.charts_page') }}">Charts</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('tools.tools_page') }}">Tools</a></li>
+                                </ul>
+                            </li>
+                            <!-- User Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ current_user.email }}">
+                                    <i class="bi-person-circle"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><h6 class="dropdown-header">{{ current_user.email }}</h6></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('settings.settings_page') }}">Settings</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                                </ul>
+                            </li>
                         {% else %}
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
                         {% endif %}
-                        <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('about.about') }}">About</a></li>
                     </ul>
                 </div>
             </div>
