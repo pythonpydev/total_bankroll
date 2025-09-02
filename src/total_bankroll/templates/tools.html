@@ -17,19 +17,31 @@
     <div class="container px-4 px-lg-5">
         <h2 class="text-center mt-0">Available Tools</h2>
         <hr class="divider" />
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-6 col-md-6 text-center">
-                <div class="mt-5">
-                    <div class="mb-2"><a href="/poker_stakes"><i class="bi-tools fs-1 text-primary"></i></a></div>
-                    <h3 class="h4 mb-2"><a href="/poker_stakes" class="text-decoration-none text-dark">Cash Game Stakes</a></h3>
-                    <p class="text-muted mb-0">Recommended cash game stakes for your current bankroll.</p>
+        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
+            <!-- Cash Game Stakes Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-suit-club-fill fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Cash Game Stakes</h4>
+                        <p class="card-text text-muted">Get tailored bankroll recommendations for cash games.</p>
+                        <div class="mt-auto">
+                            <a href="{{ url_for('tools.poker_stakes_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
-                <div class="mt-5">
-                    <div class="mb-2"><a href="{{ url_for('tools.tournament_stakes_page') }}"><i class="bi-tools fs-1 text-primary"></i></a></div>
-                    <h3 class="h4 mb-2"><a href="{{ url_for('tools.tournament_stakes_page') }}" class="text-decoration-none text-dark">Tournament Stakes</a></h3>
-                    <p class="text-muted mb-0">Recommended tournament stakes for your current bankroll.</p>
+            <!-- Tournament Stakes Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-trophy-fill fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Tournament Stakes</h4>
+                        <p class="card-text text-muted">Get tailored bankroll recommendations for tournaments.</p>
+                        <div class="mt-auto">
+                            <a href="{{ url_for('tools.tournament_stakes_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
