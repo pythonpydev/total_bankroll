@@ -205,6 +205,81 @@ def _calculate_cash_game_recommendations(total_bankroll, buy_in_multiple, cash_s
 
     return recommendations
 
+def _calculate_tournament_recommendations(total_bankroll, mean_buy_ins, all_buyins_str, tournament_stakes_list_dec):
+    """Calculates all recommendation messages for tournaments."""
+    recs = {
+        "recommended_tournament_stake": "N/A",
+        "stake_explanation": "",
+        "next_stake_level": "",
+        "next_stake_message": "",
+        "move_down_stake_level": "",
+        "move_down_message": "",
+        "recommended_buy_in": Decimal('0.0'),
+        "recommended_tournament_stake_dec": None,
+        "next_stake_level_dec": None,
+        "move_down_stake_level_dec": None
+    }
+
+    if mean_buy_ins <= 0:
+        recs["stake_explanation"] = "Please make selections above to get a stake recommendation."
+        return recs
+
+    recs["recommended_buy_in"] = total_bankroll / mean_buy_ins
+
+    # Find the recommended tournament stake
+    found_stake_index = -1
+    for i in range(len(tournament_stakes_list_dec) - 1, -1, -1):
+        stake_dec = tournament_stakes_list_dec[i]
+        if stake_dec <= recs["recommended_buy_in"]:
+            found_stake_index = i
+            break
+    
+    if found_stake_index != -1:
+        current_stake_dec = tournament_stakes_list_dec[found_stake_index]
+        recs["recommended_tournament_stake"] = all_buyins_str[found_stake_index]
+        recs["recommended_tournament_stake_dec"] = current_stake_dec
+        
+        num_buy_ins_for_stake = total_bankroll / current_stake_dec if current_stake_dec > 0 else Decimal('inf')
+        
+        recs["stake_explanation"] = (
+            f"Based on your bankroll of ${total_bankroll:.2f} and the recommended {mean_buy_ins:.0f} buy-in rule, "
+            f"your average buy-in should be ${recs['recommended_buy_in']:.2f}. The closest standard buy-in you can play is "
+            f"{recs['recommended_tournament_stake']}, for which you have {num_buy_ins_for_stake:.1f} buy-ins."
+        )
+
+        # Move up logic
+        if found_stake_index < len(all_buyins_str) - 1:
+            recs["next_stake_level"] = all_buyins_str[found_stake_index + 1]
+            next_stake_dec = tournament_stakes_list_dec[found_stake_index + 1]
+            recs["next_stake_level_dec"] = next_stake_dec
+            required_bankroll_for_next_stake = next_stake_dec * mean_buy_ins
+            additional_bankroll_needed = required_bankroll_for_next_stake - total_bankroll
+
+            if additional_bankroll_needed > 0:
+                recs["next_stake_message"] = f"To move up to {recs['next_stake_level']} tournaments, you need to win or deposit an additional ${additional_bankroll_needed:.2f} to reach a bankroll of ${required_bankroll_for_next_stake:.2f}."
+            else:
+                recs["next_stake_message"] = f"You are already sufficiently rolled to start playing at {recs['next_stake_level']} tournaments."
+
+        # Move down logic
+        if found_stake_index > 0:
+            recs["move_down_stake_level"] = all_buyins_str[found_stake_index - 1]
+            recs["move_down_stake_level_dec"] = tournament_stakes_list_dec[found_stake_index - 1]
+            current_stake_required_br = current_stake_dec * mean_buy_ins
+            amount_can_lose = total_bankroll - current_stake_required_br
+            recs["move_down_message"] = f"You will need to move down to {recs['move_down_stake_level']} tournaments if you lose ${amount_can_lose:.2f} to drop to a bankroll of ${current_stake_required_br:.2f}."
+    else: # Below smallest stakes
+        recs["recommended_tournament_stake"] = "Below Smallest Stakes"
+        recs["stake_explanation"] = f"Your bankroll of ${total_bankroll:.2f} is too small for the lowest available stakes based on the recommended {mean_buy_ins:.0f} buy-in rule. Your average buy-in should be ${recs['recommended_buy_in']:.2f}."
+        if all_buyins_str:
+            recs["next_stake_level"] = all_buyins_str[0]
+            next_stake_dec = tournament_stakes_list_dec[0]
+            recs["next_stake_level_dec"] = next_stake_dec
+            required_bankroll_for_next_stake = next_stake_dec * mean_buy_ins
+            additional_bankroll_needed = required_bankroll_for_next_stake - total_bankroll
+            recs["next_stake_message"] = f"To play at the lowest stakes ({recs['next_stake_level']}), you need to win or deposit an additional ${additional_bankroll_needed:.2f} to reach a bankroll of ${required_bankroll_for_next_stake:.2f}."
+            
+    return recs
+
 @tools_bp.route('/poker_stakes')
 @login_required
 def poker_stakes_page():
@@ -271,6 +346,7 @@ def poker_stakes_page():
 def tournament_stakes_page():
     """Tournament Stakes page."""
     selections = _get_user_selections(request.args)
+    site_filter = request.args.get('site_filter', 'all')
 
     # Load tournament buy-in data from JSON
     json_path = os.path.join(current_app.root_path, 'data', 'tournament_buy_ins.json')
@@ -303,10 +379,12 @@ def tournament_stakes_page():
                 if not buy_in_str:
                     item['bankroll_required'] = '$0.00'
                     item['additional_required'] = '$0.00'
+                    item['buy_in_dec'] = Decimal('0.0')
                     continue
                 
                 try:
                     buy_in_dec = parse_currency_to_decimal(buy_in_str)
+                    item['buy_in_dec'] = buy_in_dec
                     
                     bankroll_required = Decimal('0.0')
                     if mean_buy_ins > 0:
@@ -321,91 +399,41 @@ def tournament_stakes_page():
                 except (ValueError, InvalidOperation):
                     item['bankroll_required'] = 'N/A'
                     item['additional_required'] = 'N/A'
+                    item['buy_in_dec'] = None
 
     # --- Tournament Stake Recommendation Logic ---
-    # Dynamically build the list of all tournament buy-ins from the JSON data
-    all_buyins_map = {}  # Use a map to store {Decimal: str} to handle sorting and keep original format
-    for site_data in tournament_buy_ins.values():
+    # First, calculate a "global" recommendation for the messages at the top of the page.
+    # This uses all sites if filter is 'all', or the specific site if filtered.
+    global_buyins_map = {}
+    sites_to_process_for_global = {}
+    if site_filter == 'all':
+        sites_to_process_for_global = tournament_buy_ins
+    elif site_filter in tournament_buy_ins:
+        sites_to_process_for_global = {site_filter: tournament_buy_ins[site_filter]}
+
+    for site_data in sites_to_process_for_global.values():
         for item in site_data.get('buy_ins', []):
+            buy_in_dec = item.get('buy_in_dec')
             buy_in_str = item.get('buy_in')
-            if not buy_in_str:
-                continue
-            try:
-                buy_in_dec = Decimal(buy_in_str.replace('$', '').replace(',', ''))
-                if buy_in_dec not in all_buyins_map:
-                    all_buyins_map[buy_in_dec] = buy_in_str
-            except Exception:
-                current_app.logger.warning(f"Could not parse buy-in '{buy_in_str}' to Decimal.")
-                continue
+            if buy_in_dec is not None and buy_in_str is not None and buy_in_dec not in global_buyins_map:
+                global_buyins_map[buy_in_dec] = buy_in_str
 
-    tournament_stakes_list_dec = sorted(all_buyins_map.keys())
-    all_buyins_str = [all_buyins_map[d] for d in tournament_stakes_list_dec]
-    recommended_tournament_stake = "N/A"
-    stake_explanation = ""
-    next_stake_level = ""
-    next_stake_message = ""
-    move_down_message = ""
-    move_down_stake_level = ""
+    global_stakes_list_dec = sorted(global_buyins_map.keys())
+    global_all_buyins_str = [global_buyins_map[d] for d in global_stakes_list_dec]
 
-    recommended_buy_in = Decimal('0.0')
-    if mean_buy_ins > 0:
-        recommended_buy_in = total_bankroll / mean_buy_ins
+    global_recommendations = _calculate_tournament_recommendations(
+        total_bankroll, mean_buy_ins, global_all_buyins_str, global_stakes_list_dec
+    )
 
-        # Find the recommended tournament stake
-        found_stake_index = -1
-        for i in range(len(tournament_stakes_list_dec) - 1, -1, -1):
-            stake_dec = tournament_stakes_list_dec[i]
-            if stake_dec <= recommended_buy_in:
-                found_stake_index = i
-                break
-        
-        if found_stake_index != -1:
-            current_stake_dec = tournament_stakes_list_dec[found_stake_index]
-            recommended_tournament_stake = all_buyins_str[found_stake_index]
-            
-            num_buy_ins_for_stake = total_bankroll / current_stake_dec if current_stake_dec > 0 else Decimal('inf')
-            
-            stake_explanation = (
-                f"Based on your bankroll of ${total_bankroll:.2f} and the recommended {mean_buy_ins:.0f} buy-in rule, "
-                f"your average buy-in should be ${recommended_buy_in:.2f}. The closest standard buy-in you can play is "
-                f"{recommended_tournament_stake}, for which you have {num_buy_ins_for_stake:.1f} buy-ins."
-            )
+    # Now, calculate per-site recommendations for table highlighting
+    for site_key, site_data in tournament_buy_ins.items():
+        if 'buy_ins' in site_data:
+            site_buyins_map = {item.get('buy_in_dec'): item.get('buy_in') for item in site_data['buy_ins'] if item.get('buy_in_dec') is not None}
+            site_stakes_list_dec = sorted(site_buyins_map.keys())
+            site_all_buyins_str = [site_buyins_map[d] for d in site_stakes_list_dec]
 
-            # Move up logic
-            if found_stake_index < len(all_buyins_str) - 1:
-                next_stake_dec = tournament_stakes_list_dec[found_stake_index + 1]
-                next_stake_level = all_buyins_str[found_stake_index + 1]
-                required_bankroll_for_next_stake = next_stake_dec * mean_buy_ins
-                additional_bankroll_needed = required_bankroll_for_next_stake - total_bankroll
-                
-                if additional_bankroll_needed > 0:
-                    next_stake_message = (
-                        f"To move up to {next_stake_level} tournaments, you need to win an additional "
-                        f"${additional_bankroll_needed:.2f} to reach a bankroll of ${required_bankroll_for_next_stake:.2f}."
-                    )
-
-            # Move down logic
-            if found_stake_index > 0:
-                move_down_stake_level = all_buyins_str[found_stake_index - 1]
-                
-                # The threshold is based on the bankroll required for the *current* recommended stake.
-                current_stake_required_br = current_stake_dec * mean_buy_ins
-                amount_can_lose = total_bankroll - current_stake_required_br
-                
-                if amount_can_lose > 0: # Only show if they have a buffer
-                    move_down_message = (
-                        f"You will need to move down to {move_down_stake_level} tournaments if you lose "
-                        f"${amount_can_lose:.2f} to drop to a bankroll of ${current_stake_required_br:.2f}."
-                    )
-        else:
-            recommended_tournament_stake = "Below Smallest Stakes"
-            stake_explanation = (
-                f"Your bankroll of ${total_bankroll:.2f} is too small for the lowest available stakes based on the "
-                f"recommended {mean_buy_ins:.0f} buy-in rule. Your average buy-in should be ${recommended_buy_in:.2f}."
-            )
-            next_stake_level = all_buyins_str[0]
-    else:
-        stake_explanation = "Please make selections above to get a stake recommendation."
+            site_recommendations = _calculate_tournament_recommendations(total_bankroll, mean_buy_ins, site_all_buyins_str, site_stakes_list_dec)
+            site_data['recommendations'] = site_recommendations
 
     return render_template('tournament_stakes.html',
                            total_bankroll=total_bankroll,
@@ -414,13 +442,7 @@ def tournament_stakes_page():
                            risk_tolerance=request.args.get('risk_tolerance', 'conservative'),
                            game_environment=request.args.get('game_environment', 'online'),
                            tournament_bankroll_recommendation=tournament_bankroll_recommendation,
-                           recommended_buy_in=recommended_buy_in,
-                           recommended_tournament_stake=recommended_tournament_stake,
-                           stake_explanation=stake_explanation,
-                           next_stake_level=next_stake_level,
-                           next_stake_message=next_stake_message,
-                           move_down_stake_level=move_down_stake_level,
-                           move_down_message=move_down_message,
-                           site_filter=request.args.get('site_filter', 'all'),
+                           **global_recommendations,
+                           site_filter=site_filter,
                            tournament_buy_ins=tournament_buy_ins
                            )
