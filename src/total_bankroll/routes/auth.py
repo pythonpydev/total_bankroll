@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, current_
 from flask_security import login_user, logout_user, login_required, current_user
 from flask_security.utils import hash_password, verify_password
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, ValidationError
 from wtforms.validators import DataRequired, Email, EqualTo
 from ..extensions import db, mail
 from ..models import User
@@ -15,9 +15,29 @@ from flask_dance.contrib.facebook import facebook as facebook_blueprint
 from datetime import datetime
 from ..utils import generate_token, confirm_token
 import logging
+import re
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
+
+def strong_password_check(form, field):
+    """Custom validator for password strength."""
+    password = field.data
+    errors = []
+    if len(password) < 8:
+        errors.append("be at least 8 characters long")
+    if not re.search(r"[a-z]", password):
+        errors.append("contain at least one lowercase letter")
+    if not re.search(r"[A-Z]", password):
+        errors.append("contain at least one uppercase letter")
+    if not re.search(r"\d", password):
+        errors.append("contain at least one digit")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        errors.append("contain at least one special character")
+
+    if errors:
+        error_message = "Password must " + ", ".join(errors) + "."
+        raise ValidationError(error_message)
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -26,7 +46,7 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirm_password', message='Passwords must match.')])
+    password = PasswordField('Password', validators=[DataRequired(), strong_password_check, EqualTo('confirm_password', message='Passwords must match.')])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
     submit = SubmitField('Register')
 
@@ -35,7 +55,7 @@ class ForgotPasswordForm(FlaskForm):
     submit = SubmitField('Send Reset Link')
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('New Password', validators=[DataRequired()])
+    password = PasswordField('New Password', validators=[DataRequired(), strong_password_check])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
