@@ -7,8 +7,8 @@
             <div class="col-lg-8 text-center">
                 <h2 class="text-white mt-0">About StakeEasy.net</h2>
                 <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Track Your Poker Bankroll, Master Your Stakes.</p>
-                <p class="text-white-75 mb-4">StakeEasy.net is a web application designed to help you manage your poker bankroll and other assets efficiently.</p>
+                <p class="text-white-75 mb-4 fs-5">Tired of messy spreadsheets and losing track of your real profit? StakeEasy.net was built by a poker player, for poker players, to solve that exact problem.</p>
+                <a class="btn btn-light btn-xl" href="#about_details">Find Out More</a>
             </div>
         </div>
     </div>
@@ -16,45 +16,45 @@
 
 <section class="page-section" id="about_details">
     <div class="container px-4 px-lg-5">
-        <h2 class="text-center mt-0">Key Features & Functionality</h2>
+        <h2 class="text-center mt-0">Why StakeEasy.net?</h2>
         <hr class="divider" />
         <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-wallet2 fs-1 text-primary"></i></div>
                     <h3 class="h4 mb-2">Comprehensive Tracking</h3>
                     <p class="text-muted mb-0">Track funds across various poker sites and manage diverse asset types like cash, gold, silver, and cryptocurrencies.</p>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-calculator fs-1 text-primary"></i></div>
-                    <h3 class="h4 mb-2">Automated Calculations</h3>
-                    <p class="text-muted mb-0">Automatically calculates your total bankroll (poker funds + assets) and overall profit (total bankroll - deposits + withdrawals).</p>
+                    <h3 class="h4 mb-2">Focus on Your Game</h3>
+                    <p class="text-muted mb-0">With automated calculations for total bankroll and profit, you can spend less time on spreadsheets and more time at the tables.</p>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-clock-history fs-1 text-primary"></i></div>
                     <h3 class="h4 mb-2">Historical Data & Trends</h3>
                     <p class="text-muted mb-0">Maintains a complete history of all financial values, allowing you to review past performance and track changes over time.</p>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-currency-exchange fs-1 text-primary"></i></div>
                     <h3 class="h4 mb-2">Multi-Currency Support</h3>
                     <p class="text-muted mb-0">Supports multiple currencies with all financial values converted and stored in US Dollars for consistency.</p>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-eye fs-1 text-primary"></i></div>
                     <h3 class="h4 mb-2">Visual Insights</h3>
-                    <p class="text-muted mb-0">Displays latest changes in poker site funds and assets, highlighting positive changes in green and negative changes in red.</p>
+                    <p class="text-muted mb-0">Instantly see your progress with intuitive charts and graphs that bring your financial data to life.</p>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 text-center">
+            <div class="col-lg-4 col-md-6 text-center">
                 <div class="mt-5">
                     <div class="mb-2"><i class="bi-shield-check fs-1 text-primary"></i></div>
                     <h3 class="h4 mb-2">Financial Safeguards</h3>
@@ -62,13 +62,22 @@
                 </div>
             </div>
         </div>
-
-        <h2 class="text-center mt-5">User Interface</h2>
+        
+        <div class="row gx-4 gx-lg-5 justify-content-center text-center mt-5">
+            <div class="col-lg-8">
+                <h2 class="mt-0">Get Started in Seconds</h2>
+                <hr class="divider" />
+                <p class="text-muted mb-4">Ready to take control of your bankroll? It's free and easy to get started.</p>
+                <a class="btn btn-primary btn-xl" href="{{ url_for('auth.register') }}">Register for Free</a>
+            </div>
+        </div>
+        
+        <h2 class="text-center mt-5">About the Developer</h2>
         <hr class="divider" />
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-8 text-center">
-                <p class="text-muted mb-0">StakeEasy.net is built as a Python Flask web application, providing an intuitive and responsive user experience through HTML forms and Bootstrap styling.</p>
-                <p class="text-muted mb-0">Key interface features include a clear navigation bar with links to all major sections, currency selection dropdowns with intelligent ordering, and numeric input fields for improved data validation.</p>
+                <p class="text-muted">StakeEasy.net was created by a solo developer and poker enthusiast who wanted a better way to manage their own bankroll. This application is a passion project, built with Python, Flask, and a love for the game.</p>
+                <p class="text-muted">If you find this tool useful, consider supporting its development. Every contribution helps keep the site running and ad-free.</p>
             </div>
         </div>
     </div>
