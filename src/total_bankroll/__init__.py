@@ -90,13 +90,17 @@ def create_app():
     security = Security(app, user_datastore)
 
     # OAuth Blueprints
-    google_bp = make_google_blueprint(
-        client_id=os.getenv('GOOGLE_CLIENT_ID'),
-        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-        scope=['openid', 'email', 'profile']
-    )
-    app.register_blueprint(google_bp, url_prefix='/login')
-    
+    google_client_id = os.getenv('GOOGLE_CLIENT_ID')
+    google_client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+    if google_client_id and google_client_secret:
+        google_bp = make_google_blueprint(
+            client_id=google_client_id,
+            client_secret=google_client_secret,
+            scope=['openid', 'email', 'profile']
+        )
+        app.register_blueprint(google_bp, url_prefix='/login')
+    else:
+        logger.warning("Google OAuth credentials not provided. Google login disabled.")
 
     # Conditionally register Facebook blueprint
     facebook_enabled = os.getenv('FACEBOOK_CLIENT_ID') and os.getenv('FACEBOOK_CLIENT_SECRET')
@@ -159,22 +163,23 @@ def create_app():
         flash(f'Logged in successfully with {provider_name.title()}!', 'success')
 
     # Handle OAuth callbacks
-    @oauth_authorized.connect_via(google_bp)
-    def google_logged_in(blueprint, token):
-        if not token:
-            flash("Google login failed.", "danger")
-            return redirect(url_for("auth.login"))
+    if google_client_id and google_client_secret:
+        @oauth_authorized.connect_via(google_bp)
+        def google_logged_in(blueprint, token):
+            if not token:
+                flash("Google login failed.", "danger")
+                return redirect(url_for("auth.login"))
 
-        resp = blueprint.session.get('/oauth2/v2/userinfo')
-        if not resp.ok:
-            logger.error(f"Failed to fetch user info from Google: {resp.text}")
-            flash("Failed to fetch user info from Google.", "danger")
-            return redirect(url_for("auth.login"))
+            resp = blueprint.session.get('/oauth2/v2/userinfo')
+            if not resp.ok:
+                logger.error(f"Failed to fetch user info from Google: {resp.text}")
+                flash("Failed to fetch user info from Google.", "danger")
+                return redirect(url_for("auth.login"))
 
-        user_info = resp.json()
-        user_datastore = current_app.extensions['security'].datastore
-        _get_or_create_oauth_user('google', user_info, token, user_datastore)
-        return redirect(url_for("home.home"))
+            user_info = resp.json()
+            user_datastore = current_app.extensions['security'].datastore
+            _get_or_create_oauth_user('google', user_info, token, user_datastore)
+            return redirect(url_for("home.home"))
 
     if facebook_enabled:
         @oauth_authorized.connect_via(facebook_bp)
