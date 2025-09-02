@@ -17,80 +17,76 @@
     <div class="container px-4 px-lg-5">
         <h2 class="text-center mt-0">Select a Chart</h2>
         <hr class="divider" />
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-warning btn-xl dropdown-toggle" type="button" id="pokerSitesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Poker Sites
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="pokerSitesDropdown">
-                        <li><a class="dropdown-item" href="/charts/poker_sites/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/poker_sites/bar">Bar Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/poker_sites/pie">Pie Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/poker_sites/polar_area">Polar Area Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/poker_sites/radar">Radar Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/poker_sites/scatter">Scatter Chart</a></li>
-                    </ul>
+        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
+
+            <!-- Bankroll & Profit Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-graph-up fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Bankroll & Profit</h4>
+                        <p class="card-text text-muted">Track your overall bankroll and profit over time.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Bankroll:</strong> <a href="/charts/bankroll/line">Line</a> | <a href="/charts/bankroll/bar">Bar</a></li>
+                                <li class="list-group-item"><strong>Profit:</strong> <a href="/charts/profit/line">Line</a> | <a href="/charts/profit/bar">Bar</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-secondary btn-xl dropdown-toggle" type="button" id="assetsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Assets
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="assetsDropdown">
-                        <li><a class="dropdown-item" href="/charts/assets/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/assets/bar">Bar Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/assets/pie">Pie Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/assets/polar_area">Polar Area Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/assets/radar">Radar Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/assets/scatter">Scatter Chart</a></li>
-                    </ul>
+
+            <!-- Poker Sites Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-stack fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Poker Sites</h4>
+                        <p class="card-text text-muted">Analyze your funds across different poker sites.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Historical:</strong> <a href="/charts/poker_sites/line">Line</a> | <a href="/charts/poker_sites/bar">Bar</a> | <a href="/charts/poker_sites/scatter">Scatter</a> | <a href="/charts/poker_sites/radar">Radar</a></li>
+                                <li class="list-group-item"><strong>Current:</strong> <a href="/charts/poker_sites/pie">Pie</a> | <a href="/charts/poker_sites/polar_area">Polar Area</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-success btn-xl dropdown-toggle" type="button" id="bankrollDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Bankroll
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="bankrollDropdown">
-                        <li><a class="dropdown-item" href="/charts/bankroll/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/bankroll/bar">Bar Chart</a></li>
+
+            <!-- Assets Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-gem fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Assets</h4>
+                        <p class="card-text text-muted">Visualize the value of your non-poker assets.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Historical:</strong> <a href="/charts/assets/line">Line</a> | <a href="/charts/assets/bar">Bar</a> | <a href="/charts/assets/scatter">Scatter</a> | <a href="/charts/assets/radar">Radar</a></li>
+                                <li class="list-group-item"><strong>Current:</strong> <a href="/charts/assets/pie">Pie</a> | <a href="/charts/assets/polar_area">Polar Area</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-info btn-xl dropdown-toggle" type="button" id="profitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Profit
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="profitDropdown">
-                        <li><a class="dropdown-item" href="/charts/profit/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/profit/bar">Bar Chart</a></li>
-                   </ul>
+
+            <!-- Deposits & Withdrawals Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-arrow-down-up fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Transactions</h4>
+                        <p class="card-text text-muted">View your history of deposits and withdrawals.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Deposits:</strong> <a href="/charts/deposits/line">Line</a> | <a href="/charts/deposits/bar">Bar</a></li>
+                                <li class="list-group-item"><strong>Withdrawals:</strong> <a href="/charts/withdrawals/line">Line</a> | <a href="/charts/withdrawals/bar">Bar</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-danger btn-xl dropdown-toggle" type="button" id="withdrawalsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Withdrawals
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="withdrawalsDropdown">
-                        <li><a class="dropdown-item" href="/charts/withdrawals/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/withdrawals/bar">Bar Chart</a></li>
-                   </ul>
-                </div>
-            </div>
-            <div class="col-lg-2 col-md-4 col-sm-6 text-center mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-dark btn-xl dropdown-toggle" type="button" id="depositsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Deposits
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="depositsDropdown">
-                        <li><a class="dropdown-item" href="/charts/deposits/line">Line Chart</a></li>
-                        <li><a class="dropdown-item" href="/charts/deposits/bar">Bar Chart</a></li>
-                    </ul>
-                </div>
-            </div>
+
         </div>
     </div>
 </section>
