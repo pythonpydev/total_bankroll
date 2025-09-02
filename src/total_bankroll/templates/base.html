@@ -47,7 +47,6 @@
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
                         {% endif %}
-                        <li class="nav-item"><a class="nav-link" href="https://buymeacoffee.com/pydev1" target="_blank" title="Support the developer with a coffee!"><i class="fa-solid fa-mug-hot"></i> Buy me a coffee</a></li>
                         <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     </ul>
                 </div>
@@ -58,9 +57,28 @@
         <!-- Footer-->
         <footer class="bg-light py-5">
             <div class="container px-4 px-lg-5">
-                <div class="d-flex justify-content-center align-items-center">
-                    <a href="https://buymeacoffee.com/pydev1" target="_blank" class="text-muted me-3" title="Support the developer with a coffee!"><i class="fa-solid fa-mug-hot"></i> Buy me a coffee</a>
-                    <div class="small text-muted">Copyright &copy; 2025 - StakeEasy.net</div>
+                <div class="row">
+                    <div class="col-lg-4 text-center text-lg-start mb-4 mb-lg-0">
+                        <h5 class="text-uppercase mb-4">StakeEasy.net</h5>
+                        <p class="text-muted small">Track Your Poker Bankroll, Master Your Stakes.</p>
+                    </div>
+                    <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                        <h5 class="text-uppercase mb-4">Quick Links</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><a href="{{ url_for('about.about') }}" class="text-muted text-decoration-none">About</a></li>
+                            <li><a href="{{ url_for('tools.tools_page') }}" class="text-muted text-decoration-none">Tools</a></li>
+                            <li><a href="{{ url_for('settings.settings_page') }}" class="text-muted text-decoration-none">Settings</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 text-center text-lg-end">
+                        <h5 class="text-uppercase mb-4">Support Us</h5>
+                        <a href="https://buymeacoffee.com/pydev1" target="_blank" class="btn btn-outline-dark"><i class="fa-solid fa-mug-hot"></i> Buy me a coffee</a>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 text-center border-top pt-4">
+                        <div class="small text-muted">Copyright &copy; {{ current_year }} - StakeEasy.net</div>
+                    </div>
                 </div>
             </div>
         </footer>

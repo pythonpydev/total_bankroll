@@ -8,6 +8,11 @@ from datetime import datetime
 
 common_bp = Blueprint('common', __name__)
 
+@common_bp.app_context_processor
+def inject_current_year():
+    """Injects the current year into all templates."""
+    return {'current_year': datetime.utcnow().year}
+
 @common_bp.route('/confirm_delete/<item_type>/<int:item_id>')
 @login_required
 def confirm_delete(item_type, item_id):
