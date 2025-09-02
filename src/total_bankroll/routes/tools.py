@@ -401,8 +401,55 @@ def tournament_stakes_page():
                     item['additional_required'] = 'N/A'
                     item['buy_in_dec'] = None
 
-    # --- Tournament Stake Recommendation Logic ---
-    # First, calculate a "global" recommendation for the messages at the top of the page.
+    # --- Calculate recommendations and display columns ---
+    # First, calculate per-site recommendations to determine the recommended stake for each table.
+    for site_key, site_data in tournament_buy_ins.items():
+        if 'buy_ins' in site_data:
+            # Pass 1: Populate 'buy_in_dec' and build a map for the recommendation engine.
+            site_buyins_map = {}
+            for item in site_data['buy_ins']:
+                buy_in_str = item.get('buy_in')
+                if not buy_in_str:
+                    item['buy_in_dec'] = Decimal('0.0')
+                    continue
+                try:
+                    buy_in_dec = parse_currency_to_decimal(buy_in_str)
+                    item['buy_in_dec'] = buy_in_dec
+                    if buy_in_dec not in site_buyins_map:
+                        site_buyins_map[buy_in_dec] = buy_in_str
+                except (ValueError, InvalidOperation):
+                    item['buy_in_dec'] = None
+            
+            # Calculate the recommendation for this specific site.
+            site_stakes_list_dec = sorted(site_buyins_map.keys())
+            site_all_buyins_str = [site_buyins_map[d] for d in site_stakes_list_dec]
+            site_recommendations = _calculate_tournament_recommendations(total_bankroll, mean_buy_ins, site_all_buyins_str, site_stakes_list_dec)
+            site_data['recommendations'] = site_recommendations
+            recommended_stake_dec = site_recommendations.get('recommended_tournament_stake_dec')
+
+            # Pass 2: Populate the display columns ('Bankroll Required', 'Additional $ Required')
+            # using the per-site recommendation to apply the correct logic.
+            for item in site_data['buy_ins']:
+                buy_in_dec = item.get('buy_in_dec')
+                if buy_in_dec is None:
+                    item['bankroll_required'] = 'N/A'
+                    item['additional_required'] = 'N/A'
+                    continue
+
+                bankroll_required = buy_in_dec * mean_buy_ins if mean_buy_ins > 0 else Decimal('0.0')
+                additional_required = bankroll_required - total_bankroll
+
+                # For stakes lower than recommended, show the negative "additional required"
+                # to indicate the buffer. For higher stakes, clamp to zero.
+                if recommended_stake_dec is not None and buy_in_dec < recommended_stake_dec:
+                    pass  # Keep the negative value
+                elif additional_required < 0:
+                    additional_required = Decimal('0.0')
+
+                item['bankroll_required'] = f"${bankroll_required:,.2f}"
+                item['additional_required'] = f"${additional_required:,.2f}"
+
+    # --- Calculate Global Recommendation for top messages ---
     # This uses all sites if filter is 'all', or the specific site if filtered.
     global_buyins_map = {}
     sites_to_process_for_global = {}
@@ -424,16 +471,6 @@ def tournament_stakes_page():
     global_recommendations = _calculate_tournament_recommendations(
         total_bankroll, mean_buy_ins, global_all_buyins_str, global_stakes_list_dec
     )
-
-    # Now, calculate per-site recommendations for table highlighting
-    for site_key, site_data in tournament_buy_ins.items():
-        if 'buy_ins' in site_data:
-            site_buyins_map = {item.get('buy_in_dec'): item.get('buy_in') for item in site_data['buy_ins'] if item.get('buy_in_dec') is not None}
-            site_stakes_list_dec = sorted(site_buyins_map.keys())
-            site_all_buyins_str = [site_buyins_map[d] for d in site_stakes_list_dec]
-
-            site_recommendations = _calculate_tournament_recommendations(total_bankroll, mean_buy_ins, site_all_buyins_str, site_stakes_list_dec)
-            site_data['recommendations'] = site_recommendations
 
     return render_template('tournament_stakes.html',
                            total_bankroll=total_bankroll,
