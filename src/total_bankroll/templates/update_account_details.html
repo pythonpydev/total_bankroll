@@ -16,54 +16,51 @@
 <section class="page-section" id="portfolio">
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <div class="card bg-light text-dark p-4 mb-4">
-                    <h4 class="mb-3">Current Email: {{ current_user.email }}</h4>
-
-                    <!-- Update Email Form -->
-                    <h5 class="mt-4 mb-3">Change Email Address</h5>
-                    <form method="POST" action="{{ url_for('settings.update_email') }}">
-                        {{ email_form.hidden_tag() }}
-
-                        <div class="mb-3 text-start">
-                            {{ email_form.email.label(class="form-label") }}
-                            {{ email_form.email(class="form-control", placeholder="Enter new email address") }}
-                            {% if email_form.email.errors %}
-                                <div class="text-danger">{% for error in email_form.email.errors %}{{ error }}{% endfor %}</div>
-                            {% endif %}
-                        </div>
-
-                        {{ email_form.submit_email(class="btn btn-primary btn-xl") }}
-                    </form>
-
-                    <hr class="my-4" />
-
-                    <!-- Update Password Form -->
-                    <h5 class="mt-4 mb-3">Change Password</h5>
-                    <form method="POST" action="{{ url_for('settings.update_password') }}">
-                        {{ password_form.hidden_tag() }}
-
-                        <div class="mb-3 text-start">
-                            {{ password_form.password.label(class="form-label") }}
-                            {{ password_form.password(class="form-control", placeholder="Enter new password") }}
-                            {% if password_form.password.errors %}
-                                <div class="text-danger">{% for error in password_form.password.errors %}{{ error }}{% endfor %}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            {{ password_form.confirm_password.label(class="form-label") }}
-                            {{ password_form.confirm_password(class="form-control", placeholder="Confirm new password") }}
-                            {% if password_form.confirm_password.errors %}
-                                <div class="text-danger">{% for error in password_form.confirm_password.errors %}{{ error }}{% endfor %}</div>
-                            {% endif %}
-                        </div>
-
-                        {{ password_form.submit_password(class="btn btn-primary btn-xl") }}
-                    </form>
+            <div class="col-lg-8">
+                <!-- Update Email Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Email Address</h4>
+                        <p class="text-center text-muted">Current Email: {{ current_user.email }}</p>
+                        <form method="POST" action="{{ url_for('settings.update_email') }}">
+                            {{ email_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ email_form.email(class="form-control", id="email", placeholder="New Email Address") }}
+                                {{ email_form.email.label(for="email") }}
+                                {% for error in email_form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ email_form.submit_email(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <a href="{{ url_for('settings.settings_page') }}" class="btn btn-light btn-xl">Back to Settings</a>
+                
+                <!-- Update Password Card -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Password</h4>
+                        <form method="POST" action="{{ url_for('settings.update_password') }}">
+                            {{ password_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ password_form.password(class="form-control", id="password", placeholder="New Password") }}
+                                {{ password_form.password.label(for="password") }}
+                                {% for error in password_form.password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="form-floating mb-3">
+                                {{ password_form.confirm_password(class="form-control", id="confirm_password", placeholder="Confirm New Password") }}
+                                {{ password_form.confirm_password.label(for="confirm_password") }}
+                                {% for error in password_form.confirm_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ password_form.submit_password(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-xl">Back to Settings</a>
+                </div>
             </div>
         </div>
     </div>

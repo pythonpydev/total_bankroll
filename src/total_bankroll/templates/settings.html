@@ -17,23 +17,32 @@
     <div class="container px-4 px-lg-5">
         <h2 class="text-center mt-0">Application Settings</h2>
         <hr class="divider" />
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <p class="text-muted mb-4">Settings options will be available here.</p>
-
-                <!-- Database Section -->
-                <h3 class="mt-5">Database Management</h3>
-                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
-                    <a href="{{ url_for('reset_db.confirm_reset_database') }}" class="btn btn-danger">Reset Database</a>
-                    <a href="{{ url_for('common.confirm_export_database') }}" class="btn btn-success">Export data as CSV</a>
-                    <a href="{{ url_for('import_db.confirm_import_database') }}" class="btn btn-primary">Import data from CSV</a>
+        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
+            <!-- Database Management Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">Database Management</h4>
+                        <p class="card-text text-muted">Perform database-wide actions like resetting, exporting, or importing your data.</p>
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{{ url_for('import_db.confirm_import_database') }}" class="btn btn-primary">Import Data from CSV</a>
+                            <a href="{{ url_for('common.confirm_export_database') }}" class="btn btn-success">Export Data as CSV</a>
+                            <a href="{{ url_for('reset_db.confirm_reset_database') }}" class="btn btn-danger">Reset All Data</a>
+                        </div>
+                    </div>
                 </div>
-
-                <h3 class="mt-5">User Account Management</h3>
-                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
-                    <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete User Account</a>
-                    <a href="{{ url_for('settings.update_account_details') }}" class="btn btn-primary">Update Account Details</a>
-                </div>
+            </div>
+            <!-- User Account Management Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">User Account Management</h4>
+                        <p class="card-text text-muted">Update your email and password, or delete your account permanently.</p>
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{{ url_for('settings.update_account_details') }}" class="btn btn-primary">Update Account Details</a>
+                            <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete User Account</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
