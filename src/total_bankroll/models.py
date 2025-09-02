@@ -88,7 +88,7 @@ class Currency(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     rate = db.Column(db.Numeric(10, 6), nullable=False)
-    code = db.Column(db.String(3), nullable=False)
+    code = db.Column(db.String(3), nullable=False, unique=True)
     symbol = db.Column(db.String(5), nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
