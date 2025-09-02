@@ -9,6 +9,7 @@ from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized 
 from .config import config 
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from .extensions import db, mail, csrf
 from . import commands
@@ -49,6 +50,16 @@ def register_blueprints(app):
 def create_app():
     # Load environment variables from .env file
     load_dotenv()
+
+    # Configure logging
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    log_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app.log')
+    file_handler = RotatingFileHandler(log_file, maxBytes=1024*1024, backupCount=5)
+    file_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
     # Get the absolute path to the directory containing app.py
     basedir = os.path.abspath(os.path.dirname(__file__))
