@@ -88,7 +88,11 @@ def create_app():
         google_bp = make_google_blueprint(
             client_id=google_client_id,
             client_secret=google_client_secret,
-            scope=['openid', 'email', 'profile'],
+            scope=[
+                "openid",
+                "https://www.googleapis.com/auth/userinfo.email",
+                "https://www.googleapis.com/auth/userinfo.profile",
+            ],
             storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
         )
         app.register_blueprint(google_bp, url_prefix='/login')
