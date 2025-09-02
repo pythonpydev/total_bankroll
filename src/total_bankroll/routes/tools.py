@@ -302,10 +302,22 @@ def poker_stakes_page():
     with open(cash_stakes_json_path, 'r') as f:
         cash_stakes_data = json.load(f)
 
+    stakes_list = cash_stakes_data['stakes']
+
+    # Find the recommended stake index from the raw data first, so we can use it for display logic.
+    recommended_stake_index = -1
+    if buy_in_multiple > 0:
+        for i in range(len(stakes_list) - 1, -1, -1):
+            stake_row = stakes_list[i]
+            max_buy_in = parse_currency_to_decimal(stake_row['max_buy_in'])
+            if total_bankroll >= buy_in_multiple * max_buy_in:
+                recommended_stake_index = i
+                break
+
     # Reconstruct the table in the list-of-lists format expected by the template
     headers = ["Small Blind", "Big Blind", "Minimum Buy-In", "Maximum Buy-In", "Bankroll Required", "Additional $ Required"]
     cash_stakes_table = [headers]
-    for stake in cash_stakes_data['stakes']:
+    for i, stake in enumerate(stakes_list):
         max_buy_in = parse_currency_to_decimal(stake['max_buy_in'])
         
         bankroll_required = Decimal('0.0')
@@ -313,7 +325,12 @@ def poker_stakes_page():
             bankroll_required = max_buy_in * buy_in_multiple
             
         additional_required = bankroll_required - total_bankroll
-        if additional_required < 0:
+
+        # For stakes lower than recommended, show the negative "additional required" to indicate the buffer.
+        # For the recommended stake and higher, clamp to zero if the user is already rolled.
+        if recommended_stake_index != -1 and i < recommended_stake_index:
+            pass  # Keep the negative value for stakes below the recommended one
+        elif additional_required < 0:
             additional_required = Decimal('0.0')
 
         cash_stakes_table.append([
