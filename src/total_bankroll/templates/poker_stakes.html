@@ -56,7 +56,7 @@
             </div>
         </form>
         {% if bankroll_recommendation and bankroll_recommendation != "0 to 0 big blinds" %}
-        <div class="alert alert-success mt-4" role="alert">
+        <div class="alert alert-secondary mt-4" role="alert">
             <h4 class="alert-heading">Recommended Bankroll Size</h4>
             <p>Based on your selections, a bankroll of <strong>{{ bankroll_recommendation }}</strong> is recommended for your chosen cash game.</p>
             <hr>
@@ -70,7 +70,7 @@
         {% if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes" %}
         <div class="text-center">
             <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
-            <div class="alert alert-success" role="alert">
+            <div class="alert alert-light border" role="alert">
                 {{ stake_explanation }}
             </div>
             {% if move_down_message %}
