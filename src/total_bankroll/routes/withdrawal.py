@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, request, url_for, current_app
+from flask import Blueprint, render_template, redirect, request, url_for, current_app, flash
 from flask_security import login_required, current_user
 from datetime import datetime
 from decimal import Decimal
@@ -55,3 +55,42 @@ def withdrawal():
 
     current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
     return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
+
+@withdrawal_bp.route("/update_withdrawal/<int:withdrawal_id>", methods=["GET", "POST"])
+@login_required
+def update_withdrawal(withdrawal_id):
+    """Update a withdrawal transaction."""
+    withdrawal_item = db.session.query(Drawings).filter_by(id=withdrawal_id, user_id=current_user.id).first()
+    if not withdrawal_item:
+        flash("Withdrawal not found.", "danger")
+        return redirect(url_for("withdrawal.withdrawal"))
+
+    if request.method == "POST":
+        date_str = request.form.get("date", "")
+        amount_str = request.form.get("amount", "")
+        currency_code = request.form.get("currency", "USD")
+
+        if not date_str or not amount_str:
+            flash("Date and amount are required", "danger")
+            return redirect(url_for("withdrawal.withdrawal"))
+
+        try:
+            withdrawal_item.date = datetime.strptime(date_str, "%Y-%m-%d")
+            amount = round(Decimal(amount_str), 2)
+            if amount <= 0:
+                flash("Amount must be positive", "danger")
+                return redirect(url_for("withdrawal.withdrawal"))
+            withdrawal_item.amount = amount
+            withdrawal_item.currency = currency_code
+            withdrawal_item.last_updated = datetime.utcnow()
+            db.session.commit()
+            flash("Withdrawal updated successfully!", "success")
+        except (ValueError, Exception) as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "danger")
+        
+        return redirect(url_for("withdrawal.withdrawal"))
+    else:
+        # GET request
+        currencies = get_sorted_currencies()
+        return render_template("update_withdrawal.html", withdrawal_item=withdrawal_item, currencies=currencies)

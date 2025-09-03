@@ -1,3 +1,29 @@
-<div>
-    <h1>Update Deposit</h1>
+<div class="modal-header">
+    <h5 class="modal-title">Update Deposit</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form id="updateDepositForm" action="{{ url_for('deposit.update_deposit', deposit_id=deposit.id) }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+            <label for="date" class="form-label">Date:</label>
+            <input type="date" class="form-control" id="date" name="date" value="{{ deposit.date.strftime('%Y-%m-%d') }}" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount:</label>
+            <input type="number" step="any" class="form-control" id="amount" name="amount" value="{{ "%.2f" | format(deposit.amount) }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="currency" class="form-label">Currency:</label>
+            <select class="form-select" id="currency" name="currency" required>
+                {% for currency in currencies %}
+                    <option value="{{ currency.code }}" {% if currency.code == deposit.currency %}selected{% endif %}>{{ currency.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary" form="updateDepositForm">Update Deposit</button>
 </div>
