@@ -37,6 +37,9 @@
                                     <td>{{ record.currency_name }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.edit_asset_history', history_id=record.id) }}">Edit</button>
+                                        {% if history|length > 1 %}
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='asset_history', item_id=record.id) }}">Delete</button>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
