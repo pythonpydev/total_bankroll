@@ -1,7 +1,7 @@
 """Add display_order to sites table
 
 Revision ID: 5e19a2149a34
-Revises: 2b461a823f18
+Revises: f4f52aa82318
 Create Date: 2025-09-03 09:38:10.611294
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision = '5e19a2149a34'
-down_revision = '2b461a823f18'
+down_revision = 'f4f52aa82318'
 branch_labels = None
 depends_on = None
 
