@@ -13,12 +13,20 @@ assets_bp = Blueprint("assets", __name__)
 @login_required
 def assets_page():
     """Assets page."""
+    # One-time data migration for existing assets with no order
+    uninitialized_assets = db.session.query(Assets).filter_by(user_id=current_user.id, display_order=0).all()
+    if uninitialized_assets:
+        max_order = db.session.query(func.max(Assets.display_order)).filter_by(user_id=current_user.id).scalar() or 0
+        for i, asset in enumerate(uninitialized_assets):
+            asset.display_order = max_order + i + 1
+        db.session.commit()
+
     currency_data = db.session.query(Currency).all()
     currency_rates = {row.code: Decimal(str(row.rate)) for row in currency_data}
     currency_symbols = {row.code: row.symbol for row in currency_data}
     currency_names = {row.code: row.name for row in currency_data}
 
-    assets = db.session.query(Assets).filter_by(user_id=current_user.id).order_by(Assets.name).all()
+    assets = db.session.query(Assets).filter_by(user_id=current_user.id).order_by(Assets.display_order).all()
     asset_ids = [asset.id for asset in assets]
 
     # Efficiently fetch the latest two history records for all assets in one query
@@ -114,8 +122,14 @@ def add_asset():
             return redirect(url_for("assets.assets_page"))
         currency_code = currency.code
 
+        # Determine the display order for the new asset
+        max_order = db.session.query(func.max(Assets.display_order)).filter_by(user_id=current_user.id).scalar()
+        new_order = (max_order or 0) + 1
+
         # Insert into assets table
-        new_asset = Assets(name=name, user_id=current_user.id)
+        new_asset = Assets(name=name, 
+                           user_id=current_user.id,
+                           display_order=new_order)
         db.session.add(new_asset)
         db.session.flush()  # To get the asset.id before commit
 
@@ -209,6 +223,35 @@ def rename_asset(asset_id):
         return redirect(url_for("assets.assets_page"))
     else:
         return render_template("rename_asset.html", asset=asset)
+
+@assets_bp.route("/assets/move/<int:asset_id>/<direction>")
+@login_required
+def move_asset(asset_id, direction):
+    """Move an asset up or down in the display order."""
+    if direction not in ['up', 'down']:
+        flash("Invalid direction.", "danger")
+        return redirect(url_for('assets.assets_page'))
+
+    assets = db.session.query(Assets).filter_by(user_id=current_user.id).order_by(Assets.display_order).all()
+    
+    asset_to_move_index = -1
+    for i, asset in enumerate(assets):
+        if asset.id == asset_id:
+            asset_to_move_index = i
+            break
+
+    if asset_to_move_index == -1:
+        flash("Asset not found.", "danger")
+    elif direction == 'up' and asset_to_move_index > 0:
+        other_asset = assets[asset_to_move_index - 1]
+        assets[asset_to_move_index].display_order, other_asset.display_order = other_asset.display_order, assets[asset_to_move_index].display_order
+        db.session.commit()
+    elif direction == 'down' and asset_to_move_index < len(assets) - 1:
+        other_asset = assets[asset_to_move_index + 1]
+        assets[asset_to_move_index].display_order, other_asset.display_order = other_asset.display_order, assets[asset_to_move_index].display_order
+        db.session.commit()
+    
+    return redirect(url_for('assets.assets_page'))
 
 @assets_bp.route("/assets/history/<int:asset_id>")
 @login_required

@@ -27,10 +27,10 @@
                         <thead class="table-dark">
                             <tr>
                                 <th scope="col">Asset Name</th>
-                                <th scope="col">Previous</th>
+                                <th scope="col">Previous (USD)</th>
                                 <th scope="col">Current (USD)</th>
                                 <th scope="col">Original Currency</th>
-                                <th scope="col">Original Amount</th>
+                                <th scope="col">Current (Original)</th>
                                 <th scope="col">Change</th>
                                 <th scope="col">Actions</th>
                             </tr>
@@ -44,11 +44,13 @@
                                         <td>{{ asset.currency }}</td>
                                         <td>{{ asset.currency_symbol }}{{ "%.2f" | format(asset.current_amount) }}</td>
                                         <td class="{% if (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) }}</td>
-                                        <td>
+                                        <td class="d-flex flex-wrap gap-1">
                                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.update_asset', asset_id=asset.id) }}">Update</button>
                                             <a href="{{ url_for('assets.asset_history', asset_id=asset.id) }}" class="btn btn-secondary btn-sm">History</a>
                                             <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.rename_asset', asset_id=asset.id) }}">Rename</button>
                                             <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='asset', item_id=asset.id) }}">Delete</button>
+                                            <a href="{{ url_for('assets.move_asset', asset_id=asset.id, direction='up') }}" class="btn btn-light btn-sm {% if loop.first %}disabled{% endif %}" title="Move Up"><i class="bi bi-arrow-up"></i></a>
+                                            <a href="{{ url_for('assets.move_asset', asset_id=asset.id, direction='down') }}" class="btn btn-light btn-sm {% if loop.last %}disabled{% endif %}" title="Move Down"><i class="bi bi-arrow-down"></i></a>
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -40,6 +40,7 @@ class Assets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    display_order = db.Column(db.Integer, nullable=False, server_default='0')
     user = db.relationship('User', backref=db.backref('assets', lazy='dynamic'))
 
 class Deposits(db.Model):

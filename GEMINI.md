@@ -86,6 +86,58 @@ gh issue list -R pythonpydev/total_bankroll
 **Project's GitHub URL:**
 https://github.com/pythonpydev/total_bankroll
 
+# Deployment Workflow for Database Changes
+
+To ensure that database schema changes are applied safely and consistently to both the local development environment and the production server on PythonAnywhere, follow this procedure for every change that affects the database models.
+
+## Phase 1: On Your Local Development Machine
+
+This is where all work and testing should be done first.
+
+1.  **Make Code Changes:** Modify your Python code as needed (e.g., add a column to a model in `src/total_bankroll/models.py`).
+
+2.  **Generate Migration Script:** In your local terminal, run the `migrate` command to create the database migration script.
+    ```bash
+    flask db migrate -m "A short, descriptive message for the change"
+    ```
+
+3.  **Apply Migration Locally:** Run the `upgrade` command to apply the changes to your local database.
+    ```bash
+    flask db upgrade
+    ```
+
+4.  **Test Locally:** Start your local server (`flask run`) and thoroughly test the application to ensure the new feature works and nothing else is broken.
+
+5.  **Commit to Git:** Once you are confident that everything works, commit all your changes (including the new migration script) to your git repository.
+    ```bash
+    git add .
+    git commit -m "Your descriptive commit message"
+    git push
+    ```
+
+## Phase 2: On the PythonAnywhere Production Server
+
+After successfully testing and pushing your changes, you can deploy to the live server.
+
+1.  **Pull Latest Code:** In your **PythonAnywhere Bash console**, navigate to your project directory and pull the latest code.
+    ```bash
+    cd ~/total_bankroll
+    git pull
+    ```
+
+2.  **Activate Environment:** Prepare your console session.
+    ```bash
+    workon bankroll_venv
+    export FLASK_APP="src/total_bankroll"
+    ```
+
+3.  **Apply Migration to Production:** Run the same `upgrade` command to apply the changes to your live database.
+    ```bash
+    flask db upgrade
+    ```
+
+4.  **Reload Web App:** Go to the **"Web"** tab on your PythonAnywhere dashboard and click the big green **"Reload"** button to make your changes live.
+
 # Cash-Game Stakes (Typical)
 
 Typical buy-in ranges (often 40bb minimum — 100bb maximum). Values shown in USD.
