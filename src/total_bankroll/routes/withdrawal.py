@@ -51,7 +51,7 @@ def withdrawal():
         withdrawal_data.append(withdrawal_dict)
 
     today = datetime.now().strftime("%Y-%m-%d")
-    currencies = [c['name'] for c in get_sorted_currencies()]
+    currencies = get_sorted_currencies()
 
     current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
     return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
