@@ -49,6 +49,30 @@ def perform_delete(item_type, item_id):
             db.session.commit()
             flash("Deposit deleted successfully!", "success")
             return redirect(url_for('deposit.deposit'))
+        elif item_type == 'site_history':
+            history_record = SiteHistory.query.filter_by(id=item_id, user_id=current_user.id).first()
+            if history_record:
+                site_id = history_record.site_id
+                count = SiteHistory.query.filter_by(site_id=site_id, user_id=current_user.id).count()
+                if count <= 1:
+                    flash("Cannot delete the last history record for a site. Please delete the site itself.", "danger")
+                    return redirect(url_for('poker_sites.site_history', site_id=site_id))
+                db.session.delete(history_record)
+                db.session.commit()
+                flash("History record deleted successfully!", "success")
+                return redirect(url_for('poker_sites.site_history', site_id=site_id))
+        elif item_type == 'asset_history':
+            history_record = AssetHistory.query.filter_by(id=item_id, user_id=current_user.id).first()
+            if history_record:
+                asset_id = history_record.asset_id
+                count = AssetHistory.query.filter_by(asset_id=asset_id, user_id=current_user.id).count()
+                if count <= 1:
+                    flash("Cannot delete the last history record for an asset. Please delete the asset itself.", "danger")
+                    return redirect(url_for('assets.asset_history', asset_id=asset_id))
+                db.session.delete(history_record)
+                db.session.commit()
+                flash("History record deleted successfully!", "success")
+                return redirect(url_for('assets.asset_history', asset_id=asset_id))
         else:
             flash("Invalid item type", "danger")
             return "Invalid item type", 400
