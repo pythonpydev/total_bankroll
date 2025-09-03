@@ -36,6 +36,8 @@ class DevelopmentConfig(Config):
     DB_USER = os.getenv('DEV_DB_USER', 'root')
     DB_PASS = os.getenv('DEV_DB_PASS', 'f3gWoQe7X7BFCm')
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+    SERVER_NAME = 'localhost:5000'
+    PREFERRED_URL_SCHEME = 'http'
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -44,6 +46,8 @@ class ProductionConfig(Config):
     DB_USER = os.getenv('PROD_DB_USER', 'pythonpydev')
     DB_PASS = os.getenv('PROD_DB_PASS', 'f3gWoQe7X7BFCm')
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+    SERVER_NAME = 'www.stakeeasy.net'
+    PREFERRED_URL_SCHEME = 'https'
 
 class TestingConfig(Config):
     TESTING = True

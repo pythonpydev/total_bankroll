@@ -112,8 +112,31 @@ def init_oauth(app):
 
         @oauth_authorized.connect_via(facebook_bp)
         def facebook_logged_in(blueprint, token):
-            # This is a placeholder. Implement full logic similar to google_logged_in if needed.
-            flash("Facebook login is not fully implemented yet.", "info")
-            return redirect(url_for("auth.login"))
+            try:
+                if not token:
+                    flash("Facebook login failed.", "danger")
+                    return redirect(url_for("auth.login"))
+                
+                # Fetch user info from Facebook
+                resp = facebook.get("/me?fields=id,name,email")
+                if not resp.ok:
+                    flash("Failed to fetch user info from Facebook.", "danger")
+                    logger.error(f"Facebook API request failed: {resp.text}")
+                    return redirect(url_for("auth.login"))
+                
+                user_info = resp.json()
+                user_datastore = current_app.extensions['security'].datastore
+                user = _login_or_create_oauth_user('facebook', user_info, user_datastore)
+                
+                if user:
+                    login_user(user, remember=True)
+                    flash('Logged in successfully with Facebook!', 'success')
+                    return redirect(url_for("home.home"))
+                
+                return redirect(url_for("auth.login"))
+            except Exception as e:
+                logger.critical(f"UNCAUGHT EXCEPTION IN facebook_logged_in: {e}", exc_info=True)
+                flash("An unexpected error occurred during login. Please try again.", "danger")
+                return redirect(url_for("auth.login"))
     else:
         logger.warning("Facebook OAuth credentials not provided. Facebook login disabled.")
