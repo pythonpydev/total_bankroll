@@ -44,11 +44,13 @@
                                 <td>{{ site.currency }}</td>
                                 <td>{{ site.currency_symbol }}{{ "%.2f" | format(site.current_amount) }}</td>
                                 <td class="{% if (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) }}</td>
-                                <td>
+                                <td class="d-flex flex-wrap gap-1">
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.update_site', site_id=site.id) }}">Update</button>
                                     <a href="{{ url_for('poker_sites.site_history', site_id=site.id) }}" class="btn btn-secondary btn-sm">History</a>
                                     <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.rename_site', site_id=site.id) }}">Rename</button>
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
+                                    <a href="{{ url_for('poker_sites.move_site', site_id=site.id, direction='up') }}" class="btn btn-light btn-sm {% if loop.first %}disabled{% endif %}" title="Move Up"><i class="bi bi-arrow-up"></i></a>
+                                    <a href="{{ url_for('poker_sites.move_site', site_id=site.id, direction='down') }}" class="btn btn-light btn-sm {% if loop.last %}disabled{% endif %}" title="Move Down"><i class="bi bi-arrow-down"></i></a>
                                 </td>
                             </tr>
                             {% endfor %}

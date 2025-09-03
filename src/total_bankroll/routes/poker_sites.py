@@ -16,13 +16,21 @@ poker_sites_bp = Blueprint("poker_sites", __name__)
 @login_required
 def poker_sites_page():
     """Poker Sites page."""
+    # One-time data migration for existing sites with no order
+    uninitialized_sites = db.session.query(Sites).filter_by(user_id=current_user.id, display_order=0).all()
+    if uninitialized_sites:
+        max_order = db.session.query(func.max(Sites.display_order)).filter_by(user_id=current_user.id).scalar() or 0
+        for i, site in enumerate(uninitialized_sites):
+            site.display_order = max_order + i + 1
+        db.session.commit()
+
     currency_data = db.session.query(Currency).all()
     currency_rates = {row.code: Decimal(str(row.rate)) for row in currency_data}
     currency_symbols = {row.code: row.symbol for row in currency_data}
     currency_names = {row.code: row.name for row in currency_data}
 
     # Get all sites for the user
-    sites = db.session.query(Sites).filter_by(user_id=current_user.id).order_by(Sites.name).all()
+    sites = db.session.query(Sites).filter_by(user_id=current_user.id).order_by(Sites.display_order).all()
     site_ids = [site.id for site in sites]
 
     # Efficiently fetch the latest two history records for all sites in one query
@@ -119,8 +127,14 @@ def add_site():
             return redirect(url_for("poker_sites.poker_sites_page"))
         currency_code = currency.code
 
+        # Determine the display order for the new site
+        max_order = db.session.query(func.max(Sites.display_order)).filter_by(user_id=current_user.id).scalar()
+        new_order = (max_order or 0) + 1
+
         # Insert into sites table
-        new_site = Sites(name=name, user_id=current_user.id)
+        new_site = Sites(name=name, 
+                         user_id=current_user.id,
+                         display_order=new_order)
         db.session.add(new_site)
         db.session.flush()  # To get the site.id before commit
 
@@ -217,6 +231,35 @@ def rename_site(site_id):
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
         return render_template("rename_site.html", site=site)
+
+@poker_sites_bp.route("/poker_sites/move/<int:site_id>/<direction>")
+@login_required
+def move_site(site_id, direction):
+    """Move a site up or down in the display order."""
+    if direction not in ['up', 'down']:
+        flash("Invalid direction.", "danger")
+        return redirect(url_for('poker_sites.poker_sites_page'))
+
+    sites = db.session.query(Sites).filter_by(user_id=current_user.id).order_by(Sites.display_order).all()
+    
+    site_to_move_index = -1
+    for i, site in enumerate(sites):
+        if site.id == site_id:
+            site_to_move_index = i
+            break
+
+    if site_to_move_index == -1:
+        flash("Site not found.", "danger")
+    elif direction == 'up' and site_to_move_index > 0:
+        other_site = sites[site_to_move_index - 1]
+        sites[site_to_move_index].display_order, other_site.display_order = other_site.display_order, sites[site_to_move_index].display_order
+        db.session.commit()
+    elif direction == 'down' and site_to_move_index < len(sites) - 1:
+        other_site = sites[site_to_move_index + 1]
+        sites[site_to_move_index].display_order, other_site.display_order = other_site.display_order, sites[site_to_move_index].display_order
+        db.session.commit()
+    
+    return redirect(url_for('poker_sites.poker_sites_page'))
 
 @poker_sites_bp.route("/poker_sites/history/<int:site_id>")
 @login_required
