@@ -209,3 +209,57 @@ def rename_asset(asset_id):
         return redirect(url_for("assets.assets_page"))
     else:
         return render_template("rename_asset.html", asset=asset)
+
+@assets_bp.route("/assets/history/<int:asset_id>")
+@login_required
+def asset_history(asset_id):
+    """Display the history for a specific asset."""
+    asset = db.session.query(Assets).filter_by(id=asset_id, user_id=current_user.id).first_or_404()
+    history = db.session.query(AssetHistory).filter_by(asset_id=asset_id, user_id=current_user.id).order_by(AssetHistory.recorded_at.desc()).all()
+    
+    currency_data = db.session.query(Currency).all()
+    currency_symbols = {row.code: row.symbol for row in currency_data}
+    currency_names = {row.code: row.name for row in currency_data}
+
+    history_data = []
+    for record in history:
+        history_data.append({
+            'id': record.id,
+            'recorded_at': record.recorded_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'amount': record.amount,
+            'currency_name': currency_names.get(record.currency, record.currency),
+            'currency_symbol': currency_symbols.get(record.currency, record.currency)
+        })
+
+    return render_template("asset_history.html", asset=asset, history=history_data)
+
+@assets_bp.route("/assets/history/edit/<int:history_id>", methods=["GET", "POST"])
+@login_required
+def edit_asset_history(history_id):
+    """Edit a specific asset history record."""
+    history_record = db.session.query(AssetHistory).filter_by(id=history_id, user_id=current_user.id).first_or_404()
+    
+    if request.method == "POST":
+        amount_str = request.form.get("amount", "")
+        currency_code = request.form.get("currency", "USD")
+        date_str = request.form.get("recorded_at", "")
+
+        if not amount_str or not date_str:
+            flash("Amount and date are required.", "danger")
+            return redirect(url_for('assets.asset_history', asset_id=history_record.asset_id))
+
+        try:
+            history_record.amount = round(Decimal(amount_str), 2)
+            history_record.currency = currency_code
+            history_record.recorded_at = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            db.session.commit()
+            flash("History record updated successfully!", "success")
+        except (ValueError, Exception) as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "danger")
+        
+        return redirect(url_for('assets.asset_history', asset_id=history_record.asset_id))
+    else:
+        # GET request
+        currencies = get_sorted_currencies()
+        return render_template("edit_asset_history.html", history_record=history_record, currencies=currencies)

@@ -217,3 +217,58 @@ def rename_site(site_id):
         return redirect(url_for("poker_sites.poker_sites_page"))
     else:
         return render_template("rename_site.html", site=site)
+
+@poker_sites_bp.route("/poker_sites/history/<int:site_id>")
+@login_required
+def site_history(site_id):
+    """Display the history for a specific poker site."""
+    site = db.session.query(Sites).filter_by(id=site_id, user_id=current_user.id).first_or_404()
+    history = db.session.query(SiteHistory).filter_by(site_id=site_id, user_id=current_user.id).order_by(SiteHistory.recorded_at.desc()).all()
+    
+    # To display currency symbols and names
+    currency_data = db.session.query(Currency).all()
+    currency_symbols = {row.code: row.symbol for row in currency_data}
+    currency_names = {row.code: row.name for row in currency_data}
+
+    history_data = []
+    for record in history:
+        history_data.append({
+            'id': record.id,
+            'recorded_at': record.recorded_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'amount': record.amount,
+            'currency_name': currency_names.get(record.currency, record.currency),
+            'currency_symbol': currency_symbols.get(record.currency, record.currency)
+        })
+
+    return render_template("site_history.html", site=site, history=history_data)
+
+@poker_sites_bp.route("/poker_sites/history/edit/<int:history_id>", methods=["GET", "POST"])
+@login_required
+def edit_site_history(history_id):
+    """Edit a specific site history record."""
+    history_record = db.session.query(SiteHistory).filter_by(id=history_id, user_id=current_user.id).first_or_404()
+    
+    if request.method == "POST":
+        amount_str = request.form.get("amount", "")
+        currency_code = request.form.get("currency", "USD")
+        date_str = request.form.get("recorded_at", "")
+
+        if not amount_str or not date_str:
+            flash("Amount and date are required.", "danger")
+            return redirect(url_for('poker_sites.site_history', site_id=history_record.site_id))
+
+        try:
+            history_record.amount = round(Decimal(amount_str), 2)
+            history_record.currency = currency_code
+            history_record.recorded_at = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            db.session.commit()
+            flash("History record updated successfully!", "success")
+        except (ValueError, Exception) as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "danger")
+        
+        return redirect(url_for('poker_sites.site_history', site_id=history_record.site_id))
+    else:
+        # GET request
+        currencies = get_sorted_currencies()
+        return render_template("edit_site_history.html", history_record=history_record, currencies=currencies)

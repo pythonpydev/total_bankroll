@@ -1,0 +1,29 @@
+<div class="modal-header">
+    <h5 class="modal-title">Edit Site History Record</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form id="editSiteHistoryForm" action="{{ url_for('poker_sites.edit_site_history', history_id=history_record.id) }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+            <label for="recorded_at" class="form-label">Recorded At (UTC):</label>
+            <input type="text" class="form-control" id="recorded_at" name="recorded_at" value="{{ history_record.recorded_at.strftime('%Y-%m-%d %H:%M:%S') }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount:</label>
+            <input type="number" step="any" class="form-control" id="amount" name="amount" value="{{ "%.2f" | format(history_record.amount) }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="currency" class="form-label">Currency:</label>
+            <select class="form-select" id="currency" name="currency" required>
+                {% for currency in currencies %}
+                    <option value="{{ currency.code }}" {% if currency.code == history_record.currency %}selected{% endif %}>{{ currency.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary" form="editSiteHistoryForm">Update Record</button>
+</div>
