@@ -111,8 +111,8 @@
                     <h3 class="text-center">{{ site_data.name }}</h3>
                     <p class="text-center text-muted">{{ site_data.description }}</p>
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
+                        <table class="table-custom">
+                            <thead>
                                 <tr>
                                     <th>Buy-In</th>
                                     <th>Examples/Notes</th>
@@ -123,13 +123,13 @@
                             <tbody>
                                 {% for item in site_data.buy_ins %}
                                     {% set recs = site_data.get('recommendations') %}
-                                    {% set row_class = '' %} {# Default class #}
+                                    {% set row_class = '' %}
                                     {% if recs and item.buy_in_dec == recs.get('recommended_tournament_stake_dec') %}
-                                        {% set row_class = 'bg-success text-white fw-bold' %}
+                                        {% set row_class = 'highlight-recommended' %}
                                     {% elif recs and item.buy_in_dec == recs.get('next_stake_level_dec') %}
-                                        {% set row_class = 'bg-danger text-white fw-bold' %}
+                                        {% set row_class = 'highlight-move-up' %}
                                     {% elif recs and item.buy_in_dec == recs.get('move_down_stake_level_dec') %}
-                                        {% set row_class = 'bg-primary text-white fw-bold' %}
+                                        {% set row_class = 'highlight-move-down' %}
                                     {% endif %}
                                     <tr class="{{ row_class }}">
                                         <td>{{ item.buy_in }}</td>

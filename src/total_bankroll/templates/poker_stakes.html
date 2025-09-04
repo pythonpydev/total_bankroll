@@ -89,8 +89,8 @@
         {% endif %}
 
         <h3 class="mt-5">Cash Game Stakes</h3>
-        <table class="table table-bordered table-striped mx-auto" style="max-width: 900px;">
-            <thead class="table-dark">
+        <table class="table-custom mx-auto" style="max-width: 900px;">
+            <thead>
                 <tr>
                     {% for header in cash_stakes_table[0] %}
                     <th>{{ header }}</th>
@@ -100,7 +100,7 @@
             <tbody>
                 {% for row in cash_stakes_table[1:] %}
                 {% set current_stake = row[0] + '/' + row[1] %}
-                <tr {% if current_stake == recommended_stake %}class="bg-success text-white fw-bold"{% elif current_stake == next_stake_level %}class="bg-danger text-white fw-bold"{% elif current_stake == move_down_stake_level %}class="bg-primary text-white fw-bold"{% endif %}>
+                <tr {% if current_stake == recommended_stake %}class="highlight-recommended"{% elif current_stake == next_stake_level %}class="highlight-move-up"{% elif current_stake == move_down_stake_level %}class="highlight-move-down"{% endif %}>
                     {% for cell in row %}
                     <td>{{ cell }}</td>
                     {% endfor %}

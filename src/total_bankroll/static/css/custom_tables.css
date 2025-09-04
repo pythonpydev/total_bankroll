@@ -1,0 +1,62 @@
+/*
+ * Custom Table Styles for StakeEasy.net
+ * This stylesheet provides a modern, clean look for data tables.
+ */
+
+.table-custom {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: 'Merriweather Sans', sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+}
+
+.table-custom thead tr {
+    background-color: #f8f9fa; /* A light grey, less harsh than black */
+    color: #343a40; /* Dark text for contrast */
+    text-align: left;
+    font-weight: bold;
+}
+
+.table-custom th,
+.table-custom td {
+    padding: 12px 15px;
+}
+
+.table-custom tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.table-custom tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.table-custom tbody tr:last-of-type {
+    border-bottom: 2px solid #0d6efd; /* Bootstrap primary blue for accent */
+}
+
+.table-custom tbody tr:hover {
+    background-color: #e9ecef; /* Hover effect for rows */
+}
+
+/* Custom classes for positive/negative changes */
+.table-custom .change-positive { color: #198754; font-weight: bold; }
+.table-custom .change-negative { color: #dc3545; font-weight: bold; }
+.table-custom .change-zero { color: #6c757d; }
+
+/* Custom highlighting for recommendation tables */
+.table-custom .highlight-recommended {
+    background-color: rgba(25, 135, 84, 0.2) !important; /* Light green */
+    font-weight: bold;
+}
+.table-custom .highlight-move-up {
+    background-color: rgba(220, 53, 69, 0.2) !important; /* Light red */
+    font-weight: bold;
+}
+.table-custom .highlight-move-down {
+    background-color: rgba(13, 110, 253, 0.2) !important; /* Light blue */
+    font-weight: bold;
+}
