@@ -117,11 +117,17 @@ def init_oauth(app):
                     flash("Facebook login failed.", "danger")
                     return redirect(url_for("auth.login"))
                 
-                # Fetch user info from Facebook
+                # Fetch user info from Facebook, explicitly asking for email
                 resp = facebook.get("/me?fields=id,name,email")
                 if not resp.ok:
                     flash("Failed to fetch user info from Facebook.", "danger")
                     logger.error(f"Facebook API request failed: {resp.text}")
+                    return redirect(url_for("auth.login"))
+                
+                user_info = resp.json()
+                if not user_info.get("email"):
+                    logger.error(f"Facebook did not return an email address. User info: {user_info}")
+                    flash("Facebook login failed: No email address was provided. Please ensure your Facebook account has a verified email and that you have granted permission.", "danger")
                     return redirect(url_for("auth.login"))
                 
                 user_info = resp.json()
