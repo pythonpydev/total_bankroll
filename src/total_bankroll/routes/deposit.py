@@ -19,8 +19,12 @@ def deposit():
     bankroll_data = get_user_bankroll_data(current_user.id)
     total_net_worth = bankroll_data['total_bankroll']
 
+    # Get date range from request arguments
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+
     # Get deposits with currency conversion to USD
-    deposits_raw = db.session.query(
+    deposits_query = db.session.query(
         Deposits.id,
         Deposits.date,
         Deposits.amount.label('original_amount'),
@@ -29,8 +33,17 @@ def deposit():
         Currency.rate.label('exchange_rate'),
         Currency.name.label('currency_name')
     ).join(Currency, Deposits.currency == Currency.code)\
-     .filter(Deposits.user_id == current_user.id)\
-     .order_by(Deposits.date.desc()).all()
+     .filter(Deposits.user_id == current_user.id)
+
+    # Apply date filters if they exist
+    if start_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        deposits_query = deposits_query.filter(Deposits.date >= start_date)
+    if end_date_str:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        deposits_query = deposits_query.filter(Deposits.date <= end_date)
+
+    deposits_raw = deposits_query.order_by(Deposits.date.desc()).all()
     current_app.logger.debug(f"deposits_raw: {deposits_raw}")
 
     # Process deposits to add USD calculations and currency symbols
@@ -51,7 +64,13 @@ def deposit():
     today = datetime.now().strftime("%Y-%m-%d")
     currencies = [c['name'] for c in get_sorted_currencies()]
 
-    return render_template("deposit.html", deposits=deposit_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
+    return render_template("deposit.html", 
+                           deposits=deposit_data, 
+                           today=today, 
+                           total_net_worth=total_net_worth, 
+                           currencies=currencies,
+                           start_date=start_date_str,
+                           end_date=end_date_str)
 
 @deposit_bp.route("/update_deposit/<int:deposit_id>", methods=["GET", "POST"])
 @login_required

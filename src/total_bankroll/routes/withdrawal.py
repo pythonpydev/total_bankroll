@@ -21,8 +21,12 @@ def withdrawal():
     bankroll_data = get_user_bankroll_data(current_user.id)
     total_net_worth = bankroll_data['total_bankroll']
 
+    # Get date range from request arguments
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+
     # Get withdrawals with currency conversion to USD
-    withdrawals_raw = db.session.query(
+    withdrawals_query = db.session.query(
         Drawings.id,
         Drawings.date,
         Drawings.amount.label('original_amount'),
@@ -33,7 +37,17 @@ def withdrawal():
     ).\
         join(Currency, Drawings.currency == Currency.code).\
         filter(Drawings.user_id == current_user.id).\
-        order_by(Drawings.date.desc()).all()
+        order_by(Drawings.date.desc())
+
+    # Apply date filters if they exist
+    if start_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        withdrawals_query = withdrawals_query.filter(Drawings.date >= start_date)
+    if end_date_str:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        withdrawals_query = withdrawals_query.filter(Drawings.date <= end_date)
+
+    withdrawals_raw = withdrawals_query.all()
     current_app.logger.debug(f"withdrawals_raw: {withdrawals_raw}")
 
     # Process withdrawals to add USD calculations and currency symbols
@@ -54,7 +68,13 @@ def withdrawal():
     currencies = get_sorted_currencies()
 
     current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
-    return render_template("withdrawal.html", drawings=withdrawal_data, today=today, total_net_worth=total_net_worth, currencies=currencies)
+    return render_template("withdrawal.html", 
+                           drawings=withdrawal_data, 
+                           today=today, 
+                           total_net_worth=total_net_worth, 
+                           currencies=currencies,
+                           start_date=start_date_str,
+                           end_date=end_date_str)
 
 @withdrawal_bp.route("/update_withdrawal/<int:withdrawal_id>", methods=["GET", "POST"])
 @login_required
