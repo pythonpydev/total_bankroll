@@ -22,7 +22,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="card h-100 shadow-sm text-center">
                     <div class="card-body">
-                        <div class="mb-2"><i class="bi-wallet2 fs-1 text-primary"></i></div>
+                        <div class="mb-2"><i class="bi-wallet2 fs-1 text-primary" aria-hidden="true"></i></div>
                         <h4 class="card-title">Total Bankroll</h4>
                         <p class="card-text fs-2 fw-bold">${{ "%.2f" | format(total_bankroll) }}</p>
                     </div>
@@ -35,7 +35,7 @@
                         {% set profit_text_class = 'text-success' if total_profit > 0 else 'text-danger' if total_profit < 0 else '' %}
                         {% set profit_icon_class = 'text-success' if total_profit > 0 else 'text-danger' if total_profit < 0 else 'text-primary' %}
                         {% set profit_icon = 'bi-graph-up' if total_profit > 0 else 'bi-graph-down' if total_profit < 0 else 'bi-bar-chart-line' %}
-                        <div class="mb-2"><i class="{{ profit_icon }} fs-1 {{ profit_icon_class }}"></i></div>
+                        <div class="mb-2"><i class="{{ profit_icon }} fs-1 {{ profit_icon_class }}" aria-hidden="true"></i></div>
                         <h4 class="card-title">Total Profit / Loss</h4>
                         <p class="card-text fs-2 fw-bold {{ profit_text_class }}">${{ "%.2f" | format(total_profit) }}</p>
                     </div>
@@ -45,7 +45,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="card h-100 shadow-sm text-center">
                     <div class="card-body">
-                        <div class="mb-2"><i class="bi-stack fs-1 text-primary"></i></div>
+                        <div class="mb-2"><i class="bi-stack fs-1 text-primary" aria-hidden="true"></i></div>
                         <h4 class="card-title">Poker Sites</h4>
                         <p class="card-text fs-2 fw-bold">${{ "%.2f" | format(current_poker_total) }}</p>
                         {% set poker_change = current_poker_total - previous_poker_total %}
@@ -58,7 +58,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="card h-100 shadow-sm text-center">
                     <div class="card-body">
-                        <div class="mb-2"><i class="bi-gem fs-1 text-primary"></i></div>
+                        <div class="mb-2"><i class="bi-gem fs-1 text-primary" aria-hidden="true"></i></div>
                         <h4 class="card-title">Other Assets</h4>
                         <p class="card-text fs-2 fw-bold">${{ "%.2f" | format(current_asset_total) }}</p>
                         {% set asset_change = current_asset_total - previous_asset_total %}
@@ -71,7 +71,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="card h-100 shadow-sm text-center">
                     <div class="card-body">
-                        <div class="mb-2"><i class="bi-arrow-up-circle-fill fs-1 text-success"></i></div>
+                        <div class="mb-2"><i class="bi-arrow-up-circle-fill fs-1 text-success" aria-hidden="true"></i></div>
                         <h4 class="card-title">Total Deposits</h4>
                         <p class="card-text fs-2 fw-bold">${{ "%.2f" | format(total_deposits) }}</p>
                     </div>
@@ -81,7 +81,7 @@
             <div class="col-lg-6 col-md-6">
                 <div class="card h-100 shadow-sm text-center">
                     <div class="card-body">
-                        <div class="mb-2"><i class="bi-arrow-down-circle-fill fs-1 text-danger"></i></div>
+                        <div class="mb-2"><i class="bi-arrow-down-circle-fill fs-1 text-danger" aria-hidden="true"></i></div>
                         <h4 class="card-title">Total Withdrawals</h4>
                         <p class="card-text fs-2 fw-bold">${{ "%.2f" | format(total_withdrawals) }}</p>
                     </div>
