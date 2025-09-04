@@ -1,0 +1,43 @@
+{% macro render_item_table(items, item_type) %}
+{% set blueprint_name = 'poker_sites' if item_type == 'site' else item_type ~ 's' %}
+{% set id_param_name = item_type ~ '_id' %}
+<div class="table-responsive">
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th scope="col">{{ item_type | capitalize }} Name</th>
+                <th scope="col">Previous (USD)</th>
+                <th scope="col">Current (USD)</th>
+                <th scope="col">Original Currency</th>
+                <th scope="col">Current (Original)</th>
+                <th scope="col">Change</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>${{ "%.2f" | format(item.previous_amount_usd) if item.previous_amount_usd is not none else "N/A" }}</td>
+                    <td>${{ "%.2f" | format(item.current_amount_usd) }}</td>
+                    <td>{{ item.currency }}</td>
+                    <td>{{ item.currency_symbol }}{{ "%.2f" | format(item.current_amount) }}</td>
+                    <td class="{% if (item.current_amount_usd - (item.previous_amount_usd if item.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (item.current_amount_usd - (item.previous_amount_usd if item.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(item.current_amount_usd - (item.previous_amount_usd if item.previous_amount_usd is not none else 0)) }}</td>
+                    <td class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for(blueprint_name ~ '.update_' ~ item_type, **{id_param_name: item.id}) }}">Update</button>
+                        <a href="{{ url_for(blueprint_name ~ '.' ~ item_type ~ '_history', **{id_param_name: item.id}) }}" class="btn btn-secondary btn-sm">History</a>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for(blueprint_name ~ '.rename_' ~ item_type, **{id_param_name: item.id}) }}">Rename</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type=item_type, item_id=item.id) }}">Delete</button>
+                        <a href="{{ url_for(blueprint_name ~ '.move_' ~ item_type, **{id_param_name: item.id, 'direction': 'up'}) }}" class="btn btn-light btn-sm {% if loop.first %}disabled{% endif %}" title="Move Up" aria-label="Move Up"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+                        <a href="{{ url_for(blueprint_name ~ '.move_' ~ item_type, **{id_param_name: item.id, 'direction': 'down'}) }}" class="btn btn-light btn-sm {% if loop.last %}disabled{% endif %}" title="Move Down" aria-label="Move Down"><i class="bi bi-arrow-down" aria-hidden="true"></i></a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">You haven't added any {{ item_type }}s yet. Click 'Add New {{ item_type | capitalize }}' to get started!</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}

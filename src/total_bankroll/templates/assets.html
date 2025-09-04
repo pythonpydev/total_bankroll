@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% from "_macros.html" import render_item_table %}
 
 {% block content %}
 <section class="page-section bg-primary" id="assets">
@@ -21,42 +21,7 @@
             <div class="col-lg-12 text-end mb-3">
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.add_asset') }}">Add New Asset</button>
             </div>
-            <div class="col-lg-12">
-                <div class="table-responsive">
-                    <table class="table-custom">
-                        <thead>
-                            <tr>
-                                <th scope="col">Asset Name</th>
-                                <th scope="col">Previous (USD)</th>
-                                <th scope="col">Current (USD)</th>
-                                <th scope="col">Original Currency</th>
-                                <th scope="col">Current (Original)</th>
-                                <th scope="col">Change</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                                {% for asset in assets %}
-                                    <tr>
-                                        <td>{{ asset.name }}</td>
-                                        <td>${{ "%.2f" | format(asset.previous_amount_usd) if asset.previous_amount_usd is not none else "N/A" }}</td>
-                                        <td>${{ "%.2f" | format(asset.current_amount_usd) }}</td>
-                                        <td>{{ asset.currency }}</td>
-                                        <td>{{ asset.currency_symbol }}{{ "%.2f" | format(asset.current_amount) }}</td>
-                                        <td class="{% if (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(asset.current_amount_usd - (asset.previous_amount_usd if asset.previous_amount_usd is not none else 0)) }}</td>
-                                        <td class="d-flex flex-wrap gap-1">
-                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.update_asset', asset_id=asset.id) }}">Update</button>
-                                            <a href="{{ url_for('assets.asset_history', asset_id=asset.id) }}" class="btn btn-secondary btn-sm">History</a>
-                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.rename_asset', asset_id=asset.id) }}">Rename</button>
-                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='asset', item_id=asset.id) }}">Delete</button>
-                                            <a href="{{ url_for('assets.move_asset', asset_id=asset.id, direction='up') }}" class="btn btn-light btn-sm {% if loop.first %}disabled{% endif %}" title="Move Up" aria-label="Move Up"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
-                                            <a href="{{ url_for('assets.move_asset', asset_id=asset.id, direction='down') }}" class="btn btn-light btn-sm {% if loop.last %}disabled{% endif %}" title="Move Down" aria-label="Move Down"><i class="bi bi-arrow-down" aria-hidden="true"></i></a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="col-lg-12">{{ render_item_table(assets, 'asset') }}</div>
 
                     <div class="table-responsive mt-5">
                         <table class="table-custom">

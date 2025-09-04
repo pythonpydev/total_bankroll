@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% from "_macros.html" import render_item_table %}
 
 {% block content %}
 <section class="page-section bg-primary" id="poker_sites">
@@ -21,42 +21,7 @@
             <div class="col-lg-12 text-end mb-3">
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.add_site') }}">Add New Site</button>
             </div>
-            <div class="col-lg-12">
-                <div class="table-responsive">
-                    <table class="table-custom">
-                        <thead>
-                            <tr>
-                                <th>Site Name</th>
-                                <th>Previous (USD)</th>
-                                <th>Current (USD)</th>
-                                <th>Original Currency</th>
-                                <th>Current (Original)</th>
-                                <th>Change</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for site in poker_sites %}
-                            <tr>
-                                <td>{{ site.name }}</td>
-                                <td>${{ "%.2f" | format(site.previous_amount_usd) if site.previous_amount_usd is not none else "N/A" }}</td>
-                                <td>${{ "%.2f" | format(site.current_amount_usd) }}</td>
-                                <td>{{ site.currency }}</td>
-                                <td>{{ site.currency_symbol }}{{ "%.2f" | format(site.current_amount) }}</td>
-                                <td class="{% if (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) > 0 %}change-positive{% elif (site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(site.current_amount_usd - (site.previous_amount_usd if site.previous_amount_usd is not none else 0)) }}</td>
-                                <td class="d-flex flex-wrap gap-1">
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.update_site', site_id=site.id) }}">Update</button>
-                                    <a href="{{ url_for('poker_sites.site_history', site_id=site.id) }}" class="btn btn-secondary btn-sm">History</a>
-                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.rename_site', site_id=site.id) }}">Rename</button>
-                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='site', item_id=site.id) }}">Delete</button>
-                                    <a href="{{ url_for('poker_sites.move_site', site_id=site.id, direction='up') }}" class="btn btn-light btn-sm {% if loop.first %}disabled{% endif %}" title="Move Up" aria-label="Move Up"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
-                                    <a href="{{ url_for('poker_sites.move_site', site_id=site.id, direction='down') }}" class="btn btn-light btn-sm {% if loop.last %}disabled{% endif %}" title="Move Down" aria-label="Move Down"><i class="bi bi-arrow-down" aria-hidden="true"></i></a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-lg-12">{{ render_item_table(poker_sites, 'site') }}</div>
 
                 <div class="table-responsive mt-5">
                         <table class="table-custom">
