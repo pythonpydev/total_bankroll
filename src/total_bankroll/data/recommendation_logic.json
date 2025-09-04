@@ -1,0 +1,52 @@
+{
+  "weights": {
+    "game_type": 2,
+    "skill_level": 3,
+    "risk_tolerance": 4,
+    "game_environment": 1
+  },
+  "cash_games": {
+    "unit": "big blinds",
+    "ranges": {
+      "game_type": {
+        "Limit Hold’Em": [20, 30],
+        "NLHE": [30, 50],
+        "PLO": [50, 100]
+      },
+      "skill_level": {
+        "Soft Games": [20, 30],
+        "Tough Games": [50, 100]
+      },
+      "risk_tolerance": {
+        "Conservative": [50, 100],
+        "Aggressive": [20, 30]
+      },
+      "game_environment": {
+        "Live Poker": [20, 30],
+        "Online Poker": [40, 60]
+      }
+    }
+  },
+  "tournaments": {
+    "unit": "buy-ins",
+    "ranges": {
+      "game_type": {
+        "Limit Hold’Em": [40, 60],
+        "NLHE": [60, 100],
+        "PLO": [100, 200]
+      },
+      "skill_level": {
+        "Soft Games": [40, 60],
+        "Tough Games": [100, 200]
+      },
+      "risk_tolerance": {
+        "Conservative": [100, 200],
+        "Aggressive": [40, 60]
+      },
+      "game_environment": {
+        "Live Poker": [40, 60],
+        "Online Poker": [80, 120]
+      }
+    }
+  }
+}

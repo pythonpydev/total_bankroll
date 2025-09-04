@@ -123,12 +123,12 @@
                             <tbody>
                                 {% for item in site_data.buy_ins %}
                                     {% set recs = site_data.get('recommendations') %}
-                                    {% set row_class = '' %}
-                                    {% if item.buy_in_dec and recs and item.buy_in_dec == recs.recommended_tournament_stake_dec %}
+                                    {% set row_class = '' %} {# Default class #}
+                                    {% if recs and item.buy_in_dec == recs.get('recommended_tournament_stake_dec') %}
                                         {% set row_class = 'bg-success text-white fw-bold' %}
-                                    {% elif item.buy_in_dec and recs and item.buy_in_dec == recs.next_stake_level_dec %}
+                                    {% elif recs and item.buy_in_dec == recs.get('next_stake_level_dec') %}
                                         {% set row_class = 'bg-danger text-white fw-bold' %}
-                                    {% elif item.buy_in_dec and recs and item.buy_in_dec == recs.move_down_stake_level_dec %}
+                                    {% elif recs and item.buy_in_dec == recs.get('move_down_stake_level_dec') %}
                                         {% set row_class = 'bg-primary text-white fw-bold' %}
                                     {% endif %}
                                     <tr class="{{ row_class }}">
