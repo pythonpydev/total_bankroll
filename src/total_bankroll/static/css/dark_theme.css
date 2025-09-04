@@ -60,6 +60,11 @@ body.dark-mode .card {
     border-color: var(--dark-border);
 }
 
+body.dark-mode .card.bg-primary {
+    background-color: var(--dark-bg-0) !important;
+    border-color: var(--dark-accent) !important;
+}
+
 body.dark-mode .text-dark {
     color: var(--dark-text-0) !important;
 }
