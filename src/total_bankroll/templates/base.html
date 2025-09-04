@@ -94,8 +94,12 @@
                         <h5 class="text-uppercase mb-4">Quick Links</h5>
                         <ul class="list-unstyled mb-0">
                             <li><a href="{{ url_for('about.about') }}" class="text-muted text-decoration-none">About</a></li>
-                            <li><a href="{{ url_for('tools.tools_page') }}" class="text-muted text-decoration-none">Tools</a></li>
-                            <li><a href="{{ url_for('settings.settings_page') }}" class="text-muted text-decoration-none">Settings</a></li>
+                            {% if current_user.is_authenticated %}
+                                <li><a href="{{ url_for('tools.tools_page') }}" class="text-muted text-decoration-none">Tools</a></li>
+                                <li><a href="{{ url_for('settings.settings_page') }}" class="text-muted text-decoration-none">Settings</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none">Login</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                     <div class="col-lg-4 text-center text-lg-end">

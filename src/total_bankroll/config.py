@@ -15,6 +15,11 @@ class Config:
     SECURITY_PASSWORD_HASH = 'argon2'
     SECURITY_CONFIRMABLE = True
     SECURITY_RECOVERABLE = True
+    SECURITY_LOGIN_URL = "/auth/login"
+    SECURITY_LOGOUT_URL = "/auth/logout"
+    SECURITY_REGISTER_URL = "/auth/register"
+    SECURITY_POST_LOGIN_VIEW = "/"
+    SECURITY_POST_LOGOUT_VIEW = "/auth/login"
 
     # --- Mail settings ---
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')

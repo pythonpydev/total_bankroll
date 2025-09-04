@@ -32,7 +32,7 @@ def register_blueprints(app):
     from .routes.tools import tools_bp
 
     blueprints = [
-        (auth_bp, '/security'), (home_bp, None), (poker_sites_bp, None),
+        (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
         (assets_bp, None), (withdrawal_bp, None), (deposit_bp, None),
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
@@ -75,7 +75,10 @@ def create_app():
 
     # Initialize Flask-Security and OAuth
     user_datastore = SQLAlchemyUserDatastore(db, User, None)
-    security = Security(app, user_datastore)
+    # Since we have implemented all auth views in the 'auth' blueprint,
+    # we can disable the default blueprint from Flask-Security to avoid
+    # route conflicts.
+    security = Security(app, user_datastore, register_blueprint=False)
 
     from . import oauth
     oauth.init_oauth(app)

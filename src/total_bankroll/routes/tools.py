@@ -12,6 +12,7 @@ def parse_currency_to_decimal(currency_str):
     return Decimal(str(currency_str).replace('$', '').replace(',', ''))
 
 @tools_bp.route('/tools')
+@login_required
 def tools_page():
     return render_template('tools.html')
 
