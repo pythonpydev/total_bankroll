@@ -24,44 +24,31 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/poker_sites_pie_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('pokerSitesChart').getContext('2d');
-                
-                new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: data.labels,
-                        datasets: data.datasets
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            title: {
-                                display: true,
-                                text: 'Total Poker Sites Value (Latest Data)'
-                            }
+
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Total Poker Sites Value (Latest Data)',
+                            font: { size: 18 }
                         }
-                    }
-                });
+                    },
+                };
+
+                createChart(ctx, 'pie', chartData, chartOptions);
             })
             .catch(error => console.error('Error fetching poker sites data:', error));
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     });
 </script>
 {% endblock %}

@@ -24,44 +24,33 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/deposits_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('depositsChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.labels,
-                        datasets: data.datasets
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Amount (USD)'
-                                }
-                            },
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Date'
-                                }
-                            }
+
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Deposits Over Time (Line Chart)',
+                            font: { size: 18 }
                         }
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Date' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Amount (USD)' } }
                     }
-                });
+                };
+
+                createChart(ctx, 'line', chartData, chartOptions);
             })
             .catch(error => console.error('Error fetching deposits data:', error));
     });

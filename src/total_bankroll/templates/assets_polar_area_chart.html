@@ -24,47 +24,31 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/assets_pie_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
-                
-                new Chart(ctx, {
-                    type: 'polarArea',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.datasets[0].data,
-                            backgroundColor: data.datasets[0].data.map(() => getRandomColor())
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            title: {
-                                display: true,
-                                text: 'Total Assets Value (Latest Data)'
-                            }
+
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Total Assets Value (Latest Data)',
+                            font: { size: 18 }
                         }
-                    }
-                });
+                    },
+                };
+
+                createChart(ctx, 'polarArea', chartData, chartOptions);
             })
             .catch(error => console.error('Error fetching assets data:', error));
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     });
 </script>
 {% endblock %}

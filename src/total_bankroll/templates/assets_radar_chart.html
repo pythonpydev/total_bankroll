@@ -24,56 +24,36 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/assets_historical_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
-                
-                new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: data.labels,
-                        datasets: data.datasets.map(dataset => ({
-                            label: dataset.label,
-                            data: dataset.data,
-                            borderColor: dataset.borderColor,
-                            backgroundColor: dataset.borderColor.replace('rgb', 'rgba').replace(')', ', 0.2)')
-                        }))
+
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Assets Value (Radar Chart)',
+                            font: { size: 18 }
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        elements: {
-                            line: {
-                                borderWidth: 3
-                            }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Total Assets Value (Latest Data)'
-                            }
-                        },
-                        scales: {
-                            r: {
-                                beginAtZero: true
-                            }
+                    scales: {
+                        r: {
+                            beginAtZero: true
                         }
                     }
-                });
+                };
+
+                createChart(ctx, 'radar', chartData, chartOptions);
             })
             .catch(error => console.error('Error fetching assets data:', error));
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     });
 </script>
 {% endblock %}

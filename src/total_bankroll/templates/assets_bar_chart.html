@@ -24,51 +24,35 @@
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/assets_historical_data')
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: data.datasets.map(dataset => ({
-                            ...dataset,
-                            backgroundColor: dataset.borderColor, // Use borderColor from backend as background
-                            borderWidth: 1
-                        }))
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Amount (USD)'
-                                }
-                            },
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Date'
-                                }
-                            }
+
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Assets Value Over Time (Bar Chart)',
+                            font: { size: 18 }
                         }
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Date' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Amount (USD)' } }
                     }
-                });
+                };
+
+                createChart(ctx, 'bar', chartData, chartOptions);
             })
             .catch(error => console.error('Error fetching assets data:', error));
-
-        
     });
 </script>
 {% endblock %}
