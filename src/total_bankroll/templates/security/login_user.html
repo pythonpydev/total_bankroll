@@ -51,9 +51,14 @@
                 <div class="text-center">
                     <p class="text-muted">Or log in with:</p>
                     <div class="d-flex justify-content-center gap-3">
-                        <a href="{{ url_for('auth.google') }}" class="btn btn-outline-primary"><i class="fab fa-google"></i></a>
-                        <a href="{{ url_for('auth.twitter') }}" class="btn btn-outline-primary"><i class="fab fa-twitter"></i></a>
-                        <a href="{{ url_for('auth.facebook') }}" class="btn btn-outline-primary"><i class="fab fa-facebook"></i></a>
+                        {% if config.get('GOOGLE_CLIENT_ID') %}
+                            <a href="{{ url_for('google.login') }}" class="btn btn-outline-primary"><i class="fab fa-google"></i></a>
+                        {% endif %}
+                        {# Twitter is disabled, but keeping the structure #}
+                        {# <a href="{{ url_for('twitter.login') }}" class="btn btn-outline-primary"><i class="fab fa-twitter"></i></a> #}
+                        {% if config.get('FACEBOOK_CLIENT_ID') %}
+                            <a href="{{ url_for('facebook.login') }}" class="btn btn-outline-primary"><i class="fab fa-facebook"></i></a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

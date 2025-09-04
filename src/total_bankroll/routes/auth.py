@@ -241,32 +241,6 @@ def reset_password(token):
 
     return render_template('security/reset_password.html', form=form)
 
-@auth_bp.route('/google')
-def google():
-    logger.debug(f"Google login attempt, current_user.authenticated: {current_user.is_authenticated}")
-    if current_user.is_authenticated:
-        return redirect(url_for('home.home'))
-    return redirect(url_for('google.login'))
-
-@auth_bp.route('/twitter')
-def twitter():
-    flash('Twitter login is not enabled.', 'danger')
-    return redirect(url_for('auth.login'))
-
-@auth_bp.route('/twitter/authorized')
-def twitter_auth():
-    flash('Twitter login is not enabled.', 'danger')
-    return redirect(url_for('auth.login'))
-
-@auth_bp.route('/facebook')
-def facebook():
-    if not os.getenv('FACEBOOK_CLIENT_ID') or not os.getenv('FACEBOOK_CLIENT_SECRET'):
-        flash('Facebook login is not enabled.', 'danger')
-        return redirect(url_for('auth.login'))
-    if current_user.is_authenticated:
-        return redirect(url_for('home.home'))
-    return redirect(url_for('facebook.login'))
-
 @auth_bp.route('/logout')
 @login_required
 def logout():

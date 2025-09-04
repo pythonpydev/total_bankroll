@@ -28,6 +28,10 @@ class Config:
     # --- Flask-Security email integration ---
     SECURITY_EMAIL_SENDER = os.getenv('MAIL_USERNAME')
     SECURITY_EMAIL_SUBJECT_REGISTER = "Please confirm your email"
+    
+    # --- OAuth settings for templates ---
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    FACEBOOK_CLIENT_ID = os.getenv('FACEBOOK_CLIENT_ID')
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -36,7 +40,7 @@ class DevelopmentConfig(Config):
     DB_USER = os.getenv('DEV_DB_USER', 'root')
     DB_PASS = os.getenv('DEV_DB_PASS', 'f3gWoQe7X7BFCm')
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
-    SERVER_NAME = 'localhost:5000'
+    SERVER_NAME = '127.0.0.1:5000'
     PREFERRED_URL_SCHEME = 'http'
 
 class ProductionConfig(Config):
