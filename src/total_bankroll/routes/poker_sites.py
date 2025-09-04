@@ -16,6 +16,7 @@ poker_sites_bp = Blueprint("poker_sites", __name__)
 
 class AddSiteForm(FlaskForm):
     name = StringField('Site Name', validators=[DataRequired(), Length(min=2, max=50)])
+    amount = DecimalField('Initial Amount', validators=[DataRequired()])
     currency = SelectField('Currency', coerce=str, validators=[DataRequired()])
     submit = SubmitField('Add Site')
 
@@ -87,8 +88,17 @@ def add_site():
     form = AddSiteForm()
     form.currency.choices = [(c['code'], c['name']) for c in get_sorted_currencies()]
     if form.validate_on_submit():
-        new_site = Sites(name=form.name.data, user_id=current_user.id, currency=form.currency.data)
+        new_site = Sites(name=form.name.data, user_id=current_user.id)
         db.session.add(new_site)
+        db.session.flush()  # Flush to get the new_site.id
+
+        initial_history = SiteHistory(
+            site_id=new_site.id,
+            amount=form.amount.data,
+            currency=form.currency.data,
+            user_id=current_user.id
+        )
+        db.session.add(initial_history)
         db.session.commit()
         flash('Site added successfully!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
@@ -103,12 +113,19 @@ def update_site(site_id):
         return redirect(url_for('poker_sites.poker_sites_page'))
 
     form = UpdateSiteForm()
+    last_history = SiteHistory.query.filter_by(site_id=site.id, user_id=current_user.id).order_by(SiteHistory.recorded_at.desc()).first()
+
     if form.validate_on_submit():
-        new_history = SiteHistory(site_id=site.id, amount=form.amount.data, currency=site.currency, user_id=current_user.id)
+        currency_code = last_history.currency if last_history else 'USD'
+        new_history = SiteHistory(site_id=site.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
         flash('Site amount updated!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
+    
+    if last_history:
+        form.amount.data = last_history.amount
+
     return render_template("_modal_form.html", form=form, title=f"Update {site.name}")
 
 @poker_sites_bp.route("/rename_site/<int:site_id>", methods=['GET', 'POST'])

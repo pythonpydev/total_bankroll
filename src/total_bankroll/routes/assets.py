@@ -16,6 +16,7 @@ assets_bp = Blueprint("assets", __name__)
 
 class AddAssetForm(FlaskForm):
     name = StringField('Asset Name', validators=[DataRequired(), Length(min=2, max=50)])
+    amount = DecimalField('Initial Amount', validators=[DataRequired()])
     currency = SelectField('Currency', coerce=str, validators=[DataRequired()])
     submit = SubmitField('Add Asset')
 
@@ -87,8 +88,17 @@ def add_asset():
     form = AddAssetForm()
     form.currency.choices = [(c['code'], c['name']) for c in get_sorted_currencies()]
     if form.validate_on_submit():
-        new_asset = Assets(name=form.name.data, user_id=current_user.id, currency=form.currency.data)
+        new_asset = Assets(name=form.name.data, user_id=current_user.id)
         db.session.add(new_asset)
+        db.session.flush()  # Get new_asset.id
+
+        initial_history = AssetHistory(
+            asset_id=new_asset.id,
+            amount=form.amount.data,
+            currency=form.currency.data,
+            user_id=current_user.id
+        )
+        db.session.add(initial_history)
         db.session.commit()
         flash('Asset added successfully!', 'success')
         return redirect(url_for('assets.assets_page'))
@@ -103,12 +113,19 @@ def update_asset(asset_id):
         return redirect(url_for('assets.assets_page'))
 
     form = UpdateAssetForm()
+    last_history = AssetHistory.query.filter_by(asset_id=asset.id, user_id=current_user.id).order_by(AssetHistory.recorded_at.desc()).first()
+
     if form.validate_on_submit():
-        new_history = AssetHistory(asset_id=asset.id, amount=form.amount.data, currency=asset.currency, user_id=current_user.id)
+        currency_code = last_history.currency if last_history else 'USD'
+        new_history = AssetHistory(asset_id=asset.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
         flash('Asset amount updated!', 'success')
         return redirect(url_for('assets.assets_page'))
+    
+    if last_history:
+        form.amount.data = last_history.amount
+
     return render_template("_modal_form.html", form=form, title=f"Update {asset.name}")
 
 @assets_bp.route("/rename_asset/<int:asset_id>", methods=['GET', 'POST'])

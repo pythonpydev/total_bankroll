@@ -197,6 +197,11 @@
                     .then(response => response.text())
                     .then(html => {
                         modalContent.innerHTML = html;
+                        // After loading content, find the form and set its action
+                        const form = modalContent.querySelector('form');
+                        if (form) {
+                            form.action = url;
+                        }
                     })
                     .catch(error => {
                         modalContent.innerHTML = '<div class="modal-body"><p>Error loading content.</p></div>';
