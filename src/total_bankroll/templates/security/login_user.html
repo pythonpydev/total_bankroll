@@ -56,9 +56,6 @@
                         {% endif %}
                         {# Twitter is disabled, but keeping the structure #}
                         {# <a href="{{ url_for('twitter.login') }}" class="btn btn-outline-primary"><i class="fab fa-twitter"></i></a> #}
-                        {% if config.get('FACEBOOK_CLIENT_ID') %}
-                            <a href="{{ url_for('facebook.login') }}" class="btn btn-outline-primary"><i class="fab fa-facebook"></i></a>
-                        {% endif %}
                     </div>
                 </div>
             </div>

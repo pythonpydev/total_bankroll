@@ -36,7 +36,6 @@ class Config:
     
     # --- OAuth settings for templates ---
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-    FACEBOOK_CLIENT_ID = os.getenv('FACEBOOK_CLIENT_ID')
 
 class DevelopmentConfig(Config):
     DEBUG = True

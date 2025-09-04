@@ -2,7 +2,6 @@ import os
 import json
 from flask import flash, redirect, url_for, current_app
 from flask_dance.contrib.google import make_google_blueprint, google
-from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized
 from flask_security import login_user, current_user
@@ -98,51 +97,3 @@ def init_oauth(app):
                 return redirect(url_for("auth.login"))
     else:
         logger.warning("Google OAuth credentials not provided. Google login disabled.")
-
-    # Conditionally register Facebook blueprint
-    facebook_enabled = os.getenv('FACEBOOK_CLIENT_ID') and os.getenv('FACEBOOK_CLIENT_SECRET')
-    if facebook_enabled:
-        facebook_bp = make_facebook_blueprint(
-            client_id=os.getenv('FACEBOOK_CLIENT_ID'),
-            client_secret=os.getenv('FACEBOOK_CLIENT_SECRET'),
-            scope=['email'],
-            storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
-        )
-        app.register_blueprint(facebook_bp, url_prefix='/login')
-
-        @oauth_authorized.connect_via(facebook_bp)
-        def facebook_logged_in(blueprint, token):
-            try:
-                if not token:
-                    flash("Facebook login failed.", "danger")
-                    return redirect(url_for("auth.login"))
-                
-                # Fetch user info from Facebook, explicitly asking for email
-                resp = facebook.get("/me?fields=id,name,email")
-                if not resp.ok:
-                    flash("Failed to fetch user info from Facebook.", "danger")
-                    logger.error(f"Facebook API request failed: {resp.text}")
-                    return redirect(url_for("auth.login"))
-                
-                user_info = resp.json()
-                if not user_info.get("email"):
-                    logger.error(f"Facebook did not return an email address. User info: {user_info}")
-                    flash("Facebook login failed: No email address was provided. Please ensure your Facebook account has a verified email and that you have granted permission.", "danger")
-                    return redirect(url_for("auth.login"))
-                
-                user_info = resp.json()
-                user_datastore = current_app.extensions['security'].datastore
-                user = _login_or_create_oauth_user('facebook', user_info, user_datastore)
-                
-                if user:
-                    login_user(user, remember=True)
-                    flash('Logged in successfully with Facebook!', 'success')
-                    return redirect(url_for("home.home"))
-                
-                return redirect(url_for("auth.login"))
-            except Exception as e:
-                logger.critical(f"UNCAUGHT EXCEPTION IN facebook_logged_in: {e}", exc_info=True)
-                flash("An unexpected error occurred during login. Please try again.", "danger")
-                return redirect(url_for("auth.login"))
-    else:
-        logger.warning("Facebook OAuth credentials not provided. Facebook login disabled.")
