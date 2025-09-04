@@ -30,6 +30,8 @@
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
         <!-- Custom Table CSS -->
         <link href="{{ url_for('static', filename='css/custom_tables.css') }}" rel="stylesheet" />
+        <!-- Dark Theme CSS (disabled by default) -->
+        <link id="dark-theme-style" href="{{ url_for('static', filename='css/dark_theme.css') }}" rel="stylesheet" disabled />
         <!-- Custom CSS for application-specific overrides -->
         <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet" />
         <!-- Font Awesome-->
@@ -89,6 +91,12 @@
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
                         {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('about.about') }}">About</a></li>
+                        <!-- Theme Toggler -->
+                        <li class="nav-item ms-lg-2">
+                            <button class="btn btn-link nav-link px-2" id="theme-toggle" type="button" aria-label="Toggle theme">
+                                <i class="bi-sun-fill"></i>
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -151,6 +159,31 @@
     <!-- Custom Chart Utility -->
     <script src="{{ url_for('static', filename='js/chart_utils.js') }}"></script>
 
+    <!-- Theme Toggler Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('theme-toggle');
+            const darkThemeLink = document.getElementById('dark-theme-style');
+            const body = document.body;
+            const themeIcon = themeToggle.querySelector('i');
+
+            function setDarkTheme(isDark) {
+                darkThemeLink.disabled = !isDark;
+                body.classList.toggle('dark-mode', isDark);
+                themeIcon.classList.toggle('bi-sun-fill', !isDark);
+                themeIcon.classList.toggle('bi-moon-fill', isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setDarkTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+            themeToggle.addEventListener('click', () => {
+                setDarkTheme(!body.classList.contains('dark-mode'));
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var generalModal = document.getElementById('generalModal');

@@ -1,0 +1,176 @@
+/*
+ * Dark Theme for StakeEasy.net
+ */
+
+:root {
+    --dark-bg-0: #121212; /* Deepest background */
+    --dark-bg-1: #1e1e1e; /* Main background */
+    --dark-bg-2: #2a2a2a; /* Surface background (cards, modals) */
+    --dark-border: #444;
+    --dark-text-0: #f5f5f5; /* Primary text */
+    --dark-text-1: #bdbdbd; /* Secondary text (muted) */
+    --dark-accent: #4dabf7; /* A lighter blue for accents */
+}
+
+body.dark-mode {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+}
+
+/* --- Components --- */
+
+body.dark-mode .bg-light {
+    background-color: var(--dark-bg-0) !important;
+}
+
+body.dark-mode .navbar-light {
+    background-color: var(--dark-bg-2) !important;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+body.dark-mode .navbar-brand,
+body.dark-mode .nav-link {
+    color: var(--dark-text-0) !important;
+}
+
+body.dark-mode .navbar-toggler-icon {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: var(--dark-accent);
+    color: var(--dark-bg-0);
+}
+
+body.dark-mode .dropdown-divider {
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .card {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .text-dark {
+    color: var(--dark-text-0) !important;
+}
+
+body.dark-mode .text-muted {
+    color: var(--dark-text-1) !important;
+}
+
+body.dark-mode .divider {
+    background-color: var(--dark-border) !important;
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-bottom-color: var(--dark-border);
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* --- Forms --- */
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+    border-color: var(--dark-accent);
+    box-shadow: 0 0 0 0.25rem rgba(77, 171, 247, 0.25);
+}
+
+/* --- Custom Tables --- */
+
+body.dark-mode .table-custom {
+    color: var(--dark-text-0);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .table-custom thead tr {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-0);
+}
+body.dark-mode .table-custom tbody tr {
+    border-bottom-color: var(--dark-border);
+}
+body.dark-mode .table-custom tbody tr:nth-of-type(even) {
+    background-color: var(--dark-bg-1);
+}
+body.dark-mode .table-custom tbody tr:hover {
+    background-color: var(--dark-bg-2);
+}
+
+/* --- List Groups --- */
+
+body.dark-mode .list-group-item {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-0);
+}
+
+/* --- Alerts --- */
+
+body.dark-mode .alert {
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .alert-light,
+body.dark-mode .alert-secondary {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .alert-light hr,
+body.dark-mode .alert-secondary hr {
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    color: #f8d7da;
+}
+
+body.dark-mode .alert-info {
+    background-color: rgba(13, 110, 253, 0.2);
+    border-color: rgba(13, 110, 253, 0.5);
+    color: #cff4fc;
+}
+
+/* --- Buttons --- */
+
+body.dark-mode .btn-outline-dark {
+    color: var(--dark-text-0);
+    border-color: var(--dark-text-0);
+}
+
+body.dark-mode .btn-outline-dark:hover {
+    color: var(--dark-bg-0);
+    background-color: var(--dark-text-0);
+    border-color: var(--dark-text-0);
+}

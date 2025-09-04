@@ -33,6 +33,8 @@ function getBackgroundColor(color) {
  * @param {object} customOptions - Custom options to merge with the defaults.
  */
 function createChart(ctx, chartType, chartData, customOptions = {}) {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+
 
     // Apply the color palette to the datasets
     chartData.datasets.forEach((dataset, index) => {
@@ -58,6 +60,7 @@ function createChart(ctx, chartType, chartData, customOptions = {}) {
                 labels: {
                     usePointStyle: true,
                     padding: 20,
+                    color: isDarkMode ? '#f5f5f5' : '#343a40',
                     font: {
                         family: "'Merriweather Sans', sans-serif",
                     }
@@ -91,10 +94,37 @@ function createChart(ctx, chartType, chartData, customOptions = {}) {
                 }
             }
         },
+        // Default scale options for dark mode
+        scales: {
+            x: {
+                ticks: { color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#343a40' },
+                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                title: { color: isDarkMode ? '#f5f5f5' : '#343a40' }
+            },
+            y: {
+                ticks: { color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#343a40' },
+                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                title: { color: isDarkMode ? '#f5f5f5' : '#343a40' }
+            },
+            r: { // For radar charts
+                angleLines: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                pointLabels: { color: isDarkMode ? '#f5f5f5' : '#343a40', font: { size: 12 } },
+                ticks: {
+                    color: isDarkMode ? '#f5f5f5' : '#343a40',
+                    backdropColor: 'rgba(0, 0, 0, 0)' // transparent backdrop
+                }
+            }
+        }
     };
 
     // Deep merge custom options into default options
     const finalOptions = _.merge(defaultOptions, customOptions);
+
+    // Special handling for chart title color which is not a default scale property
+    if (finalOptions.plugins && finalOptions.plugins.title) {
+        finalOptions.plugins.title.color = isDarkMode ? '#f5f5f5' : '#343a40';
+    }
 
     return new Chart(ctx, {
         type: chartType,
