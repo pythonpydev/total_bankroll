@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_security import login_required, current_user
 from sqlalchemy.orm import aliased
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, inspect
 from decimal import Decimal
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, SubmitField
@@ -10,6 +10,7 @@ from wtforms.validators import DataRequired, Length
 from ..extensions import db
 from ..models import Sites, SiteHistory, Currency
 from ..utils import get_sorted_currencies
+from datetime import datetime
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
 
@@ -133,8 +134,35 @@ def site_history(site_id):
     if site.user_id != current_user.id:
         flash('Not authorized to view this history.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
-    history = SiteHistory.query.filter_by(site_id=site_id).order_by(SiteHistory.recorded_at.desc()).all()
-    return render_template("history.html", item=site, history=history, item_type='site')
+
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+
+    history_query = SiteHistory.query.filter_by(site_id=site_id, user_id=current_user.id)
+
+    if start_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        history_query = history_query.filter(SiteHistory.recorded_at >= start_date)
+    if end_date_str:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        # Add time component to include the whole day
+        end_date = end_date.replace(hour=23, minute=59, second=59)
+        history_query = history_query.filter(SiteHistory.recorded_at <= end_date)
+
+    history_raw = history_query.order_by(SiteHistory.recorded_at.desc()).all()
+
+    # This is a bit inefficient, but we need currency info.
+    # A better approach would be to join Currency in the main query.
+    all_currencies = {c.code: c for c in db.session.query(Currency).all()}
+    history_data = []
+    for record in history_raw:
+        record_dict = {c.key: getattr(record, c.key) for c in inspect(record).mapper.column_attrs}
+        currency_obj = all_currencies.get(record.currency)
+        record_dict['currency_symbol'] = currency_obj.symbol if currency_obj else ''
+        record_dict['currency_name'] = currency_obj.name if currency_obj else record.currency
+        history_data.append(record_dict)
+
+    return render_template("site_history.html", site=site, history=history_data, start_date=start_date_str, end_date=end_date_str)
 
 @poker_sites_bp.route('/move_site/<int:site_id>/<direction>')
 @login_required
@@ -160,3 +188,22 @@ def move_site(site_id, direction):
     db.session.commit()
     flash(f'{site_to_move.name} moved.', 'success')
     return redirect(url_for('poker_sites.poker_sites_page'))
+
+@poker_sites_bp.route("/edit_site_history/<int:history_id>", methods=['GET', 'POST'])
+@login_required
+def edit_site_history(history_id):
+    history_record = SiteHistory.query.get_or_404(history_id)
+    if history_record.user_id != current_user.id:
+        flash('Not authorized.', 'danger')
+        return redirect(url_for('poker_sites.poker_sites_page'))
+
+    if request.method == 'POST':
+        history_record.recorded_at = datetime.strptime(request.form['recorded_at'], '%Y-%m-%d %H:%M:%S')
+        history_record.amount = Decimal(request.form['amount'])
+        history_record.currency = request.form['currency']
+        db.session.commit()
+        flash('History record updated successfully!', 'success')
+        return redirect(url_for('poker_sites.site_history', site_id=history_record.site_id))
+
+    currencies = get_sorted_currencies()
+    return render_template('edit_site_history.html', history_record=history_record, currencies=currencies)
