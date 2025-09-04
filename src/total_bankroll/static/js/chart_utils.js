@@ -38,13 +38,21 @@ function createChart(ctx, chartType, chartData, customOptions = {}) {
 
     // Apply the color palette to the datasets
     chartData.datasets.forEach((dataset, index) => {
-        const color = getColor(index);
-        dataset.borderColor = color;
-        dataset.backgroundColor = (chartType === 'line' || chartType === 'radar') ? getBackgroundColor(color) : color;
-        dataset.pointBackgroundColor = color;
-        dataset.pointHoverBorderColor = 'rgba(0, 0, 0, 1)';
-        dataset.pointHoverBackgroundColor = '#fff';
-        dataset.fill = (chartType === 'line' || chartType === 'radar'); // Fill area under line/radar
+        if (chartType === 'pie' || chartType === 'polarArea' || chartType === 'doughnut') {
+            // For these chart types, each data point gets a color from the palette.
+            dataset.backgroundColor = dataset.data.map((_, i) => getColor(i));
+            dataset.borderColor = isDarkMode ? 'rgba(42, 42, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+            dataset.borderWidth = 2;
+        } else {
+            // For other charts, each dataset gets a single color.
+            const color = getColor(index);
+            dataset.borderColor = color;
+            dataset.backgroundColor = (chartType === 'line' || chartType === 'radar') ? getBackgroundColor(color) : color;
+            dataset.pointBackgroundColor = color;
+            dataset.pointHoverBorderColor = 'rgba(0, 0, 0, 1)';
+            dataset.pointHoverBackgroundColor = '#fff';
+            dataset.fill = (chartType === 'line' || chartType === 'radar'); // Fill area under line/radar
+        }
     });
 
     const defaultOptions = {
