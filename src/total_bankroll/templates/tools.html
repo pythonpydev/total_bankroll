@@ -1,63 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="page-section bg-primary" id="tools_intro">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Poker Tools</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">This page will contain various poker tools to assist you with your bankroll management.</p>
-            </div>
-        </div>
-    </div>
-</section>
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Tools</h1>
 
-<section class="page-section" id="tools_content">
-    <div class="container px-4 px-lg-5">
-        <h2 class="text-center mt-0">Available Tools</h2>
-        <hr class="divider" />
-        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
-            <!-- Cash Game Stakes Card -->
-            <div class="col-lg-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center d-flex flex-column">
-                        <div class="mb-2"><i class="bi-suit-club-fill fs-1 text-primary"></i></div>
-                        <h4 class="card-title">Cash Game Stakes</h4>
-                        <p class="card-text text-muted">Get tailored bankroll recommendations for cash games.</p>
-                        <div class="mt-auto">
-                            <a href="{{ url_for('tools.poker_stakes_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
-                        </div>
-                    </div>
+    <div class="row">
+        <!-- Poker Stakes Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Poker Stakes Calculator</h5>
+                    <p class="card-text">Determine appropriate cash game stakes based on your bankroll and playing style.</p>
+                    <a href="{{ url_for('tools.poker_stakes_page') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
-            <!-- Tournament Stakes Card -->
-            <div class="col-lg-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center d-flex flex-column">
-                        <div class="mb-2"><i class="bi-trophy-fill fs-1 text-primary"></i></div>
-                        <h4 class="card-title">Tournament Stakes</h4>
-                        <p class="card-text text-muted">Get tailored bankroll recommendations for tournaments.</p>
-                        <div class="mt-auto">
-                            <a href="{{ url_for('tools.tournament_stakes_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
-                        </div>
-                    </div>
+        </div>
+
+        <!-- Tournament Stakes Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Tournament Stakes Calculator</h5>
+                    <p class="card-text">Find suitable tournament buy-ins for your bankroll and risk profile.</p>
+                    <a href="{{ url_for('tools.tournament_stakes_page') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
-            <!-- SPR Calculator Card -->
-            <div class="col-lg-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center d-flex flex-column">
-                        <div class="mb-2"><i class="bi-calculator-fill fs-1 text-primary"></i></div>
-                        <h4 class="card-title">SPR Calculator</h4>
-                        <p class="card-text text-muted">Calculate Stack-to-Pot Ratio for post-flop decisions.</p>
-                        <div class="mt-auto">
-                            <a href="{{ url_for('tools.spr_calculator_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
-                        </div>
-                    </div>
+        </div>
+
+        <!-- SPR Calculator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">SPR Calculator</h5>
+                    <p class="card-text">Calculate the Stack-to-Pot Ratio for any given poker scenario.</p>
+                    <a href="{{ url_for('tools.spr_calculator_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Evaluator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Evaluator</h5>
+                    <p class="card-text">Evaluate the strength of PLO hands, calculate outs, and compare equities.</p>
+                    <a href="{{ url_for('hand_eval.form') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Decisions Table Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Decisions Table</h5>
+                    <p class="card-text">Reference a table of recommended actions for various PLO scenarios.</p>
+                    <a href="{{ url_for('hand_eval.decisions') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO SPR Strategy Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO SPR Strategy</h5>
+                    <p class="card-text">Learn about optimal strategies based on Stack-to-Pot Ratio in PLO.</p>
+                    <a href="{{ url_for('hand_eval.spr_strategy') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}

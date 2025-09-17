@@ -135,8 +135,6 @@ def calculate_detailed_outs(hole_card_strs, board_card_strs):
 
     return outs_breakdown
 
-    return outs_breakdown
-
 def find_best_five_card_hand(hole_cards, board_cards):
     """Finds the best 5-card hand in PLO, requiring 2 cards from the hole and 3 from the board."""
     best_rank = float('inf')

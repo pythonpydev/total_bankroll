@@ -1,63 +1,11 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <style>
-    .center-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .data-display h2 {
-      text-align: center;
-    }
-    .data-display p {
-      text-align: left;
-    }
-    .card-image {
-      border: 1px solid black;
-    }
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px; /* Space between buttons */
-      margin-top: 20px;
-    }
-    .button-group .button {
-      flex-grow: 1;
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-decoration: none;
-      color: white;
-      font-weight: bold;
-      text-align: center;
-      max-width: 200px; /* Adjust as needed for desired button width */
-    }
-    .blue-button {
-      background-color: #008CBA !important; /* Blue for View Hand Evaluation */
-      border: none;
-    }
-    .red-button {
-      background-color: #f44336 !important; /* Red for Setup New Hand */
-      border: none;
-    }
-    .card-display-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px; /* Add some space between rows */
-    }
-    .card-display-row p {
-      flex-shrink: 0;
-      width: 150px; /* Adjust as needed for consistent label width */
-      text-align: right;
-      margin-right: 10px;
-    }
-    .card-display-row span {
-      display: flex;
-      align-items: center;
-      flex-grow: 1;
-    }
-  </style>
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/plo_styles.css') }}">
+{% endblock %}
 
+{% block content %}
   <div class="center-content">
     <div class="data-display">
       <h2>Hand Evaluation</h2>
@@ -69,8 +17,8 @@
         <p><strong>Board Cards:</strong></p>
         <span id="boardCardsHero"></span>
       </div>
-      <p><strong>Hero's Hand Evaluation:</strong> {{ hero_eval }}</p>
-      <p><strong>Opponent's Hand Evaluation:</strong> {{ opp_eval }}</p>
+      <p><strong>Hero's Hand Evaluation:</strong> {{ form_data.hero_eval }}</p>
+      <p><strong>Opponent's Hand Evaluation:</strong> {{ form_data.opp_eval }}</p>
       <p><strong>Hero's Hand Strength:</strong> {{ 'Stronger' if hero_eval < opp_eval else 'Weaker' }}</p>
       <p><strong>Opponent's Hand Strength:</strong> {{ 'Stronger' if opp_eval < hero_eval else 'Weaker' }}</p>
       <div class="card-display-row">

@@ -138,6 +138,7 @@ typing-extensions==4.15.0
     #   alembic
     #   limits
     #   sqlalchemy
+treys==0.1.3
 urllib3==2.5.0
     # via requests
 urlobject==3.0.0
