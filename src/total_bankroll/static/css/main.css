@@ -1,0 +1,210 @@
+:root {
+    /* Colors */
+    --color-text-success: #155724;
+    --color-text-danger: #721c24;
+    --color-text-warning: #856404;
+    --color-dark-bg: #343a40;
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    /* Spacing & Sizing */
+    --spacing-xs: 2px;
+    --spacing-sm: 5px;
+    --spacing-md: 10px;
+    --spacing-lg: 20px;
+    --spacing-xl: 6rem;
+
+    --border-radius-sm: 5px;
+    --border-radius-md: 8px;
+}
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.center-content h2 {
+    text-align: center;
+}
+
+.data-display h2 {
+    text-align: center; /* Center the heading within its column */
+}
+
+.data-display p {
+    text-align: left;
+}
+
+.card-image {
+    border: 1px solid var(--color-black);
+    height: 70px; /* Example height, adjust as needed */
+    margin: var(--spacing-xs);
+}
+
+.data-display-container {
+    display: flex;
+    justify-content: space-between; /* Changed from space-around */
+    width: 100%;
+    max-width: 1200px; /* Adjusted to ensure it fits well */
+    margin: 0 auto var(--spacing-lg); /* Center the container and add bottom margin */
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+}
+
+.left-column, .right-column {
+    flex: 1;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+}
+
+.left-column {
+    margin-right: var(--spacing-md); /* Space between left and right columns */
+}
+
+.right-column {
+    margin-left: var(--spacing-md); /* Space between left and right columns */
+}
+
+.hand-details-row, .blind-details-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.hand-details-row p, .blind-details-row p {
+    flex: 1;
+    margin-right: var(--spacing-md);
+}
+
+.hand-details-row p:last-child, .blind-details-row p:last-child {
+    margin-right: 0;
+}
+
+.left-column p strong, .right-column p strong {
+    display: inline-block;
+    min-width: 150px; /* Adjusted to ensure better alignment */
+    text-align: left;
+}
+
+.data-display {
+    width: 100%; /* Full width for the data display section */
+    max-width: 600px; /* Adjusted to ensure it fits well */
+    margin: 0 auto; /* Center the data display section */
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+}
+
+.card-display-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md); /* Add some space between rows */
+}
+
+.card-display-row p {
+    flex-shrink: 0;
+    width: 150px; /* Adjust as needed for consistent label width */
+    text-align: right;
+    margin-right: var(--spacing-md);
+}
+
+.card-display-row span {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md); /* Space between buttons */
+  margin-top: var(--spacing-lg);
+}
+
+.button-group .button {
+  flex-grow: 1;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  color: var(--color-white);
+  font-weight: bold;
+  text-align: center;
+  max-width: 200px; /* Adjust as needed for desired button width */
+}
+
+.text-success { color: var(--color-text-success) !important; }
+.text-danger { color: var(--color-text-danger) !important; }
+.text-warning { color: var(--color-text-warning) !important; }
+
+.thead-dark th {
+    background-color: var(--color-dark-bg); /* Explicitly set dark background */
+    color: var(--color-white) !important; /* Ensure text is white */
+}
+
+/* Styles from custom.css */
+.page-section {
+    padding: var(--spacing-xl) 0;
+}
+
+/* Styles from custom_tables.css */
+/* (No styles were present in the file) */
+
+/* --- Responsive Styles --- */
+@media (max-width: 768px) {
+    .data-display-container {
+        flex-direction: column;
+        padding: var(--spacing-md);
+    }
+
+    .left-column, .right-column {
+        margin-right: 0;
+        margin-left: 0;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .right-column {
+        margin-bottom: 0;
+    }
+
+    .hand-details-row, .blind-details-row {
+        flex-direction: column;
+    }
+
+    .card-display-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card-display-row p {
+        width: auto;
+        text-align: left;
+        margin-right: 0;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* --- SPR Guess Form --- */
+.spr-guess-form {
+    text-align: center;
+}
+
+.spr-guess-form .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.spr-guess-form label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.spr-result {
+    font-weight: bold;
+    margin-top: var(--spacing-md);
+    text-align: center;
+}

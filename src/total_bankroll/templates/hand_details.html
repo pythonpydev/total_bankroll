@@ -2,7 +2,6 @@
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/plo_styles.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -47,88 +46,77 @@
       <div class="center-content">
       <h2>Guess the SPR</h2>
       </div>
-      <form id="sprGuessForm" style="text-align: center;">
-        <label for="sprGuess">Guess the SPR:</label>
-        <input type="number" id="sprGuess" name="sprGuess" step="0.01" required>
-        <br><br>
-        <label for="potBetsGuess">Guess number of pot sized bets:</label>
-        <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required>
+      <form id="sprGuessForm" class="spr-guess-form">
+        <div class="form-group">
+          <label for="sprGuess">Guess the SPR:</label>
+          <input type="number" id="sprGuess" name="sprGuess" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="potBetsGuess">Guess number of pot sized bets:</label>
+          <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required>
+        </div>
         <div class="button-group">
           <button type="submit" class="button">Submit Answers</button>
           <a href="/hand_evaluation" class="button blue-button">View Hand Evaluation</a>
           <a href="/form" class="button red-button">Setup New Hand</a>
         </div>
       </form>
-      <div id="actualSpr" style="font-weight: bold; margin-top: 10px; text-align: center;"></div>
-      <div id="actualPotBets" style="font-weight: bold; margin-top: 5px; text-align: center;"></div>
+      <div id="actualSpr" class="spr-result" role="status" aria-live="polite"></div>
+      <div id="actualPotBets" class="spr-result" role="status" aria-live="polite"></div>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const rankOrder = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-      const suitOrder = ['s', 'h', 'd', 'c'];
-
-      function sortCards(cards) {
-        return cards.sort((a, b) => {
-          const rankA = rankOrder.indexOf(a[0]);
-          const rankB = rankOrder.indexOf(b[0]);
-          if (rankA !== rankB) {
-            return rankA - rankB;
-          }
-          const suitA = suitOrder.indexOf(a[1]);
-          const suitB = suitOrder.indexOf(b[1]);
-          return suitA - suitB;
-        });
-      }
-
-      function displayCards(hand, elementId) {
-        const container = document.getElementById(elementId);
-        hand.forEach(card => {
-          const img = document.createElement('img');
-          img.src = `{{ url_for('static', filename='images/cards/') }}${card}.png`;
-          img.alt = card;
-          img.classList.add('card-image');
-          container.appendChild(img);
-        });
-      }
-
+      // Data from Flask template
       const heroHand = sortCards({{ form_data.heroHand|tojson }});
       const boardCards = sortCards({{ form_data.boardCards|tojson }});
       const opponentHand = sortCards({{ form_data.opponentHand|tojson }});
-
-      displayCards(heroHand, 'heroHand');
-      displayCards(boardCards, 'boardCards');
-      displayCards(opponentHand, 'opponentHand');
-
       const actualSpr = {{ form_data.actual_spr|tojson }};
       const actualPotBets = {{ form_data.actual_pot_bets|tojson }};
+
+      // DOM Elements for card display
+      const heroHandContainer = document.getElementById('heroHand');
+      const boardCardsContainer = document.getElementById('boardCards');
+      const opponentHandContainer = document.getElementById('opponentHand');
+      const cardImagePath = `{{ url_for('static', filename='images/cards/') }}`;
+
+      // Display the sorted cards
+      displayCards(heroHand, heroHandContainer, cardImagePath);
+      displayCards(boardCards, boardCardsContainer, cardImagePath);
+      displayCards(opponentHand, opponentHandContainer, cardImagePath);
+
+      // Cache DOM elements
+      const sprGuessInput = document.getElementById('sprGuess');
+      const potBetsGuessInput = document.getElementById('potBetsGuess');
+      const actualSprDiv = document.getElementById('actualSpr');
+      const actualPotBetsDiv = document.getElementById('actualPotBets');
+
+      const SPR_TOLERANCE = 0.05;
 
       document.getElementById('sprGuessForm').addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent default form submission
 
-        const sprGuess = parseFloat(document.getElementById('sprGuess').value);
-        const potBetsGuess = parseFloat(document.getElementById('potBetsGuess').value);
+        const sprGuess = parseFloat(sprGuessInput.value);
+        const potBetsGuess = parseFloat(potBetsGuessInput.value);
 
-        const actualSprDiv = document.getElementById('actualSpr');
         if (actualSpr !== null) {
-          const sprText = 'Actual SPR: ' + actualSpr.toFixed(2);
-          const tolerance = actualSpr * 0.05;
+          const sprText = `Actual SPR: ${actualSpr.toFixed(2)}`;
+          const tolerance = actualSpr * SPR_TOLERANCE;
           if (Math.abs(sprGuess - actualSpr) <= tolerance) {
-            actualSprDiv.innerHTML = '<span style="color: green;">' + sprText + ' &#10004;</span>';
+            actualSprDiv.innerHTML = `<span class="text-success">${sprText} &#10004;</span>`;
           } else {
-            actualSprDiv.innerHTML = '<span style="color: red;">' + sprText + ' &#10060;</span>';
+            actualSprDiv.innerHTML = `<span class="text-danger">${sprText} &#10060;</span>`;
           }
         } else {
           actualSprDiv.textContent = 'Actual SPR: N/A';
         }
 
-        const actualPotBetsDiv = document.getElementById('actualPotBets');
-        const potBetsText = 'Actual Pot Sized Bets: ' + actualPotBets;
+        const potBetsText = `Actual Pot Sized Bets: ${actualPotBets}`;
         if (potBetsGuess === actualPotBets) {
-          actualPotBetsDiv.innerHTML = '<span style="color: green;">' + potBetsText + ' &#10004;</span>';
+          actualPotBetsDiv.innerHTML = `<span class="text-success">${potBetsText} &#10004;</span>`;
         } else {
-          actualPotBetsDiv.innerHTML = '<span style="color: red;">' + potBetsText + ' &#10060;</span>';
+          actualPotBetsDiv.innerHTML = `<span class="text-danger">${potBetsText} &#10060;</span>`;
         }
       });
     });
