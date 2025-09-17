@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app
+from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app, session
 from flask_security import login_required, current_user, logout_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField
@@ -10,6 +10,10 @@ from flask_mail import Message
 from datetime import datetime, UTC
 from ..utils import generate_token, confirm_token, is_email_taken, get_sorted_currencies
 import re
+import pyotp
+import qrcode
+import io
+import base64
 
 settings_bp = Blueprint("settings", __name__)
 
@@ -53,6 +57,65 @@ class DeleteUserForm(FlaskForm):
 def settings_page():
     """Settings page."""
     return render_template("settings.html")
+
+@settings_bp.route('/settings/2fa/setup', methods=['GET', 'POST'])
+@login_required
+def setup_2fa():
+    if current_user.otp_enabled:
+        flash('2FA is already enabled.', 'info')
+        return redirect(url_for('settings.settings_page'))
+
+    if request.method == 'GET':
+        # Generate a new secret if one doesn't exist in the session
+        if 'otp_secret' not in session:
+            session['otp_secret'] = pyotp.random_base32()
+
+        # Generate QR code
+        totp = pyotp.TOTP(session['otp_secret'])
+        provisioning_uri = totp.provisioning_uri(name=current_user.email, issuer_name='StakeEasy.net')
+        
+        img = qrcode.make(provisioning_uri)
+        buf = io.BytesIO()
+        img.save(buf)
+        buf.seek(0)
+        qr_code_data = base64.b64encode(buf.getvalue()).decode('ascii')
+
+        return render_template('setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
+
+    # Handle POST request for verification
+    token = request.form.get('token')
+    totp = pyotp.TOTP(session['otp_secret'])
+    if totp.verify(token):
+        current_user.otp_secret = session['otp_secret']
+        current_user.otp_enabled = True
+        db.session.commit()
+        session.pop('otp_secret', None)
+        flash('2FA has been successfully enabled!', 'success')
+        return redirect(url_for('settings.settings_page'))
+    else:
+        flash('Invalid token. Please try again.', 'danger')
+        # We need to regenerate the QR code data to re-render the page
+        totp = pyotp.TOTP(session['otp_secret'])
+        provisioning_uri = totp.provisioning_uri(name=current_user.email, issuer_name='StakeEasy.net')
+        img = qrcode.make(provisioning_uri)
+        buf = io.BytesIO()
+        img.save(buf)
+        buf.seek(0)
+        qr_code_data = base64.b64encode(buf.getvalue()).decode('ascii')
+        return render_template('setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
+
+@settings_bp.route('/settings/2fa/disable', methods=['GET'])
+@login_required
+def disable_2fa():
+    if not current_user.otp_enabled:
+        flash('2FA is not enabled.', 'info')
+        return redirect(url_for('settings.settings_page'))
+
+    current_user.otp_secret = None
+    current_user.otp_enabled = False
+    db.session.commit()
+    flash('2FA has been disabled.', 'success')
+    return redirect(url_for('settings.settings_page'))
 
 @settings_bp.route("/delete_user_account")
 @login_required

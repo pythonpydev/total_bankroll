@@ -208,3 +208,54 @@
     margin-top: var(--spacing-md);
     text-align: center;
 }
+
+/* --- Back to Top Button --- */
+#backToTopBtn {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: var(--dark-accent);
+    color: var(--color-white);
+    cursor: pointer;
+    padding: 12px 16px;
+    border-radius: var(--border-radius-md);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+/* --- Cookie Consent Banner --- */
+#cookieConsentBanner {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #2a2a2a; /* A neutral dark color that works on both themes */
+    color: #f5f5f5;
+    padding: var(--spacing-md);
+    z-index: 1050; /* Ensure it's above other content */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    font-size: 14px;
+}
+
+#cookieConsentBanner .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cookieConsentBanner a {
+    color: var(--dark-accent);
+    text-decoration: underline;
+}
+
+#cookieConsentBanner .btn-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+    margin-left: var(--spacing-lg);
+}

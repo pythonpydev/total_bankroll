@@ -15,6 +15,7 @@ from flask_dance.contrib.facebook import facebook as facebook_blueprint
 from datetime import datetime, UTC
 from ..utils import generate_token, confirm_token
 import logging
+import pyotp
 import re
 
 auth_bp = Blueprint('auth', __name__)
@@ -59,6 +60,10 @@ class ResetPasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
+class Verify2FAForm(FlaskForm):
+    token = StringField('2FA Token', validators=[DataRequired()])
+    submit = SubmitField('Verify')
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -93,6 +98,11 @@ def login():
         flash('Account error: No user ID. Please contact support.', 'danger')
         return redirect(url_for('auth.login'))
 
+    if user.otp_enabled:
+        session['2fa_user_id'] = user.id
+        # Redirect to a new 2FA verification page
+        return redirect(url_for('auth.verify_2fa'))
+
     try:
         user.last_login_at = datetime.now(UTC)
         db.session.commit()
@@ -105,6 +115,31 @@ def login():
         db.session.rollback()
         flash('Login failed due to server error.', 'danger')
         return redirect(url_for('auth.login'))
+
+@auth_bp.route('/verify-2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    if '2fa_user_id' not in session:
+        return redirect(url_for('auth.login'))
+
+    form = Verify2FAForm()
+    if form.validate_on_submit():
+        user = db.session.get(User, session['2fa_user_id'])
+        if not user:
+            flash('User not found. Please try logging in again.', 'danger')
+            return redirect(url_for('auth.login'))
+
+        token = form.token.data
+        totp = pyotp.TOTP(user.otp_secret)
+        if totp.verify(token):
+            session.pop('2fa_user_id', None)
+            login_user(user)
+            flash('Logged in successfully.', 'success')
+            return redirect(url_for('home.home'))
+        else:
+            flash('Invalid 2FA token.', 'danger')
+            return redirect(url_for('auth.verify_2fa'))
+
+    return render_template('security/verify_2fa.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():

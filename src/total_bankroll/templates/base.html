@@ -2,15 +2,16 @@
 <html lang="en">
     <head>
 
+        {% if g.cookie_consent_given %}
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-3YV0C7B8MQ"></script>
         <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-3YV0C7B8MQ');
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-3YV0C7B8MQ');
         </script>
+        {% endif %}
 
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -47,27 +48,20 @@
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto my-2 my-lg-0">
                         {% if current_user.is_authenticated %}
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.home') }}">Bankroll</a></li>
-                            <!-- Manage Dropdown -->
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('home.home') }}">Dashboard</a></li>
+                            <!-- Main Menu Dropdown -->
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="manageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
-                                <ul class="dropdown-menu" aria-labelledby="manageDropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</a>
+                                <ul class="dropdown-menu" aria-labelledby="menuDropdown">
+                                    <li><h6 class="dropdown-header">Manage</h6></li>
                                     <li><a class="dropdown-item" href="{{ url_for('poker_sites.poker_sites_page') }}">Poker Sites</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('assets.assets_page') }}">Assets</a></li>
-                                </ul>
-                            </li>
-                            <!-- Transactions Dropdown -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="transactionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Transactions</a>
-                                <ul class="dropdown-menu" aria-labelledby="transactionsDropdown">
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Transactions</h6></li>
                                     <li><a class="dropdown-item" href="{{ url_for('deposit.deposit') }}">Deposit</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('withdrawal.withdrawal') }}">Withdrawal</a></li>
-                                </ul>
-                            </li>
-                            <!-- Analysis Dropdown -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Analysis</a>
-                                <ul class="dropdown-menu" aria-labelledby="analysisDropdown">
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Analysis</h6></li>
                                     <li><a class="dropdown-item" href="{{ url_for('charts.charts_page') }}">Bankroll Charts</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('tools.tools_page') }}">Strategy Tools</a></li>
                                 </ul>
@@ -105,6 +99,19 @@
         <!-- Back to Top Button -->
         <a href="#" id="backToTopBtn" title="Go to top"><i class="bi bi-arrow-up"></i></a>
 
+        {% if g.is_in_eu %}
+        <!-- Cookie Consent Banner -->
+        <div id="cookieConsentBanner">
+            <div class="container">
+                <span class="cookie-text">We use cookies to ensure you get the best experience on our website. <a href="{{ url_for('legal.privacy_policy') }}">Learn more</a>.</span>
+                <div class="btn-group">
+                    <button id="declineCookie" class="btn btn-secondary btn-sm">Decline</button>
+                    <button id="acceptCookie" class="btn btn-primary btn-sm">Got it!</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <footer class="bg-light py-5">
             <div class="container px-4 px-lg-5">
                 <div class="row">
@@ -122,6 +129,8 @@
                             {% else %}
                                 <li><a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none">Login</a></li>
                             {% endif %}
+                            <li><a href="{{ url_for('legal.privacy_policy') }}" class="text-muted text-decoration-none">Privacy Policy</a></li>
+                            <li><a href="{{ url_for('legal.terms_of_service') }}" class="text-muted text-decoration-none">Terms of Service</a></li>
                         </ul>
                     </div>
                     <div class="col-lg-4 text-center text-lg-end">
@@ -237,6 +246,51 @@
                 });
             });
         });
+    </script>    
+    {% if g.is_in_eu %}
+    <!-- Cookie Consent Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const banner = document.getElementById('cookieConsentBanner');
+            const acceptBtn = document.getElementById('acceptCookie');
+            const declineBtn = document.getElementById('declineCookie');
+
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for(let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            if (!getCookie('cookie_consent')) {
+                banner.style.display = 'block';
+            }
+
+            acceptBtn.addEventListener('click', function () {
+                setCookie('cookie_consent', 'true', 365);
+                banner.style.display = 'none';
+            });
+
+            declineBtn.addEventListener('click', function () {
+                setCookie('cookie_consent', 'false', null); // Session cookie
+                banner.style.display = 'none';
+            });
+        });
     </script>
+    {% endif %}
 </body>
 </html>

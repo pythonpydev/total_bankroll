@@ -1,51 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="page-section bg-primary" id="settings">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Settings</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Manage your application settings here.</p>
-            </div>
-        </div>
-    </div>
-</section>
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Settings</h1>
 
-<section class="page-section" id="portfolio">
-    <div class="container px-4 px-lg-5">
-        <h2 class="text-center mt-0">Application Settings</h2>
-        <hr class="divider" />
-        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
-            <!-- Database Management Card -->
-            <div class="col-lg-6">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center">
-                        <h4 class="card-title">Database Management</h4>
-                        <p class="card-text text-muted">Perform database-wide actions like resetting, exporting, or importing your data.</p>
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="{{ url_for('import_db.confirm_import_database') }}" class="btn btn-primary">Import Data from CSV</a>
-                            <a href="{{ url_for('common.confirm_export_database') }}" class="btn btn-success">Export Data as CSV</a>
-                            <a href="{{ url_for('reset_db.confirm_reset_database') }}" class="btn btn-danger">Reset All Data</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- User Account Management Card -->
-            <div class="col-lg-6">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center">
-                        <h4 class="card-title">User Account Management</h4>
-                        <p class="card-text text-muted">Update your email and password, or delete your account permanently.</p>
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="{{ url_for('settings.update_account_details') }}" class="btn btn-primary">Update Account Details</a>
-                            <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete User Account</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Account Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Account Settings</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-primary">Change Password</a>
         </div>
     </div>
-</section>
+
+    <!-- Two-Factor Authentication -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Two-Factor Authentication (2FA)</h5>
+        </div>
+        <div class="card-body">
+            {% if not current_user.otp_secret %}
+                <p>Add an extra layer of security to your account by enabling two-factor authentication.</p>
+                <a href="{{ url_for('settings.setup_2fa') }}" class="btn btn-primary">Enable 2FA</a>
+            {% else %}
+                <p class="text-success"><strong>Two-factor authentication is enabled.</strong></p>
+                <p>You can disable 2FA, but it will reduce your account's security.</p>
+                <a href="{{ url_for('settings.disable_2fa') }}" class="btn btn-warning">Disable 2FA</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Privacy Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Privacy Settings</h5>
+        </div>
+        <div class="card-body">
+            <p>You can manage your cookie preferences here. Resetting your preferences will show the cookie consent banner again on your next page load, allowing you to make a new choice.</p>
+            <button id="resetCookieConsent" class="btn btn-secondary">Reset Cookie Preferences</button>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card border-danger mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Danger Zone</h5>
+        </div>
+        <div class="card-body">
+            <h6 class="card-title">Delete Your Account</h6>
+            <p class="card-text">Once you delete your account, there is no going back. All of your data, including bankroll history and transactions, will be permanently removed. Please be certain.</p>
+            <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete My Account</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const resetBtn = document.getElementById('resetCookieConsent');
+
+    resetBtn.addEventListener('click', function () {
+        // Delete the cookie by setting its expiration date to the past
+        document.cookie = "cookie_consent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        alert('Your cookie preferences have been reset. The consent banner will reappear on the next page you visit.');
+        // Optionally, reload the page to show the banner immediately if the user is in the EU
+        // window.location.reload();
+    });
+});
+</script>
+
 {% endblock %}

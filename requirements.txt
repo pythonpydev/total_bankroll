@@ -123,6 +123,8 @@ python-dotenv==1.1.1
 requests==2.32.5
     # via
     #   flask-dance
+    # via
+    #   flask-dance
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via flask-dance
@@ -159,3 +161,9 @@ wtforms==3.2.1
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
+pyotp==2.9.0
+qrcode==7.4.2
+pillow==10.4.0

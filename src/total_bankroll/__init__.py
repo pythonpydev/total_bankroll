@@ -1,6 +1,6 @@
 import os
 __version__ = "0.1.0"
-from flask import Flask, session, flash, redirect, url_for, current_app, g
+from flask import Flask, session, flash, redirect, url_for, current_app, g, request
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from .config import config 
@@ -10,6 +10,7 @@ from datetime import datetime
 from .extensions import db, mail, csrf
 from . import commands
 from flask_migrate import Migrate
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ def register_blueprints(app):
     from .routes.add_deposit import add_deposit_bp
     from .routes.tools import tools_bp
     from .routes.hand_eval import hand_eval_bp
+    from .routes.legal import legal_bp
 
     blueprints = [
         (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
@@ -38,7 +40,7 @@ def register_blueprints(app):
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
         (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None), 
-        (hand_eval_bp, None),
+        (hand_eval_bp, None), (legal_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
@@ -98,6 +100,49 @@ def create_app(config_name=None):
     oauth.init_oauth(app)
 
     register_blueprints(app)
+    
+    @app.before_request
+    def before_request_handler():
+        """
+        Runs before each request.
+        - Checks user's location via IP to determine if they are in the EU for GDPR.
+          The result is stored in the session to avoid repeated API calls.
+        - Checks the cookie consent cookie to determine if analytics should be loaded.
+        """
+        # 1. Check user location for EU cookie banner
+        if 'is_in_eu' not in session:
+            g.is_in_eu = False # Default to false
+            try:
+                # Use a test IP for local development, otherwise use the request IP
+                ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+                if ip_address == '127.0.0.1':
+                    ip_address = '8.8.8.8' # Google's DNS for testing non-EU
+                    # ip_address = '212.58.244.20' # BBC's IP for testing EU (UK)
+
+                # Use a free geolocation API
+                response = requests.get(f'http://ip-api.com/json/{ip_address}?fields=countryCode', timeout=2)
+                response.raise_for_status()
+                data = response.json()
+
+                eu_countries = {
+                    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+                    'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
+                    'SI', 'ES', 'SE'
+                }
+                
+                if data.get('countryCode') in eu_countries:
+                    session['is_in_eu'] = True
+                else:
+                    session['is_in_eu'] = False
+
+            except (requests.RequestException, ValueError) as e:
+                logger.warning(f"Could not determine user location: {e}")
+                session['is_in_eu'] = False # Default to not showing banner on error
+        g.is_in_eu = session.get('is_in_eu', False)
+
+        # 2. Check for cookie consent to enable/disable analytics
+        cookie_consent = request.cookies.get('cookie_consent')
+        g.cookie_consent_given = cookie_consent == 'true'
 
     return app
 
