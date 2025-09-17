@@ -4,14 +4,14 @@ from ..extensions import db
 from ..models import Sites, Assets, Drawings, Deposits, SiteHistory, AssetHistory, Currency
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, UTC
 
 common_bp = Blueprint('common', __name__)
 
 @common_bp.app_context_processor
 def inject_current_year():
     """Injects the current year into all templates."""
-    return {'current_year': datetime.utcnow().year}
+    return {'current_year': datetime.now(UTC).year}
 
 @common_bp.route('/confirm_delete/<item_type>/<int:item_id>')
 @login_required

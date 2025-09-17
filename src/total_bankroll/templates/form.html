@@ -1,0 +1,265 @@
+<!-- templates/form.html - Combined form and table view -->
+{% extends "base.html" %}
+
+{% block content %} 
+  
+    
+
+  <div class="container">
+    <h1>Setup Poker Hand</h1>
+    
+    <div class="image-container">
+        <img id="pokerTable" class="poker-table" src="../static/images/tables/poker_table_pot_btn_chips1.png">
+
+        <div class="seat-label" id="seat1">Seat 1</div>
+        <div class="position-label" id="pos1"></div>
+        <div class="seat-label" id="seat2">Seat 2</div>
+        <div class="position-label" id="pos2"></div>
+        <div class="seat-label" id="seat3">Seat 3</div>
+        <div class="position-label" id="pos3"></div>
+        <div class="seat-label" id="seat4">Seat 4</div>
+        <div class="position-label" id="pos4"></div>
+        <div class="seat-label" id="seat5">Seat 5</div>
+        <div class="position-label" id="pos5"></div>
+        <div class="seat-label" id="seat6">Seat 6</div>
+        <div class="position-label" id="pos6"></div>
+        <div class="image-info">
+            <strong>Current View:</strong> <span id="currentView">Button on seat 1</span>
+        </div>
+    </div>
+    
+  <form action="/hand_details" method="post" class="poker-form">
+
+        <label for="btn_ptn">Choose button position:</label>
+        <select name="btn" id="btn_ptn">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+        </select>
+        <br><br>
+    
+    <p>Click the button above to switch between different poker table layouts for your PLO Stack to Pot Ratio analysis.</p>
+
+
+    <label for="smallBlind">Small Blind</label>
+    <input type="number" id="smallBlind" name="smallBlind" value="1" required>
+
+    <label for="bigBlind">Big Blind</label>
+    <input type="number" id="bigBlind" name="bigBlind" value="2" required>
+
+    <label for="heroStack">Hero's Chip Stack</label>
+    <input type="number" id="heroStack" name="heroStack" value="100" min="0" required>
+
+    <label for="heroPosition">Hero's Position</label>
+    <input type="text" id="heroPosition" name="heroPosition" placeholder="e.g. UTG, CO, BTN" value="BTN" required>
+
+    <label for="heroHand">Hero's Hand</label>
+    <input type="text" id="heroHand" name="heroHand" placeholder="e.g. 6c4s8dkc" value="AcAs4c3d" required>
+
+    <label for="boardCards">Board Cards</label>
+    <input type="text" id="boardCards" name="boardCards" placeholder="e.g. 2c3c4c" value="5d5s6c" required>
+
+    <label for="opponentStack">Opponent's Chip Stack</label>
+    <input type="number" id="opponentStack" name="opponentStack" value="100" min="0" required>
+
+    <label for="opponentPosition">Opponent's Position</label>
+    <input type="text" id="opponentPosition" name="opponentPosition" placeholder="e.g. BB, SB, MP" value="BB" required>
+
+    <label for="oppHand">Opponents's Hand</label>
+    <input type="text" id="oppHand" name="oppHand" placeholder="e.g. 2c2sadqc" value="5c7c8c9c" required>
+
+    <label for="potSize">Pot Size</label>
+    <input type="number" id="potSize" name="potSize" value="20" required>
+
+    <label for="betSize">Bet Size (optional)</label>
+    <input type="number" id="betSize" name="betSize" value="0">
+
+    <button type="submit">Submit</button>
+  </form>
+</div>
+  <script>
+    function validateForm() {
+      const smallBlind = parseFloat(document.getElementById('smallBlind').value);
+      const bigBlind = parseFloat(document.getElementById('bigBlind').value);
+      const potSize = parseFloat(document.getElementById('potSize').value);
+      const heroStack = parseFloat(document.getElementById('heroStack').value);
+      const opponentStack = parseFloat(document.getElementById('opponentStack').value);
+      const heroHand = document.getElementById('heroHand').value;
+      const opponentHand = document.getElementById('oppHand').value;
+      const boardCards = document.getElementById('boardCards').value;
+
+      // Validate stake size
+      if (smallBlind <= 0 || bigBlind <= 0) {
+        alert('Error: Small Blind and Big Blind must be greater than 0.');
+        return false;
+      }
+
+      // Validate pot size > 0
+      if (potSize <= 0) {
+        alert('Error: Pot Size must be greater than 0.');
+        return false;
+      }
+
+      // Validate players' chips >= 0
+      if (isNaN(heroStack) || heroStack < 0) {
+        alert('Error: Hero\'s Chip Stack must be a non-negative number.');
+        return false;
+      }
+      if (isNaN(opponentStack) || opponentStack < 0) {
+        alert('Error: Opponent\'s Chip Stack must be a non-negative number.');
+        return false;
+      }
+
+      const heroCards = heroHand.match(/.{1,2}/g) || [];
+      const opponentCards = opponentHand.match(/.{1,2}/g) || [];
+      const boardCardsList = boardCards.match(/.{1,2}/g) || [];
+
+      // Validate if bet size is entered, and if so it is > big blind
+      const betSize = parseFloat(document.getElementById('betSize').value);
+      if (betSize > 0 && betSize <= bigBlind) {
+        alert('Error: Bet size must be greater than Big Blind.');
+        return false;
+      }
+
+      // Validate player has input their four cards
+      if (heroCards.length !== 4) {
+        alert('Error: Hero must input exactly four cards.');
+        return false;
+      }
+
+      // Validate opponent has input their four cards
+      if (opponentCards.length !== 4) {
+        alert('Error: Opponent must input exactly four cards.');
+        return false;
+      }
+
+      // Validate board cards are different from hole cards (hero and opponent)
+      for (let i = 0; i < boardCardsList.length; i++) {
+        if (heroCards.includes(boardCardsList[i]) || opponentCards.includes(boardCardsList[i])) {
+          alert('Error: Board cards cannot be in hero\'s or opponent\'s hand: ' + boardCardsList[i]);
+          return false;
+        }
+      }
+
+      // Validate unique cards across all hands and board
+      const allCards = [...heroCards, ...opponentCards, ...boardCardsList];
+      const uniqueCards = new Set();
+
+      for (let i = 0; i < allCards.length; i++) {
+        if (uniqueCards.has(allCards[i])) {
+          alert('Error: Duplicate card found: ' + allCards[i] + '. Cards must be unique across all hands and board.');
+          return false;
+        }
+        uniqueCards.add(allCards[i]);
+      }
+
+      return true;
+    }
+
+    document.querySelector('form').addEventListener('submit', function(event) {
+      if (!validateForm()) {
+        event.preventDefault();
+      }
+    });
+
+    function updatePositionLabels(buttonPosition) {
+        console.log("updatePositionLabels called with buttonPosition:", buttonPosition);
+        const positions = ["BTN", "SB", "BB", "UTG", "HJ", "CO"];
+        const seatLabels = ["pos1", "pos2", "pos3", "pos4", "pos5", "pos6"];
+
+        const buttonIndex = buttonPosition - 1; // Convert seat number to 0-based index
+        console.log("buttonIndex:", buttonIndex);
+
+        for (let i = 0; i < seatLabels.length; i++) {
+            const positionElement = document.getElementById(seatLabels[i]);
+            if (positionElement) {
+                const positionOffset = (i - buttonIndex + positions.length) % positions.length;
+                positionElement.textContent = positions[positionOffset];
+                console.log(`Seat ${i+1} (${seatLabels[i]}): AFTER SET textContent=${positionElement.textContent}`);
+            } else {
+                console.error(`Element with ID ${seatLabels[i]} not found!`);
+            }
+        }
+    }
+
+    // Initial call to set labels when the page loads and attach event listener
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOMContentLoaded fired!");
+
+        // Function to generate a random integer within a range
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Generate and set random values for chip stacks and pot size
+        document.getElementById('heroStack').value = getRandomInt(40, 500);
+        document.getElementById('opponentStack').value = getRandomInt(40, 500);
+        document.getElementById('potSize').value = getRandomInt(3, 50);
+
+        // --- New Card Dealing Logic ---
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+        const suits = ['c', 'd', 'h', 's'];
+        let deck = [];
+
+        // Create a deck of 52 cards
+        for (const suit of suits) {
+            for (const rank of ranks) {
+                deck.push(rank + suit);
+            }
+        }
+
+        // Shuffle the deck (Fisher-Yates shuffle)
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+
+        // Deal cards
+        const heroHandCards = deck.splice(0, 4);
+        const opponentHandCards = deck.splice(0, 4);
+        const boardCards = deck.splice(0, 3); // Flop only for now, can be extended
+
+        // The rest of the deck is now in the 'deck' variable
+        console.log("Remaining cards in deck:", deck);
+        console.log("Remaining card count:", deck.length);
+
+        // Set the card values in the form
+        document.getElementById('heroHand').value = heroHandCards.join('');
+        document.getElementById('oppHand').value = opponentHandCards.join('');
+        document.getElementById('boardCards').value = boardCards.join('');
+
+
+        const btnPtnSelect = document.getElementById('btn_ptn');
+
+        if (btnPtnSelect) {
+            // Initial update
+            const initialButtonPosition = parseInt(btnPtnSelect.value);
+            updatePositionLabels(initialButtonPosition);
+
+            // Attach event listener for changes
+            btnPtnSelect.addEventListener('change', function() {
+                console.log("Dropdown change detected!");
+                const buttonPosition = parseInt(btnPtnSelect.value);
+                const pokerTableImage = document.getElementById('pokerTable');
+                const currentViewSpan = document.getElementById('currentView');
+
+                // Update image source based on button position
+                pokerTableImage.src = `../static/images/tables/poker_table_pot_btn_chips${buttonPosition}.png`;
+                currentViewSpan.textContent = `Button on seat ${buttonPosition}`;
+
+                // Update position labels
+                console.log("Calling updatePositionLabels with buttonPosition:", buttonPosition);
+                updatePositionLabels(buttonPosition);
+            });
+        } else {
+            console.error("Element with ID 'btn_ptn' not found!");
+        }
+    });
+</script>
+
+{% endblock %}

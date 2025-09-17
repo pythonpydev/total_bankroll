@@ -19,7 +19,7 @@
         <hr class="divider" />
         <div class="row gx-4 gx-lg-5 justify-content-center g-4">
             <!-- Cash Game Stakes Card -->
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body text-center d-flex flex-column">
                         <div class="mb-2"><i class="bi-suit-club-fill fs-1 text-primary"></i></div>
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <!-- Tournament Stakes Card -->
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body text-center d-flex flex-column">
                         <div class="mb-2"><i class="bi-trophy-fill fs-1 text-primary"></i></div>
@@ -40,6 +40,19 @@
                         <p class="card-text text-muted">Get tailored bankroll recommendations for tournaments.</p>
                         <div class="mt-auto">
                             <a href="{{ url_for('tools.tournament_stakes_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- SPR Calculator Card -->
+            <div class="col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-calculator-fill fs-1 text-primary"></i></div>
+                        <h4 class="card-title">SPR Calculator</h4>
+                        <p class="card-text text-muted">Calculate Stack-to-Pot Ratio for post-flop decisions.</p>
+                        <div class="mt-auto">
+                            <a href="{{ url_for('tools.spr_calculator_page') }}" class="btn btn-primary btn-xl mt-3">Go to Tool</a>
                         </div>
                     </div>
                 </div>

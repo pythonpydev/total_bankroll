@@ -7,7 +7,7 @@ from ..extensions import db, mail, csrf
 from ..models import User
 from flask_security.utils import hash_password
 from flask_mail import Message 
-from datetime import datetime
+from datetime import datetime, UTC
 from ..utils import generate_token, confirm_token, is_email_taken, get_sorted_currencies
 import re
 
@@ -185,7 +185,7 @@ def confirm_new_email(token):
 
     user.email = email
     user.is_confirmed = True # Mark as confirmed since they just confirmed new email
-    user.confirmed_on = datetime.utcnow()
+    user.confirmed_on = datetime.now(UTC)
     db.session.commit()
     flash('Your email address has been updated and confirmed successfully!', 'success')
     return redirect(url_for('settings.settings_page'))

@@ -1,0 +1,588 @@
+/* static/css/style.css - Combined Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Dark Mode (Default) */
+body.dark-mode {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #E0E0E0;
+    background-color: #1A1A1A;
+}
+
+.dark-mode nav {
+    background-color: #222222;
+    padding: 1rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.dark-mode nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.dark-mode nav a {
+    color: #FFFFFF;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode nav a:hover {
+    background-color: #3CB371;
+    color: #1A1A1A;
+}
+
+.dark-mode main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background-color: #222222;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    padding: 2rem;
+    min-height: 60vh;
+}
+
+.dark-mode h1 {
+    color: #3CB371;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3CB371;
+    padding-bottom: 0.5rem;
+    font-size: 28px;
+}
+
+.dark-mode h2 {
+    color: #90EE90;
+    margin: 1.5rem 0 1rem 0;
+    font-size: 22px;
+}
+
+.dark-mode p {
+    margin-bottom: 1rem;
+}
+
+.dark-mode ul {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.dark-mode li {
+    margin-bottom: 0.5rem;
+}
+
+.dark-mode footer {
+    background-color: #222222;
+    color: #E0E0E0;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+    border-top: 1px solid #333;
+}
+
+/* Light Mode */
+body.light-mode {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #000;
+    background-color: #e8e8e8;
+}
+
+.light-mode nav {
+    background-color: #f5f5f5;
+    padding: 1rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.light-mode nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.light-mode nav a {
+    color: #000;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.light-mode nav a:hover {
+    background-color: #3CB371;
+    color: #fff;
+}
+
+.light-mode main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 2rem;
+    min-height: 60vh;
+}
+
+.light-mode h1 {
+    color: #008000;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #008000;
+    padding-bottom: 0.5rem;
+    font-size: 28px;
+}
+
+.light-mode h2 {
+    color: #006400;
+    margin: 1.5rem 0 1rem 0;
+    font-size: 22px;
+}
+
+.light-mode p {
+    margin-bottom: 1rem;
+}
+
+.light-mode ul {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.light-mode li {
+    margin-bottom: 0.5rem;
+}
+
+.light-mode footer {
+    background-color: #f5f5f5;
+    color: #000;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+    border-top: 1px solid #ddd;
+}
+
+/* Card Image Styles */
+.card-image {
+    width: 60px; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
+    vertical-align: middle; /* Align with text */
+    margin: 0 2px; /* Add a small margin between cards */
+}
+
+/* Shared Styles */
+.decision-table {
+    margin: auto;
+    border-collapse: collapse; /* Ensures borders are clean */
+}
+
+.decision-table .table-header-row td {
+    font-weight: bold;
+    text-align: center;
+}
+
+.decision-table td {
+    padding: 8px 12px; /* Add some padding for better spacing */
+    text-align: left;
+}
+
+.light-mode .decision-table td {
+    border: 1px solid #ccc;
+}
+
+.dark-mode .decision-table td {
+    border: 1px solid #555;
+    color: #000; /* Black text for dark mode decision table */
+}
+
+.dark-mode .decision-table .table-header-row td {
+    color: #FFFFFF; /* White text for dark mode table header */
+}
+
+/* Color coding for decision table rows */
+.category-ultra-low {
+    background-color: #D9F7D9; /* Light green */
+}
+
+.category-low {
+    background-color: #FFFACD; /* Light yellow */
+}
+
+.category-mid {
+    background-color: #FFDAB9; /* Light orange */
+}
+
+.category-high {
+    background-color: #FFC0CB; /* Light red */
+}
+
+.poker-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.poker-form label,
+.poker-form input,
+.poker-form select,
+.poker-form button {
+    width: 80%;
+    max-width: 300px;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+.light-mode input, .light-mode select {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #000;
+}
+
+.dark-mode input, .dark-mode select {
+  border: 1px solid #555;
+  background-color: #333;
+  color: #E0E0E0;
+}
+
+button, .button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.light-mode button, .light-mode .button {
+  background-color: #3CB371;
+  color: #fff;
+}
+
+.light-mode button:hover, .light-mode .button:hover {
+  background-color: #2E8B57;
+}
+
+.dark-mode button, .dark-mode .button {
+  background-color: #3CB371;
+  color: #1A1A1A;
+}
+
+.dark-mode button:hover, .dark-mode .button:hover {
+  background-color: #2E8B57;
+}
+
+/* Styles for centering image and text on form.html */
+.image-container {
+    margin: 30px auto; /* Center the container */
+    max-width: 600px; /* Increased max-width */
+    padding: 40px; /* Increased padding */
+    border-radius: 8px;
+    text-align: center; /* Center text within the container */
+    position: relative;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.light-mode .image-container {
+    background-color: #fff;
+    border: 2px solid #008000;
+}
+
+.dark-mode .image-container {
+    background-color: #2A2A2A;
+    border: 2px solid #3CB371;
+}
+
+.poker-table {
+    display: block;
+    width: 100%; /* Force image to scale to container width */
+    height: auto; /* Maintain aspect ratio */
+    margin: 0 auto;
+}
+
+.image-info {
+    position: absolute;
+    bottom: calc(-1% + 3.5em);
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center; /* Ensure the text below the image is centered */
+}
+
+.seat-label {
+    position: absolute;
+    font-weight: bold;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 9999; /* Ensure labels are on top */
+}
+
+#seat1 { /* Bottom left */
+    bottom: calc(1% + 5em);
+    left: 1%;
+}
+
+#seat2 { /* Top left */
+    top: 1%;
+    left: 1%;
+}
+
+#seat3 { /* Top middle */
+    top: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#seat4 { /* Top right */
+    top: 1%;
+    right: 1%;
+}
+
+#seat5 { /* Bottom right */
+    bottom: calc(1% + 5em);
+    right: 1%;
+}
+
+#seat6 { /* Bottom middle */
+    bottom: calc(2% + 5em);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.light-mode .seat-label {
+    color: #000; /* Dark text for light mode */
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+}
+
+.dark-mode .seat-label {
+    color: #E0E0E0; /* Light text for dark mode */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+}
+
+.position-label {
+    position: absolute;
+    font-weight: bold;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 9999;
+}
+
+/* Positioning for each position label */
+#pos1 { /* Under Seat 1 (BTN) */
+    bottom: calc(-1% + 2em); /* Adjust as needed */
+    left: 1%;
+}
+
+#pos2 { /* Under Seat 2 (SB) */
+    top: 10%; /* Adjust as needed */
+    left: 1%;
+}
+
+#pos3 { /* Under Seat 3 (BB) */
+    top: 10%; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#pos4 { /* Under Seat 4 (UTG) */
+    top: 10%; /* Adjust as needed */
+    right: 1%;
+}
+
+#pos5 { /* Under Seat 5 (HJ) */
+    bottom: calc(-1% + 2em); /* Adjust as needed */
+    right: 1%;
+}
+
+#pos6 { /* Under Seat 6 (CO) */
+    bottom: calc(-1% + 2em); /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.light-mode .position-label {
+    color: #000; /* Dark text for light mode */
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+}
+
+.dark-mode .position-label {
+    color: #E0E0E0; /* Light text for dark mode */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+}
+
+/* Styles for hand_details.html */
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.center-content h2 {
+  text-align: center;
+}
+.data-display h2 {
+  text-align: left; /* Align heading to left within its column */
+}
+.data-display p {
+  text-align: left;
+}
+.card-display-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Add some space between rows */
+}
+.card-display-row p {
+  flex-shrink: 0;
+  width: 150px; /* Adjust as needed for consistent label width */
+  text-align: right;
+  margin-right: 10px;
+}
+.card-display-row span {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+.card-image {
+  border: 1px solid black;
+}
+.data-display-container {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 1000px; /* Widened width */
+  margin-bottom: 20px;
+}
+.left-column, .right-column {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+}
+.left-column {
+  margin-right: 10px;
+}
+.blind-details-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.blind-details-row p {
+  flex: 1;
+  margin-right: 10px;
+}
+.blind-details-row p:last-child {
+  margin-right: 0;
+}
+.hand-details-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.hand-details-row p {
+  flex: 1;
+  margin-right: 10px;
+}
+.hand-details-row p:last-child {
+  margin-right: 0;
+}
+.left-column p strong {
+  display: inline-block;
+  min-width: 200px; /* Adjusted to ensure better alignment */
+  text-align: left;
+}
+.data-display {
+  width: 100%; /* Full width for the data display section */
+  max-width: 600px; /* Adjusted to ensure it fits well */
+  margin: 0 auto; /* Center the data display section */
+  padding: 20px;
+  border-radius: 8px;
+  background-color: transparent;
+  box-shadow: none;
+}
+.data-display-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%; /* Full width for the container */
+  max-width: 1200px; /* Adjusted to ensure it fits well */
+  margin: 0 auto; /* Center the container */
+  padding: 20px;
+  border-radius: 8px;
+  background-color: transparent;
+  box-shadow: none;
+}
+.left-column, .right-column {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: transparent;
+  box-shadow: none;
+}
+.left-column {
+  margin-right: 10px; /* Space between left and right columns */
+}
+.right-column {
+  margin-left: 10px; /* Space between left and right columns */
+}
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Space between buttons */
+  margin-top: 20px;
+}
+.button-group .button {
+  flex-grow: 1;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  max-width: 200px; /* Adjust as needed for desired button width */
+}
+.button-group button[type="submit"] {
+  background-color: #4CAF50; /* Green for Submit Answers */
+  border: none;
+}
+.blue-button {
+  background-color: #008CBA !important; /* Blue for View Hand Evaluation */
+  border: none;
+}
+.red-button {
+  background-color: #f44336 !important; /* Red for Setup New Hand */
+  border: none;
+}
+
+.light-mode .data-display,
+.light-mode .data-display-container,
+.light-mode .left-column,
+.light-mode .right-column {
+    background-color: #f9f9f9;
+    color: #000;
+}
+
+.dark-mode .data-display,
+.dark-mode .data-display-container,
+.dark-mode .left-column,
+.dark-mode .right-column {
+    background-color: #2A2A2A;
+    color: #E0E0E0;
+}

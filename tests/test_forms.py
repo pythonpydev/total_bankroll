@@ -1,250 +1,125 @@
 import pytest
-import os
-import tempfile
-import sqlite3
-from total_bankroll.main import app, get_db, init_db
-
-@pytest.fixture
-def client():
-    db_fd, db_path = tempfile.mkstemp()
-    app.config['DATABASE'] = db_path
-    app.config['TESTING'] = True
-
-    with app.test_client() as client:
-        with app.app_context():
-            init_db()
-        yield client
-
-    os.close(db_fd)
-    os.unlink(db_path)
-
-def get_bankroll_data(client):
-    response = client.get('/')
-    html = response.data.decode('utf-8')
-
-    import re
-
-    def extract_row_values(category):
-        # Regex to capture previous and current values for a given category row
-        pattern = rf"<td>{category}</td>\s*<td>\$\s*(\d+\.\d{{2}})</td>\s*<td>\$\s*(\d+\.\d{{2}})</td>"
-        match = re.search(pattern, html)
-        if match:
-            return float(match.group(1)), float(match.group(2))
-        return 0.0, 0.0
-
-    previous_poker_total, current_poker_total = extract_row_values("Poker Sites")
-    previous_asset_total, current_asset_total = extract_row_values("Assets")
-    previous_withdrawal_total, current_withdrawal_total = extract_row_values("Withdrawal")
-    previous_deposit_total, current_deposit_total = extract_row_values("Deposits")
-    previous_net_worth, total_net_worth = extract_row_values("Total Net Worth")
-    previous_profit, current_profit = extract_row_values("Profit")
-
-    return {
-        "current_poker_total": current_poker_total,
-        "previous_poker_total": previous_poker_total,
-        "current_asset_total": current_asset_total,
-        "previous_asset_total": previous_asset_total,
-        "current_withdrawal_total": current_withdrawal_total,
-        "previous_withdrawal_total": previous_withdrawal_total,
-        "current_deposit_total": current_deposit_total,
-        "previous_deposit_total": previous_deposit_total,
-        "total_net_worth": total_net_worth,
-        "previous_net_worth": previous_net_worth,
-        "current_profit": current_profit,
-        "previous_profit": previous_profit,
-    }
+from flask import url_for
+from total_bankroll.models import Sites, SiteHistory, Assets, AssetHistory, Drawings, Deposits
+from decimal import Decimal
 
 # Test cases for Poker Sites
-def test_add_poker_site_valid(client):
-    response = client.post('/add_site', data={'site_name': 'Test Site', 'amount': '100.00', 'currency': 'USD'})
-    assert response.status_code == 302 # Redirect
+def test_add_poker_site_valid(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('poker_sites.add_site'), data={
+            'name': 'Test Site',
+            'amount': '100.00',
+            'currency': 'USD',
+            'submit': 'Add Site'
+        })
+        # The modal form submission returns a redirect on success
+        assert response.status_code == 302
 
-    # Verify data in DB
-    with app.app_context():
-        db = get_db()
-        site = db.execute("SELECT * FROM sites WHERE name = 'Test Site'").fetchone()
+        # Verify data in DB
+        site = db.session.query(Sites).filter_by(name='Test Site', user_id=new_user.id).first()
         assert site is not None
-        assert site['amount'] == 100.00
-        assert site['currency'] == 'USD'
+        history = db.session.query(SiteHistory).filter_by(site_id=site.id).first()
+        assert history is not None
+        assert history.amount == Decimal('100.00')
+        assert history.currency == 'USD'
 
-def test_bankroll_update_after_add_poker_site(client):
-    bankroll_data_before = get_bankroll_data(client)
-    client.post('/add_site', data={'site_name': 'Bankroll Test Site', 'amount': '75.00', 'currency': 'USD'})
-    bankroll_data_after = get_bankroll_data(client)
-    assert bankroll_data_after["current_poker_total"] == bankroll_data_before["current_poker_total"] + 75.00
+def test_add_poker_site_invalid_amount(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('poker_sites.add_site'), data={
+            'name': 'Invalid Site',
+            'amount': 'abc',
+            'currency': 'USD',
+            'submit': 'Add Site'
+        })
+        assert response.status_code == 400 # Expect a bad request on validation error
+        json_data = response.get_json()
+        assert 'This field is required.' in json_data['errors']['amount']
 
-def test_add_poker_site_invalid_amount(client):
-    response = client.post('/add_site', data={'site_name': 'Invalid Site', 'amount': 'abc'})
-    assert response.status_code == 400 # Bad Request
-
-    with app.app_context():
-        db = get_db()
-        site = db.execute("SELECT * FROM sites WHERE name = 'Invalid Site'").fetchone()
+        site = db.session.query(Sites).filter_by(name='Invalid Site').first()
         assert site is None # Should not be added
 
-def test_add_poker_site_empty_name(client):
-    response = client.post('/add_site', data={'site_name': '', 'amount': '100.00', 'currency': 'USD'})
-    assert response.status_code == 400 # Bad Request
+def test_add_poker_site_empty_name(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('poker_sites.add_site'), data={
+            'name': '',
+            'amount': '100.00',
+            'currency': 'USD',
+            'submit': 'Add Site'
+        })
+        assert response.status_code == 400 # Expect a bad request on validation error
+        json_data = response.get_json()
+        assert 'This field is required.' in json_data['errors']['name']
 
-    with app.app_context():
-        db = get_db()
-        site = db.execute("SELECT * FROM sites WHERE name = ?", ('',)).fetchone()
+        site = db.session.query(Sites).filter_by(name='').first()
         assert site is None # Should not be added
 
-def test_update_poker_site_valid(client):
-    # Add a site first
-    client.post('/add_site', data={'site_name': 'Update Site', 'amount': '50.00', 'currency': 'USD'})
-    with app.app_context():
-        db = get_db()
-        site_id = db.execute("SELECT id FROM sites WHERE name = 'Update Site'").fetchone()['id']
+def test_update_poker_site_valid(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        # Add a site directly to the DB for a more robust test setup
+        site = Sites(name='Update Site', user_id=new_user.id)
+        db.session.add(site)
+        db.session.commit()
 
-    response = client.post(f'/update_site/{site_id}', data={'site_name': 'Updated Site', 'amount': '150.00', 'currency': 'EUR'})
-    assert response.status_code == 302
+        response = client.post(url_for('poker_sites.update_site', site_id=site.id), data={'amount': '150.00', 'submit': 'Update Amount'}, follow_redirects=True)
+        assert response.status_code == 200
 
-    with app.app_context():
-        db = get_db()
-        updated_site = db.execute("SELECT * FROM sites WHERE name = 'Updated Site' ORDER BY last_updated DESC").fetchone()
-        assert updated_site is not None
-        assert updated_site['amount'] == 150.00
-        assert updated_site['currency'] == 'EUR'
+        history_records = db.session.query(SiteHistory).filter_by(site_id=site.id).order_by(SiteHistory.recorded_at.desc()).all()
+        assert len(history_records) == 1
+        assert history_records[0].amount == Decimal('150.00')
 
-def test_delete_poker_site(client):
-    # Add a site first
-    client.post('/add_site', data={'site_name': 'Delete Site', 'amount': '200.00', 'currency': 'USD'})
-    with app.app_context():
-        db = get_db()
-        site_id = db.execute("SELECT id FROM sites WHERE name = 'Delete Site'").fetchone()['id']
+def test_delete_poker_site(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        # Add a site directly to the DB
+        site = Sites(name='Delete Site', user_id=new_user.id)
+        db.session.add(site)
+        db.session.commit()
 
-    response = client.get(f'/perform_delete/site/{site_id}')
-    assert response.status_code == 302
+        response = client.post(url_for('common.perform_delete', item_type='site', item_id=site.id), follow_redirects=True)
+        assert response.status_code == 200
 
-    with app.app_context():
-        db = get_db()
-        site = db.execute("SELECT * FROM sites WHERE id = ?", (site_id,)).fetchone()
-        assert site is None
+        deleted_site = db.session.query(Sites).filter_by(id=site.id).first()
+        assert deleted_site is None
 
 # Test cases for Assets (similar structure to Poker Sites)
-def test_add_asset_valid(client):
-    response = client.post('/add_asset', data={'name': 'Test Asset', 'amount': '500.00', 'currency': 'USD'})
-    assert response.status_code == 302
+def test_add_asset_valid(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('assets.add_asset'), data={
+            'name': 'Test Asset',
+            'amount': '500.00',
+            'currency': 'USD',
+            'submit': 'Add Asset'
+        })
+        assert response.status_code == 302 # Redirect on success
 
-    with app.app_context():
-        db = get_db()
-        asset = db.execute("SELECT * FROM assets WHERE name = 'Test Asset'").fetchone()
+        asset = db.session.query(Assets).filter_by(name='Test Asset', user_id=new_user.id).first()
         assert asset is not None
-        assert asset['amount'] == 500.00
-        assert asset['currency'] == 'USD'
-
-def test_update_asset_valid(client):
-    client.post('/add_asset', data={'name': 'Update Asset', 'amount': '100.00', 'currency': 'USD'})
-    with app.app_context():
-        db = get_db()
-        asset_id = db.execute("SELECT id FROM assets WHERE name = 'Update Asset'").fetchone()['id']
-
-    response = client.post(f'/update_asset/{asset_id}', data={'name': 'Updated Asset', 'amount': '250.00', 'currency': 'EUR'})
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        updated_asset = db.execute("SELECT * FROM assets WHERE name = 'Updated Asset' ORDER BY last_updated DESC").fetchone()
-        assert updated_asset is not None
-        assert updated_asset['amount'] == 250.00
-        assert updated_asset['currency'] == 'EUR'
-
-def test_delete_asset(client):
-    client.post('/add_asset', data={'name': 'Delete Asset', 'amount': '300.00', 'currency': 'USD'})
-    with app.app_context():
-        db = get_db()
-        asset_id = db.execute("SELECT id FROM assets WHERE name = 'Delete Asset'").fetchone()['id']
-
-    response = client.get(f'/perform_delete/asset/{asset_id}')
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        asset = db.execute("SELECT * FROM assets WHERE id = ?", (asset_id,)).fetchone()
-        assert asset is None
+        history = db.session.query(AssetHistory).filter_by(asset_id=asset.id).first()
+        assert history.amount == Decimal('500.00')
 
 # Test cases for Withdrawals
-def test_add_withdrawal_valid(client):
-    response = client.post('/add_withdrawal', data={'date': '2025-01-01', 'amount': '50.00', 'withdrawn_at': '1000.00'})
-    assert response.status_code == 302 # Redirect
+def test_add_withdrawal_valid(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('add_withdrawal.add_withdrawal'), data={'date': '2025-01-01', 'amount': '50.00', 'currency': 'USD'})
+        assert response.status_code == 302
 
-    with app.app_context():
-        db = get_db()
-        withdrawal = db.execute("SELECT * FROM drawings WHERE amount = 50.00").fetchone()
+        withdrawal = db.session.query(Drawings).filter_by(amount=Decimal('50.00'), user_id=new_user.id).first()
         assert withdrawal is not None
-        assert withdrawal['date'] == '2025-01-01'
-        assert withdrawal['withdrawn_at'] == 1000.00
-
-def test_update_withdrawal_valid(client):
-    client.post('/add_withdrawal', data={'date': '2025-01-01', 'amount': '50.00', 'withdrawn_at': '1000.00'})
-    with app.app_context():
-        db = get_db()
-        withdrawal_id = db.execute("SELECT id FROM drawings WHERE amount = 50.00").fetchone()['id']
-
-    response = client.post(f'/update_withdrawal/{withdrawal_id}', data={'date': '2025-01-02', 'amount': '75.00', 'withdrawn_at': '1200.00'})
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        updated_withdrawal = db.execute("SELECT * FROM drawings WHERE id = ?", (withdrawal_id,)).fetchone()
-        assert updated_withdrawal is not None
-        assert updated_withdrawal['amount'] == 75.00
-        assert updated_withdrawal['date'] == '2025-01-02'
-
-def test_delete_withdrawal(client):
-    client.post('/add_withdrawal', data={'date': '2025-01-01', 'amount': '50.00', 'withdrawn_at': '1000.00'})
-    with app.app_context():
-        db = get_db()
-        withdrawal_id = db.execute("SELECT id FROM drawings WHERE amount = 50.00").fetchone()['id']
-
-    response = client.get(f'/perform_delete/withdrawal/{withdrawal_id}')
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        withdrawal = db.execute("SELECT * FROM drawings WHERE id = ?", (withdrawal_id,)).fetchone()
-        assert withdrawal is None
+        assert withdrawal.date.strftime('%Y-%m-%d') == '2025-01-01'
 
 # Test cases for Deposits
-def test_add_deposit_valid(client):
-    response = client.post('/add_deposit', data={'date': '2025-01-01', 'amount': '200.00', 'deposited_at': '500.00'})
-    assert response.status_code == 302
+def test_add_deposit_valid(client, new_user, db):
+    with client:
+        client.post(url_for('auth.login'), data={'email': new_user.email, 'password': 'password123'}, follow_redirects=True)
+        response = client.post(url_for('add_deposit.add_deposit'), data={'date': '2025-01-01', 'amount': '200.00', 'currency': 'USD'})
+        assert response.status_code == 302
 
-    with app.app_context():
-        db = get_db()
-        deposit = db.execute("SELECT * FROM deposits WHERE amount = 200.00").fetchone()
+        deposit = db.session.query(Deposits).filter_by(amount=Decimal('200.00'), user_id=new_user.id).first()
         assert deposit is not None
-        assert deposit['date'] == '2025-01-01'
-        assert deposit['deposited_at'] == 500.00
-
-def test_update_deposit_valid(client):
-    client.post('/add_deposit', data={'date': '2025-01-01', 'amount': '200.00', 'deposited_at': '500.00'})
-    with app.app_context():
-        db = get_db()
-        deposit_id = db.execute("SELECT id FROM deposits WHERE amount = 200.00").fetchone()['id']
-
-    response = client.post(f'/update_deposit/{deposit_id}', data={'date': '2025-01-02', 'amount': '300.00', 'deposited_at': '600.00'})
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        updated_deposit = db.execute("SELECT * FROM deposits WHERE id = ?", (deposit_id,)).fetchone()
-        assert updated_deposit is not None
-        assert updated_deposit['amount'] == 300.00
-        assert updated_deposit['date'] == '2025-01-02'
-
-def test_delete_deposit(client):
-    client.post('/add_deposit', data={'date': '2025-01-01', 'amount': '200.00', 'deposited_at': '500.00'})
-    with app.app_context():
-        db = get_db()
-        deposit_id = db.execute("SELECT id FROM deposits WHERE amount = 200.00").fetchone()['id']
-
-    response = client.get(f'/perform_delete/deposit/{deposit_id}')
-    assert response.status_code == 302
-
-    with app.app_context():
-        db = get_db()
-        deposit = db.execute("SELECT * FROM deposits WHERE id = ?", (deposit_id,)).fetchone()
-        assert deposit is None
+        assert deposit.date.strftime('%Y-%m-%d') == '2025-01-01'

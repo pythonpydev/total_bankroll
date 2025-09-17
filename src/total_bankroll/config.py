@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(24).hex())
     EXCHANGE_RATE_API_KEY = os.getenv('EXCHANGE_RATE_API_KEY')
@@ -10,16 +8,19 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_recycle': 280}
     SESSION_PROTECTION = 'strong'
 
+    # --- Database settings ---
+    # Database variables are now defined in environment-specific configs.
+
     # --- Flask-Security settings ---
     SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT', 'default_salt_please_change')
     SECURITY_PASSWORD_HASH = 'argon2'
     SECURITY_CONFIRMABLE = True
     SECURITY_RECOVERABLE = True
-    SECURITY_LOGIN_URL = "/auth/login"
-    SECURITY_LOGOUT_URL = "/auth/logout"
-    SECURITY_REGISTER_URL = "/auth/register"
+    SECURITY_LOGIN_VIEW = "auth.login"
+    SECURITY_LOGOUT_VIEW = "auth.logout"
+    SECURITY_REGISTER_VIEW = "auth.register"
     SECURITY_POST_LOGIN_VIEW = "/"
-    SECURITY_POST_LOGOUT_VIEW = "/auth/login"
+    SECURITY_POST_LOGOUT_VIEW = "auth.login"
 
     # --- Mail settings ---
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -39,32 +40,35 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    DB_HOST = os.getenv('DEV_DB_HOST', 'localhost')
-    DB_NAME = os.getenv('DEV_DB_NAME', 'bankroll')
-    DB_USER = os.getenv('DEV_DB_USER', 'root')
-    DB_PASS = os.getenv('DEV_DB_PASS', 'f3gWoQe7X7BFCm')
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
     SERVER_NAME = '127.0.0.1:5000'
     PREFERRED_URL_SCHEME = 'http'
+    # Development-specific database credentials
+    DB_USER = os.getenv('DEV_DB_USER')
+    DB_PASS = os.getenv('DEV_DB_PASS')
+    DB_HOST = os.getenv('DEV_DB_HOST')
+    DB_NAME = os.getenv('DEV_DB_NAME')
 
 class ProductionConfig(Config):
     DEBUG = False
-    DB_HOST = os.getenv('PROD_DB_HOST', 'pythonpydev.mysql.pythonanywhere-services.com')
-    DB_NAME = os.getenv('PROD_DB_NAME', 'pythonpydev$bankroll')
-    DB_USER = os.getenv('PROD_DB_USER', 'pythonpydev')
-    DB_PASS = os.getenv('PROD_DB_PASS', 'f3gWoQe7X7BFCm')
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
     SERVER_NAME = 'www.stakeeasy.net'
     PREFERRED_URL_SCHEME = 'https'
+    # Production-specific database credentials using distinct environment variables
+    DB_USER = os.getenv('PROD_DB_USER')
+    DB_PASS = os.getenv('PROD_DB_PASS')
+    DB_HOST = os.getenv('PROD_DB_HOST')
+    DB_NAME = os.getenv('PROD_DB_NAME')
 
 class TestingConfig(Config):
     TESTING = True
-    DEBUG = True
-    DB_HOST = 'localhost'
-    DB_NAME = 'test_bankroll'
-    DB_USER = 'root'
-    DB_PASS = 'f3gWoQe7X7BFCm'
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+    # Use an in-memory SQLite database for tests to make them faster
+    # and avoid conflicts with the MySQL dev database.
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    WTF_CSRF_ENABLED = False  # Disable CSRF for tests
+    SECURITY_PASSWORD_SALT = "test-salt"  # Use a static salt for tests
+    LOGIN_DISABLED = False  # Make sure login is not disabled
+    MAIL_SUPPRESS_SEND = True  # Don't send emails during tests
+    SECURITY_LOGIN_VIEW = "auth.login" # Set login view for tests before security is initialized
+    SERVER_NAME = "localhost.localdomain" # Required for url_for to work in tests
 
 config = {
     'development': DevelopmentConfig,

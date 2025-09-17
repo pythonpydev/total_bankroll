@@ -1,6 +1,7 @@
 from flask_security import UserMixin
 from .extensions import db
-from datetime import datetime
+from datetime import datetime, UTC
+from flask_security.utils import hash_password
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -8,7 +9,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     last_login_at = db.Column(db.DateTime, nullable=True)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     is_confirmed = db.Column(db.Boolean, default=False, nullable=False)
@@ -17,6 +18,14 @@ class User(db.Model, UserMixin):
 
     def get_id(self):
         return self.fs_uniquifier  # Use fs_uniquifier for Flask-Security
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = hash_password(password)
 
 class OAuth(db.Model):
     __tablename__ = 'oauth'
@@ -69,7 +78,7 @@ class SiteHistory(db.Model):
     site_id = db.Column(db.Integer, db.ForeignKey('sites.id'), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     currency = db.Column(db.String(3), db.ForeignKey('currency.code'), nullable=False)
-    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    recorded_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     site = db.relationship('Sites', backref=db.backref('history', lazy='dynamic'))
     user = db.relationship('User', backref=db.backref('site_history', lazy='dynamic'))
@@ -80,7 +89,7 @@ class AssetHistory(db.Model):
     asset_id = db.Column(db.Integer, db.ForeignKey('assets.id'), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     currency = db.Column(db.String(3), db.ForeignKey('currency.code'), nullable=False)
-    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    recorded_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     asset = db.relationship('Assets', backref=db.backref('history', lazy='dynamic'))
     user = db.relationship('User', backref=db.backref('asset_history', lazy='dynamic'))
@@ -92,7 +101,7 @@ class Currency(db.Model):
     rate = db.Column(db.Numeric(10, 6), nullable=False)
     code = db.Column(db.String(3), nullable=False, unique=True)
     symbol = db.Column(db.String(5), nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
 class CashStakes(db.Model):
     __tablename__ = 'cash_stakes'

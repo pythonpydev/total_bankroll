@@ -1,12 +1,20 @@
 import json
 import os
-from flask import Blueprint, render_template, request, current_app
-from flask_security import current_user, login_required
+from flask import Blueprint, render_template, request, current_app, flash
+from flask_security import current_user, login_required, login_required
 from decimal import Decimal, InvalidOperation
+from flask_wtf import FlaskForm
+from wtforms import DecimalField, SubmitField
+from wtforms.validators import DataRequired, NumberRange
 from ..utils import get_user_bankroll_data
 from ..recommendations import RecommendationEngine
 
 tools_bp = Blueprint('tools', __name__)
+
+class SPRCalculatorForm(FlaskForm):
+    effective_stack = DecimalField('Effective Stack Size', validators=[DataRequired(), NumberRange(min=0)])
+    pot_size = DecimalField('Pot Size', validators=[DataRequired(), NumberRange(min=0.01, message="Pot size must be greater than zero.")])
+    submit = SubmitField('Calculate SPR')
 
 def parse_currency_to_decimal(currency_str):
     """Helper to parse currency string to Decimal."""
@@ -241,3 +249,18 @@ def tournament_stakes_page():
                            site_filter=site_filter,
                            tournament_buy_ins=tournament_buy_ins
                            )
+
+@tools_bp.route('/tools/spr-calculator', methods=['GET', 'POST'])
+@login_required
+def spr_calculator_page():
+    """
+    Renders the SPR Calculator page and handles the calculation.
+    """
+    form = SPRCalculatorForm()
+    spr = None
+    if form.validate_on_submit():
+        effective_stack = form.effective_stack.data
+        pot_size = form.pot_size.data
+        spr = effective_stack / pot_size
+
+    return render_template('spr_calculator.html', form=form, spr=spr)

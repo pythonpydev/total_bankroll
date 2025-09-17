@@ -7,54 +7,10 @@ from flask_dance.consumer import oauth_authorized
 from flask_security import login_user, current_user
 from .models import User, OAuth
 from .extensions import db
-from datetime import datetime
+from datetime import datetime, UTC
 import logging
 
 logger = logging.getLogger(__name__)
-
-def _login_or_create_oauth_user(provider_name, user_info, user_datastore):
-    """
-    Finds an existing user or creates a new one for OAuth login.
-    Returns the user object on success, or None on failure.
-    """
-    try:
-        logger.info(f"Starting _login_or_create_oauth_user for provider: {provider_name}")
-
-        email = user_info.get("email")
-        if not email:
-            flash(f"Email not provided by {provider_name.title()}.", 'danger')
-            logger.error(f"Email missing in OAuth callback from {provider_name}. Info: {user_info}")
-            return None
-        
-        logger.info(f"Looking for user with email: {email}")
-        user = user_datastore.find_user(email=email)
-        
-        if not user:
-            logger.info(f"User not found. Creating new user for {email}.")
-            user = User(
-                email=email,
-                fs_uniquifier=os.urandom(24).hex(),
-                active=True,
-                is_confirmed=True,
-                confirmed_on=datetime.utcnow(),
-                created_at=datetime.utcnow()
-            )
-            db.session.add(user)
-            logger.info("New user object added to session.")
-        else:
-            logger.info(f"Found existing user with ID: {user.id}")
-
-        user.last_login_at = datetime.utcnow()
-        logger.info("Committing user transaction to database.")
-        db.session.commit()
-        logger.info("Transaction committed.")
-        
-        return user
-    except Exception as e:
-        logger.critical(f"UNCAUGHT EXCEPTION IN _login_or_create_oauth_user: {e}", exc_info=True)
-        db.session.rollback()
-        flash("A database error occurred during login.", "danger")
-        return None
 
 def init_oauth(app):
     # OAuth Blueprints
@@ -69,7 +25,7 @@ def init_oauth(app):
                 "https://www.googleapis.com/auth/userinfo.email",
                 "https://www.googleapis.com/auth/userinfo.profile",
             ],
-            storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
+            storage=SQLAlchemyStorage(OAuth, db.session)
         )
         app.register_blueprint(google_bp, url_prefix='/login')
 
@@ -83,13 +39,41 @@ def init_oauth(app):
                 if not resp.ok:
                     flash("Failed to fetch user info from Google.", "danger")
                     return redirect(url_for("auth.login"))
+
                 user_info = resp.json()
+                email = user_info.get("email")
+                if not email:
+                    flash("Email not provided by Google.", 'danger')
+                    logger.error(f"Email missing in Google OAuth callback. Info: {user_info}")
+                    return redirect(url_for("auth.login"))
+
                 user_datastore = current_app.extensions['security'].datastore
-                user = _login_or_create_oauth_user('google', user_info, user_datastore)
+                
+                logger.info(f"Looking for user with email: {email}")
+                user = user_datastore.find_user(email=email)
+
+                if not user:
+                    logger.info(f"User not found. Creating new user for {email}.")
+                    user = User(
+                        email=email,
+                        fs_uniquifier=os.urandom(24).hex(),
+                        active=True,
+                        is_confirmed=True,
+                        confirmed_on=datetime.now(UTC),
+                        created_at=datetime.now(UTC)
+                    )
+                    db.session.add(user)
+                else:
+                    logger.info(f"Found existing user with ID: {user.id}")
+
+                user.last_login_at = datetime.now(UTC)
+                db.session.commit()
+                logger.info("User transaction committed.")
+
                 if user:
                     login_user(user, remember=True)
                     flash(f'Logged in successfully with Google!', 'success')
-                    return redirect(url_for("home.home"))
+                    return redirect(url_for("home.home")) # Redirect to the main dashboard
                 return redirect(url_for("auth.login"))
             except Exception as e:
                 logger.critical(f"UNCAUGHT EXCEPTION IN google_logged_in: {e}", exc_info=True)

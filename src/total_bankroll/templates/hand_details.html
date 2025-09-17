@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <style>
+    .center-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .center-content h2 {
+      text-align: center;
+    }
+    .data-display h2 {
+      text-align: left; /* Align heading to left within its column */
+    }
+    .data-display p {
+      text-align: left;
+    }
+    .card-display-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px; /* Add some space between rows */
+    }
+    .card-display-row p {
+      flex-shrink: 0;
+      width: 150px; /* Adjust as needed for consistent label width */
+      text-align: right;
+      margin-right: 10px;
+    }
+    .card-display-row span {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+    }
+    .card-image {
+      border: 1px solid black;
+    }
+    .data-display-container {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 1000px; /* Widened width */
+      margin-bottom: 20px;
+    }
+    .left-column, .right-column {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .left-column {
+      margin-right: 10px;
+    }
+    .blind-details-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .blind-details-row p {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .blind-details-row p:last-child {
+      margin-right: 0;
+    }
+    .hand-details-row, .blind-details-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .hand-details-row p, .blind-details-row p {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .hand-details-row p:last-child, .blind-details-row p:last-child {
+      margin-right: 0;
+    }
+    .left-column p strong, .right-column p strong {
+      display: inline-block;
+      min-width: 150px; /* Adjusted to ensure better alignment */
+      text-align: left;
+    }
+    .data-display {
+      width: 100%; /* Full width for the data display section */
+      max-width: 600px; /* Adjusted to ensure it fits well */
+      margin: 0 auto; /* Center the data display section */
+      padding: 20px;
+      border-radius: 8px;
+      }
+    .data-display-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%; /* Full width for the container */
+      max-width: 1200px; /* Adjusted to ensure it fits well */
+      margin: 0 auto; /* Center the container */
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .left-column, .right-column {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      
+    }
+    .left-column {
+      margin-right: 10px; /* Space between left and right columns */
+    }
+    .right-column {
+      margin-left: 10px; /* Space between left and right columns */
+    }
+    .card-display-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px; /* Add some space between rows */
+    }
+    .card-display-row p {
+      flex-shrink: 0;
+      width: 150px; /* Adjust as needed for consistent label width */       
+    .hand-details-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .hand-details-row p {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .hand-details-row p:last-child {
+      margin-right: 0;
+    }
+    .left-column p strong {
+      display: inline-block;
+      min-width: 200px; /* Adjusted to ensure better alignment */
+      text-align: left;
+    }
+    .data-display h2 {
+      text-align: center; /* Center the heading within its column */
+    }
+    .data-display p {
+      text-align: left;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px; /* Space between buttons */
+      margin-top: 20px;
+    }
+    .button-group .button {
+      flex-grow: 1;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      max-width: 200px; /* Adjust as needed for desired button width */
+    }
+    .button-group button[type="submit"] {
+      background-color: #4CAF50; /* Green for Submit Answers */
+      border: none;
+    }
+    .blue-button {
+      background-color: #008CBA !important; /* Blue for View Hand Evaluation */
+      border: none;
+    }
+    .red-button {
+      background-color: #f44336 !important; /* Red for Setup New Hand */
+      border: none;
+    }
+  </style>
+
+  <div class="center-content">
+    <h2>Submitted Poker Hand Details</h2>
+    <div class="data-display-container">
+        <div class="left-column">
+        <div class="blind-details-row">
+          <p><strong>Small Blind:</strong> {{ form_data.smallBlind }}</p>
+          <p><strong>Big Blind:</strong> {{ form_data.bigBlind }}</p>
+          <p></p>
+        </div>
+        <div class="hand-details-row">
+          <p><strong>Pot Size:</strong> {{ form_data.potSize }}</p>
+          <p><strong>Hero's Chip Stack:</strong> {{ form_data.heroStack }}</p>
+          <p><strong>Opponent's Chip Stack:</strong> {{ form_data.opponentStack }}</p>
+        </div>
+        <div class="hand-details-row">
+          <p><strong>Hero's Position:</strong> {{ form_data.heroPosition }}</p>
+          <p><strong>Opponent's Position:</strong> {{ form_data.opponentPosition }}</p>
+          <p><strong>Button Position:</strong> {{ form_data.buttonPosition }}</p>
+        </div>
+      </div>
+      </div>
+      <div class="right-column">
+        <div class="card-display-row">
+          <p><strong>Hero's Hand:</strong></p>
+          <span id="heroHand"></span>
+        </div>
+        <div class="card-display-row">
+          <p><strong>Board Cards:</strong></p>
+          <span id="boardCards"></span>
+        </div>
+        <div class="card-display-row">
+          <p><strong>Opponent's Hand:</strong></p>
+          <span id="opponentHand"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-display">
+      <div class="center-content">
+      <h2>Guess the SPR</h2>
+      </div>
+      <form id="sprGuessForm" style="text-align: center;">
+        <label for="sprGuess">Guess the SPR:</label>
+        <input type="number" id="sprGuess" name="sprGuess" step="0.01" required>
+        <br><br>
+        <label for="potBetsGuess">Guess number of pot sized bets:</label>
+        <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required>
+        <div class="button-group">
+          <button type="submit" class="button">Submit Answers</button>
+          <a href="/hand_evaluation" class="button blue-button">View Hand Evaluation</a>
+          <a href="/form" class="button red-button">Setup New Hand</a>
+        </div>
+      </form>
+      <div id="actualSpr" style="font-weight: bold; margin-top: 10px; text-align: center;"></div>
+      <div id="actualPotBets" style="font-weight: bold; margin-top: 5px; text-align: center;"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const rankOrder = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+      const suitOrder = ['s', 'h', 'd', 'c'];
+
+      function sortCards(cards) {
+        return cards.sort((a, b) => {
+          const rankA = rankOrder.indexOf(a[0]);
+          const rankB = rankOrder.indexOf(b[0]);
+          if (rankA !== rankB) {
+            return rankA - rankB;
+          }
+          const suitA = suitOrder.indexOf(a[1]);
+          const suitB = suitOrder.indexOf(b[1]);
+          return suitA - suitB;
+        });
+      }
+
+      function displayCards(hand, elementId) {
+        const container = document.getElementById(elementId);
+        hand.forEach(card => {
+          const img = document.createElement('img');
+          img.src = `{{ url_for('static', filename='images/cards/') }}${card}.png`;
+          img.alt = card;
+          img.classList.add('card-image');
+          container.appendChild(img);
+        });
+      }
+
+      const heroHand = sortCards({{ form_data.heroHand|tojson }});
+      const boardCards = sortCards({{ form_data.boardCards|tojson }});
+      const opponentHand = sortCards({{ form_data.opponentHand|tojson }});
+
+      displayCards(heroHand, 'heroHand');
+      displayCards(boardCards, 'boardCards');
+      displayCards(opponentHand, 'opponentHand');
+
+      const actualSpr = {{ form_data.actual_spr|tojson }};
+      const actualPotBets = {{ form_data.actual_pot_bets|tojson }};
+
+      document.getElementById('sprGuessForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const sprGuess = parseFloat(document.getElementById('sprGuess').value);
+        const potBetsGuess = parseFloat(document.getElementById('potBetsGuess').value);
+
+        const actualSprDiv = document.getElementById('actualSpr');
+        if (actualSpr !== null) {
+          const sprText = 'Actual SPR: ' + actualSpr.toFixed(2);
+          const tolerance = actualSpr * 0.05;
+          if (Math.abs(sprGuess - actualSpr) <= tolerance) {
+            actualSprDiv.innerHTML = '<span style="color: green;">' + sprText + ' &#10004;</span>';
+          } else {
+            actualSprDiv.innerHTML = '<span style="color: red;">' + sprText + ' &#10060;</span>';
+          }
+        } else {
+          actualSprDiv.textContent = 'Actual SPR: N/A';
+        }
+
+        const actualPotBetsDiv = document.getElementById('actualPotBets');
+        const potBetsText = 'Actual Pot Sized Bets: ' + actualPotBets;
+        if (potBetsGuess === actualPotBets) {
+          actualPotBetsDiv.innerHTML = '<span style="color: green;">' + potBetsText + ' &#10004;</span>';
+        } else {
+          actualPotBetsDiv.innerHTML = '<span style="color: red;">' + potBetsText + ' &#10060;</span>';
+        }
+      });
+    });
+  </script>
+{% endblock %}

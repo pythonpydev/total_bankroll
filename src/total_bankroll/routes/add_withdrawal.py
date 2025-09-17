@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, current_app
 from flask_security import login_required, current_user
-from datetime import datetime
+from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from ..utils import get_user_bankroll_data, get_sorted_currencies
@@ -35,7 +35,7 @@ def add_withdrawal():
         new_drawing = Drawings(
             date=date,
             amount=amount,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(UTC),
             currency=currency_code,
             user_id=current_user.id
         )

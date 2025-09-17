@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, url_for, current_app, flash
 from flask_security import login_required, current_user
-from datetime import datetime
+from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from ..utils import get_user_bankroll_data, get_sorted_currencies
@@ -99,7 +99,7 @@ def update_deposit(deposit_id):
                 return redirect(url_for("deposit.deposit"))
             deposit_item.amount = amount
             deposit_item.currency = currency_code
-            deposit_item.last_updated = datetime.utcnow()
+            deposit_item.last_updated = datetime.now(UTC)
             db.session.commit()
             flash("Deposit updated successfully!", "success")
         except (ValueError, Exception) as e:

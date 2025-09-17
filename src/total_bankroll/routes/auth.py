@@ -12,7 +12,7 @@ import os
 from sqlalchemy.exc import IntegrityError
 from flask_dance.contrib.google import google as google_blueprint
 from flask_dance.contrib.facebook import facebook as facebook_blueprint
-from datetime import datetime
+from datetime import datetime, UTC
 from ..utils import generate_token, confirm_token
 import logging
 import re
@@ -94,7 +94,7 @@ def login():
         return redirect(url_for('auth.login'))
 
     try:
-        user.last_login_at = datetime.utcnow()
+        user.last_login_at = datetime.now(UTC)
         db.session.commit()
         login_user(user)
         logger.debug(f"User logged in: {user.email}, session: {session}")
@@ -123,7 +123,7 @@ def register():
             fs_uniquifier=os.urandom(24).hex(),
             active=True,
             is_confirmed=False,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
         db.session.add(user)
         db.session.commit()
@@ -166,7 +166,7 @@ def confirm_email(token):
             flash('Account already confirmed.', 'info')
         else:
             user.is_confirmed = True
-            user.confirmed_on = datetime.utcnow()
+            user.confirmed_on = datetime.now(UTC)
             try:
                 db.session.commit()
                 logger.debug(f"Email confirmed for {email}")

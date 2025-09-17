@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_security import login_required, current_user
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, and_, inspect
@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired, Length
 from ..extensions import db
 from ..models import Sites, SiteHistory, Currency
 from ..utils import get_sorted_currencies
-from datetime import datetime
+from datetime import datetime, UTC
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
 
@@ -102,12 +102,17 @@ def add_site():
         db.session.commit()
         flash('Site added successfully!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
-    return render_template("_modal_form.html", form=form, title="Add New Site")
+    elif request.method == 'POST':
+        # If validation fails, return errors as JSON
+        return jsonify({'success': False, 'errors': form.errors}), 400
+    return render_template("_modal_form.html", form=form, title="Add New Site", action_url=url_for('poker_sites.add_site'))
 
 @poker_sites_bp.route("/update_site/<int:site_id>", methods=['GET', 'POST'])
 @login_required
 def update_site(site_id):
-    site = Sites.query.get_or_404(site_id)
+    site = db.session.get(Sites, site_id)
+    if not site:
+        return "Site not found", 404
     if site.user_id != current_user.id:
         flash('Not authorized to update this site.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
@@ -131,7 +136,9 @@ def update_site(site_id):
 @poker_sites_bp.route("/rename_site/<int:site_id>", methods=['GET', 'POST'])
 @login_required
 def rename_site(site_id):
-    site = Sites.query.get_or_404(site_id)
+    site = db.session.get(Sites, site_id)
+    if not site:
+        return "Site not found", 404
     if site.user_id != current_user.id:
         flash('Not authorized to rename this site.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
@@ -147,7 +154,9 @@ def rename_site(site_id):
 @poker_sites_bp.route("/site_history/<int:site_id>")
 @login_required
 def site_history(site_id):
-    site = Sites.query.get_or_404(site_id)
+    site = db.session.get(Sites, site_id)
+    if not site:
+        return "Site not found", 404
     if site.user_id != current_user.id:
         flash('Not authorized to view this history.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
@@ -184,7 +193,9 @@ def site_history(site_id):
 @poker_sites_bp.route('/move_site/<int:site_id>/<direction>')
 @login_required
 def move_site(site_id, direction):
-    site_to_move = Sites.query.get_or_404(site_id)
+    site_to_move = db.session.get(Sites, site_id)
+    if not site_to_move:
+        return "Site not found", 404
     if site_to_move.user_id != current_user.id:
         flash('Not authorized.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
@@ -209,7 +220,9 @@ def move_site(site_id, direction):
 @poker_sites_bp.route("/edit_site_history/<int:history_id>", methods=['GET', 'POST'])
 @login_required
 def edit_site_history(history_id):
-    history_record = SiteHistory.query.get_or_404(history_id)
+    history_record = db.session.get(SiteHistory, history_id)
+    if not history_record:
+        return "History record not found", 404
     if history_record.user_id != current_user.id:
         flash('Not authorized.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))

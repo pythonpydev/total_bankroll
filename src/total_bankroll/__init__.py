@@ -1,6 +1,6 @@
 import os
 __version__ = "0.1.0"
-from flask import Flask, session, flash, redirect, url_for, current_app
+from flask import Flask, session, flash, redirect, url_for, current_app, g
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from .config import config 
@@ -36,21 +36,27 @@ def register_blueprints(app):
         (assets_bp, None), (withdrawal_bp, None), (deposit_bp, None),
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
-        (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None)
+        (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
 
-def create_app():
-    # Load environment variables from .env file
-    load_dotenv()
-
+def create_app(config_name=None):
     # Get the absolute path to the directory containing app.py
     basedir = os.path.abspath(os.path.dirname(__file__))
 
     # App initialization
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
-    app.config.from_object(config[os.getenv('FLASK_ENV', 'development')])
+    app.config.from_object(config[config_name or os.getenv('FLASK_ENV', 'default')])
+
+    # Dynamically construct the database URI after loading config.
+    # This is more robust than constructing it at import time in config.py.
+    if app.config.get('SQLALCHEMY_DATABASE_URI') is None:
+        db_user = app.config.get('DB_USER')
+        db_pass = app.config.get('DB_PASS')
+        db_host = app.config.get('DB_HOST')
+        db_name = app.config.get('DB_NAME')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}"
     
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
     log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
@@ -79,6 +85,12 @@ def create_app():
     # we can disable the default blueprint from Flask-Security to avoid
     # route conflicts.
     security = Security(app, user_datastore, register_blueprint=False)
+
+    # Define a custom unauthenticated handler to fix the redirect issue in tests
+    @app.login_manager.unauthorized_handler
+    def unauthn_handler():
+        # Store the URL they were trying to get to.
+        return redirect(url_for("auth.login"))
 
     from . import oauth
     oauth.init_oauth(app)
