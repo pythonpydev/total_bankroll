@@ -47,51 +47,60 @@
 
         <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form">
           {{ hand_form.hidden_tag() }}
-          <div class="form-group">
-            <label for="small_blind">Small Blind</label>
-            <input type="number" id="small_blind" name="small_blind" class="form-control"  required>
+          <div class="row g-3">
+            <!-- Blinds -->
+            <div class="col-md-6">
+              <label for="small_blind" class="form-label">Small Blind</label>
+              <input type="number" id="small_blind" name="small_blind" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="big_blind" class="form-label">Big Blind</label>
+              <input type="number" id="big_blind" name="big_blind" class="form-control" required>
+            </div>
+
+            <!-- Hero Info -->
+            <div class="col-md-4">
+              <label for="hero_stack" class="form-label">Hero's Chip Stack</label>
+              <input type="number" id="hero_stack" name="hero_stack" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="hero_position" class="form-label">Hero's Position</label>
+              <input type="text" id="hero_position" name="hero_position" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="hero_hand" class="form-label">Hero's Hand</label>
+              <input type="text" id="hero_hand" name="hero_hand" class="form-control" required>
+            </div>
+
+            <!-- Opponent Info -->
+            <div class="col-md-4">
+              <label for="opponent_stack" class="form-label">Opponent's Chip Stack</label>
+              <input type="number" id="opponent_stack" name="opponent_stack" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="opponent_position" class="form-label">Opponent's Position</label>
+              <input type="text" id="opponent_position" name="opponent_position" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="opponent_hand" class="form-label">Opponent's Hand</label>
+              <input type="text" id="opponent_hand" name="opponent_hand" class="form-control" required>
+            </div>
+
+            <!-- Game State -->
+            <div class="col-md-4">
+              <label for="board" class="form-label">Board Cards</label>
+              <input type="text" id="board" name="board" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="pot_size" class="form-label">Pot Size</label>
+              <input type="number" id="pot_size" name="pot_size" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="bet_size" class="form-label">Bet Size (optional)</label>
+              <input type="number" id="bet_size" name="bet_size" class="form-control">
+            </div>
           </div>
-          <div class="form-group">
-            <label for="big_blind">Big Blind</label>
-            <input type="number" id="big_blind" name="big_blind" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="hero_stack">Hero's Chip Stack</label>
-            <input type="number" id="hero_stack" name="hero_stack" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="hero_position">Hero's Position</label>
-            <input type="text" id="hero_position" name="hero_position" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="hero_hand">Hero's Hand</label>
-            <input type="text" id="hero_hand" name="hero_hand" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="board">Board Cards</label>
-            <input type="text" id="board" name="board" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="opponent_stack">Opponent's Chip Stack</label>
-            <input type="number" id="opponent_stack" name="opponent_stack" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="opponent_position">Opponent's Position</label>
-            <input type="text" id="opponent_position" name="opponent_position" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="opponent_hand">Opponent's Hand</label>
-            <input type="text" id="opponent_hand" name="opponent_hand" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="pot_size">Pot Size</label>
-            <input type="number" id="pot_size" name="pot_size" class="form-control"  required>
-          </div>
-          <div class="form-group">
-            <label for="bet_size">Bet Size (optional)</label>
-            <input type="number" id="bet_size" name="bet_size" class="form-control" >
-          </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="submit" class="btn btn-primary mt-4">Submit</button>
         </form>
       </div>
   </section>
