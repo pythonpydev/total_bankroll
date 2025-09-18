@@ -1,123 +1,47 @@
-.center-content {
+/* Ensure plo-form-container is centered */
+.plo-form-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.center-content h2 {
-    text-align: center;
-}
-
-.data-display h2 {
-    text-align: center; /* Center the heading within its column */
-}
-
-.data-display p {
-    text-align: left;
-}
-
-.card-image {
-    border: 1px solid black;
-    height: 70px; /* Example height, adjust as needed */
-    margin: 2px;
-}
-
-.data-display-container {
-    display: flex;
-    justify-content: space-between; /* Changed from space-around */
     width: 100%;
-    max-width: 1200px; /* Adjusted to ensure it fits well */
-    margin: 0 auto 20px; /* Center the container and add bottom margin */
-    padding: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Ensure image-container is centered */
+.image-container {
+    margin: 2rem auto;
+    max-width: 700px;
+    padding: 0;
     border-radius: 8px;
+    text-align: center;
+    position: relative;
+    width: 100%;
 }
 
-.left-column, .right-column {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
+/* Ensure poker table image is centered */
+.poker-table {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto; /* Explicitly center the image */
 }
 
-.left-column {
-    margin-right: 10px; /* Space between left and right columns */
-}
-
-.right-column {
-    margin-left: 10px; /* Space between left and right columns */
-}
-
-.hand-details-row, .blind-details-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.hand-details-row p, .blind-details-row p {
-    flex: 1;
-    margin-right: 10px;
-}
-
-.hand-details-row p:last-child, .blind-details-row p:last-child {
-    margin-right: 0;
-}
-
-.left-column p strong, .right-column p strong {
-    display: inline-block;
-    min-width: 150px; /* Adjusted to ensure better alignment */
-    text-align: left;
-}
-
-.data-display {
-    width: 100%; /* Full width for the data display section */
-    max-width: 600px; /* Adjusted to ensure it fits well */
-    margin: 0 auto; /* Center the data display section */
-    padding: 20px;
-    border-radius: 8px;
-}
-
-.card-display-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px; /* Add some space between rows */
-}
-
-.card-display-row p {
-    flex-shrink: 0;
-    width: 150px; /* Adjust as needed for consistent label width */
-    text-align: right;
-    margin-right: 10px;
-}
-
-.card-display-row span {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
-}
-
+/* Style button group */
 .button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px; /* Space between buttons */
-  margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 1rem 0;
 }
 
-.button-group .button {
-  flex-grow: 1;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  max-width: 200px; /* Adjust as needed for desired button width */
+/* Ensure form buttons match theme */
+.poker-form button {
+    background-color: var(--bs-primary);
+    color: #fff;
 }
 
-.text-success { color: #155724 !important; }
-.text-danger { color: #721c24 !important; }
-.text-warning { color: #856404 !important; }
-
-.thead-dark th {
-    background-color: #343a40; /* Explicitly set dark background */
-    color: white;
-}       
+.dark-mode .poker-form button {
+    background-color: var(--dark-accent);
+    border-color: var(--dark-accent);
+}

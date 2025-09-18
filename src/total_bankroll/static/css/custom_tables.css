@@ -31,7 +31,7 @@
 }
 
 .table-custom tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
+    background-color: #f9fafb; /* Slightly lighter for subtle zebra in light mode */
 }
 
 .table-custom tbody tr:last-of-type {
@@ -39,12 +39,12 @@
 }
 
 .table-custom tbody tr:hover {
-    background-color: #e9ecef; /* Hover effect for rows */
+    background-color: #f1f3f5; /* Softer hover in light mode */
 }
 
 /* Custom classes for positive/negative changes */
-.table-custom .change-positive { color: #198754; font-weight: bold; }
-.table-custom .change-negative { color: #dc3545; font-weight: bold; }
+.table-custom .change-positive { color: #0f8a4f; font-weight: 600; }
+.table-custom .change-negative { color: #c82333; font-weight: 600; }
 .table-custom .change-zero { color: #6c757d; }
 
 /* Custom highlighting for recommendation tables */

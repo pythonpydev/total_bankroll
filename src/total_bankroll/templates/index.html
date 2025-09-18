@@ -1,17 +1,8 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary text-white" id="home">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="mt-0">Welcome, {{ current_user.email }}!</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Here is a quick summary of your financial standing.</p>
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header('Dashboard', 'Here is a quick summary of your financial standing.') }}
 
 <section class="page-section bg-light" id="portfolio">
     <div class="container px-4 px-lg-5">

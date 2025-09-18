@@ -130,10 +130,10 @@ body.dark-mode .table-custom tbody tr {
     border-bottom-color: var(--dark-border);
 }
 body.dark-mode .table-custom tbody tr:nth-of-type(even) {
-    background-color: var(--dark-bg-2);
+    background-color: #242424; /* Slight contrast from base dark surface */
 }
 body.dark-mode .table-custom tbody tr:hover {
-    background-color: var(--dark-bg-2);
+    background-color: #2e2e2e; /* Subtle hover contrast */
 }
 
 /* --- List Groups --- */

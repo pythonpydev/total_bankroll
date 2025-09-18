@@ -1,17 +1,8 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="withdrawal_header">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Withdrawals</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Track your withdrawals and manage your transaction history.</p>
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header('Withdrawals', 'Track your withdrawals and manage your transaction history.') }}
 
 <section class="page-section" id="withdrawal_content">
     <div class="container px-4 px-lg-5">
@@ -37,7 +28,7 @@
                 </form>
 
                 <div class="table-responsive">
-                    <table class="table-custom">
+                    <table class="table table-custom table-hover">
                         <thead>
                             <tr>
                                 <th>Date</th>

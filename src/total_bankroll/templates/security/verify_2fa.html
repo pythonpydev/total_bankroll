@@ -1,25 +1,26 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Two-Factor Authentication</h3>
-                </div>
-                <div class="card-body">
-                    <p class="text-center">Enter the code from your authenticator app.</p>
-                    <form method="POST" action="{{ url_for('auth.verify_2fa') }}">
-                        {{ form.hidden_tag() }}
-                        <div class="mb-3">
-                            {{ form.token(class="form-control form-control-lg text-center", placeholder="6-digit code", autofocus=true, required=true, pattern="\\d{6}", maxlength="6") }}
-                        </div>
-                        {{ form.submit(class="btn btn-primary w-100") }}
-                    </form>
+{{ page_header('Two-Factor Authentication', 'Enter the code from your authenticator app to complete login.') }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('auth.verify_2fa') }}">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.token(class="form-control form-control-lg text-center", placeholder="6-digit code", autofocus=true, required=true, pattern="\\d{6}", maxlength="6") }}
+                            </div>
+                            {{ form.submit(class="btn btn-primary w-100") }}
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

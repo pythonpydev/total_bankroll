@@ -1,17 +1,8 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="login">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Login</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Welcome back! Log in to access your bankroll.</p>
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header('Login', 'Welcome back! Log in to access your bankroll.') }}
 
 <section class="page-section" id="login-form">
     <div class="container px-4 px-lg-5">

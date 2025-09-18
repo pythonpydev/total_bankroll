@@ -1,20 +1,11 @@
-{% extends "base.html" %} {% from "_macros.html" import render_item_table %}
+{% extends "base.html" %}
+{% from "_macros.html" import render_item_table, page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="poker_sites">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Poker Sites</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Manage your funds on different poker sites.</p>
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header('Poker Sites', 'Manage your funds on different poker sites.') }}
 
 <section class="page-section" id="portfolio">
-    <div class="container px-4 px-lg-5">
+    <div class="container">
         <h2 class="text-center mt-0">Your Poker Sites</h2>
         <hr class="divider" />
         <div class="row gx-4 gx-lg-5">
@@ -23,30 +14,31 @@
             </div>
             <div class="col-lg-12">{{ render_item_table(poker_sites, 'site') }}</div>
 
+            <div class="col-lg-6 offset-lg-3">
                 <div class="table-responsive mt-5">
-                        <table class="table-custom">
-                            <thead>
-                                <tr>
-                                    <th scope="col" colspan="2" class="text-center">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Total Current:</td>
-                                    <td>${{ "%.2f" | format(total_current) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Total Previous:</td>
-                                    <td>${{ "%.2f" | format(total_previous) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Total Change:</td>
-                                    <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-            </div>
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2" class="text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Current:</td>
+                                <td>${{ "%.2f" | format(total_current) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Previous:</td>
+                                <td>${{ "%.2f" | format(total_previous) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Change:</td>
+                                <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        </div>
         </div>
     </div>
 </section>

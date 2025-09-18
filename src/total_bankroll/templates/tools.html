@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4 text-center">Tools</h1>
+{{ page_header('Tools', 'Various tools to help analyse and improve your poker game.') }}
+
+<section class="page-section" id="tools">
+    <div class="container">
 
     <div class="row">
         <!-- Poker Stakes Card -->
@@ -44,7 +47,7 @@
                 <div class="card-body">
                     <h5 class="card-title">PLO Hand Evaluator</h5>
                     <p class="card-text">Evaluate the strength of PLO hands, calculate outs, and compare equities.</p>
-                    <a href="{{ url_for('hand_eval.form') }}" class="btn btn-primary">Go to Tool</a>
+                    <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
         </div>
@@ -71,5 +74,6 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
+</section>
 {% endblock %}
