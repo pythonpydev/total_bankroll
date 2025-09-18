@@ -51,14 +51,14 @@
             <!-- Blinds -->
             <div class="col-md-6">
               {{ hand_form.small_blind.label(class="form-label") }}
-              {{ hand_form.small_blind(class="form-control" + (" is-invalid" if hand_form.small_blind.errors else "")) }}
+              {{ hand_form.small_blind(class="form-control" + (" is-invalid" if hand_form.small_blind.errors else ""), placeholder="e.g., 1") }}
               {% for error in hand_form.small_blind.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-6">
               {{ hand_form.big_blind.label(class="form-label") }}
-              {{ hand_form.big_blind(class="form-control" + (" is-invalid" if hand_form.big_blind.errors else "")) }}
+              {{ hand_form.big_blind(class="form-control" + (" is-invalid" if hand_form.big_blind.errors else ""), placeholder="e.g., 2") }}
               {% for error in hand_form.big_blind.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -67,21 +67,21 @@
             <!-- Hero Info -->
             <div class="col-md-4">
               {{ hand_form.hero_stack.label(class="form-label") }}
-              {{ hand_form.hero_stack(class="form-control" + (" is-invalid" if hand_form.hero_stack.errors else "")) }}
+              {{ hand_form.hero_stack(class="form-control" + (" is-invalid" if hand_form.hero_stack.errors else ""), placeholder="e.g., 200") }}
               {% for error in hand_form.hero_stack.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.hero_position.label(class="form-label") }}
-              {{ hand_form.hero_position(class="form-control" + (" is-invalid" if hand_form.hero_position.errors else "")) }}
+              {{ hand_form.hero_position(class="form-control" + (" is-invalid" if hand_form.hero_position.errors else ""), placeholder="e.g., BTN") }}
               {% for error in hand_form.hero_position.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.hero_hand.label(class="form-label") }}
-              {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else "")) }}
+              {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh") }}
               {% for error in hand_form.hero_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -90,21 +90,21 @@
             <!-- Opponent Info -->
             <div class="col-md-4">
               {{ hand_form.opponent_stack.label(class="form-label") }}
-              {{ hand_form.opponent_stack(class="form-control" + (" is-invalid" if hand_form.opponent_stack.errors else "")) }}
+              {{ hand_form.opponent_stack(class="form-control" + (" is-invalid" if hand_form.opponent_stack.errors else ""), placeholder="e.g., 200") }}
               {% for error in hand_form.opponent_stack.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.opponent_position.label(class="form-label") }}
-              {{ hand_form.opponent_position(class="form-control" + (" is-invalid" if hand_form.opponent_position.errors else "")) }}
+              {{ hand_form.opponent_position(class="form-control" + (" is-invalid" if hand_form.opponent_position.errors else ""), placeholder="e.g., BB") }}
               {% for error in hand_form.opponent_position.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.opponent_hand.label(class="form-label") }}
-              {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else "")) }}
+              {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else ""), placeholder="e.g., 2s2h3d4c") }}
               {% for error in hand_form.opponent_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -113,21 +113,21 @@
             <!-- Game State -->
             <div class="col-md-4">
               {{ hand_form.board.label(class="form-label") }}
-              {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else "")) }}
+              {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else ""), placeholder="e.g., AcKcTc") }}
               {% for error in hand_form.board.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.pot_size.label(class="form-label") }}
-              {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else "")) }}
+              {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else ""), placeholder="e.g., 6") }}
               {% for error in hand_form.pot_size.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
               {{ hand_form.bet_size.label(class="form-label") }}
-              {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else "")) }}
+              {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else ""), placeholder="e.g., 6") }}
               {% for error in hand_form.bet_size.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
