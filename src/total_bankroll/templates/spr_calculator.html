@@ -1,9 +1,12 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block title %}SPR Calculator{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+{{ page_header('SPR Calculator', 'Compute the Stack-to-Pot Ratio for a given spot.') }}
+
+<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-sm">

@@ -1,12 +1,14 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block head %}
   {{ super() }}
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h1 class="mb-4 text-center">PLO Decisions</h1>
+{{ page_header('PLO Decisions', 'Guidelines by hand type and SPR for post-flop play.') }}
+
+<div class="container">
   <p class="text-center">This table provides a guide for post-flop decisions in Pot Limit Omaha based on your hand strength and the Stack-to-Pot Ratio (SPR).</p>
 
   <div class="table-responsive mb-4">
