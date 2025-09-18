@@ -1,17 +1,17 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="confirm_delete_user_account">
+{{ page_header('Confirm Account Deletion', 'Are you sure? This action cannot be undone.') }}
+
+<section class="page-section" id="confirm_delete_user_account">
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Confirm Account Deletion</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Are you sure you want to delete your account? This action cannot be undone.</p>
                 <form action="{{ url_for('settings.delete_user_account_confirmed') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger btn-xl">Yes, Delete My Account</button>
-                    <a href="{{ url_for('settings.settings_page') }}" class="btn btn-light btn-xl">Cancel</a>
+                    <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-xl">Cancel</a>
                 </form>
             </div>
         </div>
