@@ -1,17 +1,8 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-{% from "_macros.html" import page_header %}
-  <header class="masthead">
-    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
-      <div class="d-flex justify-content-center">
-        <div class="text-center">
-          <h1 class="mx-auto my-0 text-uppercase">Pot Limit Omaha Tools</h1>
-          <h2 class="text-white-50 mx-auto mt-2 mb-5">Analyze hand strength and calculate Stack-to-Pot Ratio.</h2>
-        </div>
-      </div>
-    </div>
-  </header>
+{{ page_header('Pot Limit Omaha Tools', 'Analyze hand strength and calculate Stack-to-Pot Ratio.') }}
 
 <section class="page-section" id="portfolio">
     <div class="container px-4 px-lg-5">
