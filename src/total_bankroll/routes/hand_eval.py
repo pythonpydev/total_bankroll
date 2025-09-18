@@ -24,6 +24,7 @@ class HandForm(FlaskForm):
     opponent_hand = StringField("Opponent's Hand", validators=[DataRequired()])
     pot_size = IntegerField('Pot Size', validators=[DataRequired()])
     bet_size = IntegerField('Bet Size', validators=[Optional()])
+    submit = SubmitField('Submit')
 
 @hand_eval_bp.route('/tables')
 def tables():
@@ -49,13 +50,16 @@ def switch_button_position():
 @hand_eval_bp.route('/hand_details', methods=['POST', 'GET'])
 def submit_form():
     """Handles form submission and processes data."""
+    button_form = ButtonPositionForm()
     hand_form = HandForm()
-    if request.method == 'POST' and hand_form.validate_on_submit():
+    button_position = session.get('button_position', 1)
+
+    if hand_form.validate_on_submit():
         form_data = algo.process_hand_data(request.form)
         session['form_data'] = form_data
-    else:  # GET request
-        form_data = session.get('form_data', {})
-    return render_template('hand_details.html', form_data=form_data)
+        return render_template('hand_details.html', form_data=form_data)
+
+    return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
 @hand_eval_bp.route('/hand_evaluation', methods=['GET'])
 def hand_evaluation():

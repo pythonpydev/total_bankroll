@@ -38,69 +38,102 @@
           {{ button_form.hidden_tag() }}
           <label>Choose button position:</label>
             <button type="submit" name="button_position" value="1" class="btn btn-primary btn-md">1</button>
-          <button type="submit" name="button_position" value="2">2</button>
-          <button type="submit" name="button_position" value="3">3</button>
-          <button type="submit" name="button_position" value="4">4</button>
-          <button type="submit" name="button_position" value="5">5</button>
+          <button type="submit" name="button_position" value="2" class="btn btn-primary btn-md">2</button>
+          <button type="submit" name="button_position" value="3" class="btn btn-primary btn-md">3</button>
+          <button type="submit" name="button_position" value="4" class="btn btn-primary btn-md">4</button>
+          <button type="submit" name="button_position" value="5" class="btn btn-primary btn-md">5</button>
             <button type="submit" name="button_position" value="6" class="btn btn-primary btn-md">6</button>
         </form>
 
-        <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form">
+        <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form" novalidate>
           {{ hand_form.hidden_tag() }}
           <div class="row g-3">
             <!-- Blinds -->
             <div class="col-md-6">
-              <label for="small_blind" class="form-label">Small Blind</label>
-              <input type="number" id="small_blind" name="small_blind" class="form-control" required>
+              {{ hand_form.small_blind.label(class="form-label") }}
+              {{ hand_form.small_blind(class="form-control" + (" is-invalid" if hand_form.small_blind.errors else "")) }}
+              {% for error in hand_form.small_blind.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-6">
-              <label for="big_blind" class="form-label">Big Blind</label>
-              <input type="number" id="big_blind" name="big_blind" class="form-control" required>
+              {{ hand_form.big_blind.label(class="form-label") }}
+              {{ hand_form.big_blind(class="form-control" + (" is-invalid" if hand_form.big_blind.errors else "")) }}
+              {% for error in hand_form.big_blind.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
 
             <!-- Hero Info -->
             <div class="col-md-4">
-              <label for="hero_stack" class="form-label">Hero's Chip Stack</label>
-              <input type="number" id="hero_stack" name="hero_stack" class="form-control" required>
+              {{ hand_form.hero_stack.label(class="form-label") }}
+              {{ hand_form.hero_stack(class="form-control" + (" is-invalid" if hand_form.hero_stack.errors else "")) }}
+              {% for error in hand_form.hero_stack.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="hero_position" class="form-label">Hero's Position</label>
-              <input type="text" id="hero_position" name="hero_position" class="form-control" required>
+              {{ hand_form.hero_position.label(class="form-label") }}
+              {{ hand_form.hero_position(class="form-control" + (" is-invalid" if hand_form.hero_position.errors else "")) }}
+              {% for error in hand_form.hero_position.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="hero_hand" class="form-label">Hero's Hand</label>
-              <input type="text" id="hero_hand" name="hero_hand" class="form-control" required>
+              {{ hand_form.hero_hand.label(class="form-label") }}
+              {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else "")) }}
+              {% for error in hand_form.hero_hand.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
 
             <!-- Opponent Info -->
             <div class="col-md-4">
-              <label for="opponent_stack" class="form-label">Opponent's Chip Stack</label>
-              <input type="number" id="opponent_stack" name="opponent_stack" class="form-control" required>
+              {{ hand_form.opponent_stack.label(class="form-label") }}
+              {{ hand_form.opponent_stack(class="form-control" + (" is-invalid" if hand_form.opponent_stack.errors else "")) }}
+              {% for error in hand_form.opponent_stack.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="opponent_position" class="form-label">Opponent's Position</label>
-              <input type="text" id="opponent_position" name="opponent_position" class="form-control" required>
+              {{ hand_form.opponent_position.label(class="form-label") }}
+              {{ hand_form.opponent_position(class="form-control" + (" is-invalid" if hand_form.opponent_position.errors else "")) }}
+              {% for error in hand_form.opponent_position.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="opponent_hand" class="form-label">Opponent's Hand</label>
-              <input type="text" id="opponent_hand" name="opponent_hand" class="form-control" required>
+              {{ hand_form.opponent_hand.label(class="form-label") }}
+              {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else "")) }}
+              {% for error in hand_form.opponent_hand.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
 
             <!-- Game State -->
             <div class="col-md-4">
-              <label for="board" class="form-label">Board Cards</label>
-              <input type="text" id="board" name="board" class="form-control" required>
+              {{ hand_form.board.label(class="form-label") }}
+              {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else "")) }}
+              {% for error in hand_form.board.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="pot_size" class="form-label">Pot Size</label>
-              <input type="number" id="pot_size" name="pot_size" class="form-control" required>
+              {{ hand_form.pot_size.label(class="form-label") }}
+              {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else "")) }}
+              {% for error in hand_form.pot_size.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
             <div class="col-md-4">
-              <label for="bet_size" class="form-label">Bet Size (optional)</label>
-              <input type="number" id="bet_size" name="bet_size" class="form-control">
+              {{ hand_form.bet_size.label(class="form-label") }}
+              {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else "")) }}
+              {% for error in hand_form.bet_size.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
             </div>
           </div>
-          <button type="submit" class="btn btn-primary mt-4">Submit</button>
+          {{ hand_form.submit(class="btn btn-primary mt-4") }}
         </form>
       </div>
   </section>
