@@ -1,17 +1,8 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="charts-top">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Assets Value (Radar Chart)</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Radar chart showing the amount of money in $ for different assets.</p>
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header('Assets Value (Radar Chart)', 'Radar chart of asset values in USD.') }}
 
 <section class="page-section" id="charts-content">
     <div class="container px-4 px-lg-5">
