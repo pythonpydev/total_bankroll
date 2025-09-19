@@ -130,10 +130,10 @@ body.dark-mode .table-custom tbody tr {
     border-bottom-color: var(--dark-border);
 }
 body.dark-mode .table-custom tbody tr:nth-of-type(even) {
-    background-color: #242424; /* Slight contrast from base dark surface */
+    background-color: #2e2e2e;
 }
 body.dark-mode .table-custom tbody tr:hover {
-    background-color: #2e2e2e; /* Subtle hover contrast */
+    background-color: #2e2e2e;
 }
 
 /* --- List Groups --- */
@@ -213,4 +213,53 @@ body.dark-mode .btn-primary {
 body.dark-mode .btn-primary:hover {
     background-color: #3b9de4; /* A slightly lighter shade for hover */
     border-color: #3b9de4;
+}
+
+/* Dark mode specific table colors for Bootstrap classes */
+body.dark-mode .table-success {
+    background-color: var(--dark-bg-2) !important;
+    color: #66bb6a !important;
+}
+
+body.dark-mode .table-warning {
+    background-color: var(--dark-bg-2) !important;
+    color: #ffa726 !important;
+}
+
+body.dark-mode .table-danger {
+    background-color: var(--dark-bg-2) !important;
+    color: #ef5350 !important;
+}
+
+body.dark-mode .table-bordered.table-striped tbody > tr > * {
+    background-color: var(--dark-bg-2) !important;
+}
+
+body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
+    background-color: #2e2e2e;
+}
+
+body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
+    background-color: #2e2e2e;
+}
+
+/* --- Custom Highlighting for Recommendation Tables in Dark Mode --- */
+body.dark-mode .table-custom .highlight-recommended {
+    background-color: rgba(40, 167, 69, 0.2);
+}
+body.dark-mode .table-custom .highlight-move-up {
+    background-color: rgba(220, 53, 69, 0.2);
+}
+body.dark-mode .table-custom .highlight-move-down {
+    background-color: rgba(13, 110, 253, 0.2);
+}
+
+body.dark-mode .table-striped tbody th {
+    color: #ffffff; /* White text for table headers in striped tables */
+}
+
+body.dark-mode .table-custom .highlight-recommended,
+body.dark-mode .table-custom .highlight-move-up,
+body.dark-mode .table-custom .highlight-move-down {
+    color: #ffffff; /* White text for highlighted columns */
 }

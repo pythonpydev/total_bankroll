@@ -1,60 +1,119 @@
 {% extends "base.html" %}
 {% from "_macros.html" import page_header %}
 
+{% block head %}
+  {{ super() }}
+  <style>
+    /* Ensure table background matches assets.html */
+    .table-plo-decisions {
+      background-color: #2a2a2a; /* --dark-bg-2 */
+    }
+    .table-plo-decisions tbody tr:nth-of-type(even) {
+      background-color: #2e2e2e; /* Match table-custom even rows */
+    }
+    .table-plo-decisions tbody tr {
+      border-bottom-color: #6c757d; /* --dark-border */
+    }
+    .table-plo-decisions th,
+    .table-plo-decisions td {
+      color: #f5f5f5; /* --dark-text-0 */
+    }
+    /* Retain highlight colors with muted backgrounds */
+    .table-plo-decisions .table-success {
+      background-color: #28a74533 !important; /* Muted green */
+      color: #66bb6a !important;
+    }
+    .table-plo-decisions .table-warning {
+      background-color: #ffc10733 !important; /* Muted yellow */
+      color: #ffa726 !important;
+    }
+    .table-plo-decisions .table-danger {
+      background-color: #dc354533 !important; /* Muted red */
+      color: #ef5350 !important;
+    }
+    /* Ensure thead-dark is consistent */
+    .table-plo-decisions .thead-dark th {
+      background-color: #2a2a2a; /* --dark-bg-2 */
+      color: #f5f5f5 !important; /* --dark-text-0 */
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
-{{ page_header('Deposits', 'Track your deposits and manage your transaction history.') }}
+{{ page_header('PLO Decisions', 'Guidelines by hand type and SPR for post-flop play.') }}
 
-<section class="page-section" id="deposit_content">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-12 text-end mb-3">
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_deposit.add_deposit') }}">Add New Deposit</button>
-            </div>
-            <div class="col-lg-12">
-                <!-- Date Filter Form -->
-                <form method="get" action="{{ url_for('deposit.deposit') }}" class="row g-3 align-items-end mb-4 p-3 border rounded bg-light">
-                    <div class="col-md-4">
-                        <label for="start_date" class="form-label">From</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date or '' }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="end_date" class="form-label">To</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date or '' }}">
-                    </div>
-                    <div class="col-md-4 d-flex">
-                        <button type="submit" class="btn btn-primary me-2">Filter</button>
-                        <a href="{{ url_for('deposit.deposit') }}" class="btn btn-secondary">Clear</a>
-                    </div>
-                </form>
+<div class="container">
+  <p class="text-center">This table provides a guide for post-flop decisions in Pot Limit Omaha based on your hand strength and the Stack-to-Pot Ratio (SPR).</p>
 
-                <div class="table-responsive">
-                    <table class="table table-custom table-hover">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount (Original)</th>
-                                <th>Amount (USD)</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for deposit in deposits %}
-                            <tr>
-                                <td>{{ deposit.date }}</td>
-                                <td>{{ deposit.currency_symbol }}{{ "%.2f" | format(deposit.original_amount) }} ({{ deposit.currency }})</td>
-                                <td>${{ "%.2f" | format(deposit.amount_usd) }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('deposit.update_deposit', deposit_id=deposit.id) }}">Edit</button>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='deposit', item_id=deposit.id) }}">Delete</button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+  <div class="table-responsive mb-4">
+    <table class="table table-custom table-striped table-plo-decisions" aria-describedby="decision-key">
+      <caption>PLO Post-Flop Decisions by Hand Type and Stack-to-Pot Ratio (SPR)</caption>
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Hand Type</th>
+          <th scope="col">SPR &le; 1 (Ultralow)</th>
+          <th scope="col">1 &lt; SPR &le; 4 (Low)</th>
+          <th scope="col">4 &lt; SPR &le; 13 (Mid)</th>
+          <th scope="col">SPR &gt; 13 (High)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><strong>Big-Pot Hands</strong><br><small>(e.g., Top Set w/ redraws, Nut Flush, Overfull, Strong Wraps w/ Flush Draw)</small></th>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-success">Commit / "Ram and Jam"</td>
+          <td class="table-success">Commit / "Ram and Jam"</td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Strong Small-Pot Hands</strong><br><small>(e.g., Bare Nut Straight, Middle/Bottom Set, Top Two Pair)</small></th>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-warning">Judgment Call. Lean towards calling. Avoid raising unless you have a strong read.</td>
+          <td class="table-danger">Pot Control. Smooth-call. Do not commit stack.</td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Marginal Made Hands</strong><br><small>(e.g., Bare Top Pair w/ weak redraw, Weak Two Pair)</small></th>
+          <td class="table-success">Commit (Pot Odds)</td>
+          <td class="table-warning">Judgment Call. Often a fold vs. aggression. Can shove if you have some equity.</td>
+          <td class="table-danger">Pot Control / Fold. Call only with position and good pot odds. Fold to raises.</td>
+          <td class="table-danger">Fold. This hand is a liability in high SPR pots.</td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Strong Draws</strong><br><small>(e.g., 13+ card wrap, Nut Flush Draw + Pair/Gutshot)</small></th>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-success">Commit / Shove</td>
+          <td class="table-success">Play Aggressively. Raise or call depending on opponent. Leverage fold equity.</td>
+          <td class="table-success">Play Aggressively. Use deep stack leverage. Can call or raise.</td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Medium Draws</strong><br><small>(e.g., 8-12 card wrap, Nut Flush Draw only)</small></th>
+          <td class="table-success">Commit (Pot Odds)</td>
+          <td class="table-warning">Judgment Call. Shove if you have fold equity. Call if getting good price.</td>
+          <td class="table-warning">Play based on reads. Call in position (float). Be wary of getting check-raised.</td>
+          <td class="table-danger">Pot Control. Call in position. Avoid building a big pot without improving.</td>
+        </tr>
+        <tr>
+          <th scope="row"><strong>Weak Draws / Air</strong><br><small>(e.g., Weak gutshot, backdoor draws only)</small></th>
+          <td class="table-danger">Fold (unless pot odds are massive)</td>
+          <td class="table-danger">Fold</td>
+          <td class="table-danger">Fold (unless bluffing with position and initiative)</td>
+          <td class="table-danger">Fold</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="decision-key" class="text-center">Key</h2>
+  <ul class="list-unstyled text-center">
+    <li><strong class="text-success">Green:</strong> Generally correct to be aggressive and commit your stack.</li>
+    <li><strong class="text-warning">Yellow:</strong> Situation is marginal and requires judgment based on opponent tendencies, position, and specific board texture.</li>
+    <li><strong class="text-danger">Red:</strong> Proceed with extreme caution. Pot control and folding are often the best options. Committing your stack is usually a mistake.</li>
+  </ul>
+
+  <div class="text-center mt-4">
+    <a href="/tools" class="btn btn-primary">Back to Tools</a>
+  </div>
+</div>
 
 {% endblock %}

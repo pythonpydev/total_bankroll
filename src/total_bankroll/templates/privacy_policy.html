@@ -1,29 +1,33 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4 text-center">Privacy Policy</h1>
-    <p><em>Last updated: [Date]</em></p>
+{{ page_header('Privacy Policy', 'Your privacy is important to us.') }}
 
-    <h2>1. Introduction</h2>
-    <p>Welcome to StakeEasy.net. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+<section class="page-section">
+    <div class="container mt-4">
+        <p><em>Last updated: [Date]</em></p>
 
-    <h2>2. Information We Collect</h2>
-    <p>We may collect information about you in a variety of ways. The information we may collect on the Site includes:</p>
-    <ul>
-        <li><strong>Personal Data:</strong> Personally identifiable information, such as your email address, that you voluntarily give to us when you register with the Site.</li>
-        <li><strong>Financial Data:</strong> Data related to your poker bankroll, transactions, and assets that you input into the service. This data is stored securely and is only used to provide the services of the application.</li>
-    </ul>
+        <h2>1. Introduction</h2>
+        <p>Welcome to StakeEasy.net. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
 
-    <h2>3. Use of Your Information</h2>
-    <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:</p>
-    <ul>
-        <li>Create and manage your account.</li>
-        <li>Provide you with the bankroll tracking services.</li>
-        <li>Email you regarding your account or order.</li>
-        <li>Monitor and analyze usage and trends to improve your experience with the Site.</li>
-    </ul>
+        <h2>2. Information We Collect</h2>
+        <p>We may collect information about you in a variety of ways. The information we may collect on the Site includes:</p>
+        <ul>
+            <li><strong>Personal Data:</strong> Personally identifiable information, such as your email address, that you voluntarily give to us when you register with the Site.</li>
+            <li><strong>Financial Data:</strong> Data related to your poker bankroll, transactions, and assets that you input into the service. This data is stored securely and is only used to provide the services of the application.</li>
+        </ul>
 
-    <p class="text-center mt-4"><em>[This is a placeholder. You should consult with a legal professional to draft a complete and compliant Privacy Policy.]</em></p>
-</div>
+        <h2>3. Use of Your Information</h2>
+        <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:</p>
+        <ul>
+            <li>Create and manage your account.</li>
+            <li>Provide you with the bankroll tracking services.</li>
+            <li>Email you regarding your account or order.</li>
+            <li>Monitor and analyze usage and trends to improve your experience with the Site.</li>
+        </ul>
+
+        <p class="text-center mt-4"><em>[This is a placeholder. You should consult with a legal professional to draft a complete and compliant Privacy Policy.]</em></p>
+    </div>
+</section>
 {% endblock %}

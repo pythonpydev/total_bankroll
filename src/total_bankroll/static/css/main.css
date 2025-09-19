@@ -276,3 +276,9 @@ body.dark-mode header.masthead.page-masthead {
     flex-shrink: 0;
     margin-left: var(--spacing-lg);
 }
+
+/* Dark mode overrides for light background utilities */
+body.dark-mode .bg-light {
+    background-color: var(--dark-bg-2) !important;
+}
+}
