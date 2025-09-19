@@ -74,7 +74,7 @@
             </div>
             <div class="col-md-4">
               {{ hand_form.hero_position.label(class="form-label") }}
-              {{ hand_form.hero_position(class="form-control" + (" is-invalid" if hand_form.hero_position.errors else ""), placeholder="e.g., BTN") }}
+              {{ hand_form.hero_position(class="form-select" + (" is-invalid" if hand_form.hero_position.errors else "")) }}
               {% for error in hand_form.hero_position.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -97,7 +97,7 @@
             </div>
             <div class="col-md-4">
               {{ hand_form.opponent_position.label(class="form-label") }}
-              {{ hand_form.opponent_position(class="form-control" + (" is-invalid" if hand_form.opponent_position.errors else ""), placeholder="e.g., BB") }}
+              {{ hand_form.opponent_position(class="form-select" + (" is-invalid" if hand_form.opponent_position.errors else "")) }}
               {% for error in hand_form.opponent_position.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}

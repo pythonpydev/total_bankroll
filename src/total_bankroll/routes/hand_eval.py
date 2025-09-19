@@ -2,8 +2,8 @@
 
 from flask import Blueprint, render_template, request, session, redirect, url_for
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, StringField, SubmitField
-from wtforms.validators import DataRequired, Optional
+from wtforms import IntegerField, StringField, SubmitField, SelectField
+from wtforms.validators import DataRequired, Optional, ValidationError
 from . import algo
 
 hand_eval_bp = Blueprint('hand_eval', __name__)
@@ -12,19 +12,25 @@ class ButtonPositionForm(FlaskForm):
     button_position = IntegerField('Button Position')
     submit = SubmitField('Submit')
 
+POSITIONS = [('UTG', 'UTG'), ('HJ', 'HJ'), ('CO', 'CO'), ('BTN', 'BTN'), ('SB', 'SB'), ('BB', 'BB')]
+
 class HandForm(FlaskForm):
     small_blind = IntegerField('Small Blind', validators=[DataRequired()])
     big_blind = IntegerField('Big Blind', validators=[DataRequired()])
     hero_stack = IntegerField("Hero's Chip Stack", validators=[DataRequired()])
-    hero_position = StringField("Hero's Position", validators=[DataRequired()])
+    hero_position = SelectField("Hero's Position", choices=POSITIONS, validators=[DataRequired()])
     hero_hand = StringField("Hero's Hand", validators=[DataRequired()])
     board = StringField('Board Cards', validators=[DataRequired()])
     opponent_stack = IntegerField("Opponent's Chip Stack", validators=[DataRequired()])
-    opponent_position = StringField("Opponent's Position", validators=[DataRequired()])
+    opponent_position = SelectField("Opponent's Position", choices=POSITIONS, validators=[DataRequired()])
     opponent_hand = StringField("Opponent's Hand", validators=[DataRequired()])
     pot_size = IntegerField('Pot Size', validators=[DataRequired()])
     bet_size = IntegerField('Bet Size', validators=[Optional()])
     submit = SubmitField('Submit')
+
+    def validate_opponent_position(self, field):
+        if field.data and self.hero_position.data and field.data == self.hero_position.data:
+            raise ValidationError("Hero and Opponent cannot be in the same position.")
 
 @hand_eval_bp.route('/tables')
 def tables():
