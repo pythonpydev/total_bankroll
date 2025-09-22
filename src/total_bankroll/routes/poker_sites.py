@@ -156,7 +156,8 @@ def rename_site(site_id):
 def site_history(site_id):
     site = db.session.get(Sites, site_id)
     if not site:
-        return "Site not found", 404
+        flash('Site not found.', 'danger')
+        return redirect(url_for('poker_sites.poker_sites_page'))
     if site.user_id != current_user.id:
         flash('Not authorized to view this history.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
