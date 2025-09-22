@@ -70,7 +70,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Data from Flask template
       const heroHand = sortCards({{ form_data.hero_hand|tojson }});
-      const boardCards = sortCards({{ form_data.board_cards|tojson }});
+      const boardCards = sortCards({{ form_data.board|tojson }});
       const opponentHand = sortCards({{ form_data.opponent_hand|tojson }});
       const actualSpr = {{ form_data.actual_spr|tojson }};
       const actualPotBets = {{ form_data.actual_pot_bets|tojson }};

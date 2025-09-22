@@ -19,8 +19,8 @@
       </div>
       <p><strong>Hero's Hand Evaluation:</strong> {{ form_data.hero_eval }}</p>
       <p><strong>Opponent's Hand Evaluation:</strong> {{ form_data.opp_eval }}</p>
-      <p><strong>Hero's Hand Strength:</strong> {{ 'Stronger' if hero_eval < opp_eval else 'Weaker' }}</p>
-      <p><strong>Opponent's Hand Strength:</strong> {{ 'Stronger' if opp_eval < hero_eval else 'Weaker' }}</p>
+      <p><strong>Hero's Hand Strength:</strong> {{ 'Stronger' if form_data.hero_eval < form_data.opp_eval else 'Weaker' }}</p>
+      <p><strong>Opponent's Hand Strength:</strong> {{ 'Stronger' if form_data.opp_eval < form_data.hero_eval else 'Weaker' }}</p>
       <div class="card-display-row">
         <p><strong>Hero's Best Hand:</strong></p>
         <span id="heroBestHand"></span>
@@ -100,9 +100,9 @@
       displayCards(oppBestHand, 'opponentBestHand');
 
       // Add these lines to display hero's hand, board cards, and opponent's hand
-      const heroHand = sortCards({{ form_data.heroHand|tojson }});
-      const boardCards = sortCards({{ form_data.boardCards|tojson }});
-      const opponentHand = sortCards({{ form_data.opponentHand|tojson }});
+      const heroHand = sortCards({{ form_data.hero_hand|tojson }});
+      const boardCards = sortCards({{ form_data.board|tojson }});
+      const opponentHand = sortCards({{ form_data.opponent_hand|tojson }});
 
       displayCards(heroHand, 'heroHand');
       displayCards(boardCards, 'boardCardsHero');

@@ -161,9 +161,9 @@ def find_best_five_card_hand(hole_cards, board_cards):
     return best_hand_cards
 
 def process_hand_data(form_data):
-    hero_hand_str = form_data['heroHand']
-    board_cards_str = form_data['boardCards']
-    opp_hand_str = form_data['oppHand']
+    hero_hand_str = form_data['hero_hand']
+    board_cards_str = form_data['board']
+    opp_hand_str = form_data['opponent_hand']
 
     def normalize_card_string(card_str):
         if len(card_str) == 2:
@@ -175,18 +175,17 @@ def process_hand_data(form_data):
     opp_hand_list = [normalize_card_string(opp_hand_str[i:i+2]) for i in range(0, len(opp_hand_str), 2)]
 
     processed_data = {
-        'smallBlind': float(form_data['smallBlind']),
-        'bigBlind': float(form_data['bigBlind']),
-        'heroStack': float(form_data['heroStack']),
-        'heroPosition': form_data['heroPosition'],
-        'heroHand': hero_hand_list,
-        'boardCards': board_cards_list,
-        'opponentStack': float(form_data['opponentStack']),
-        'opponentPosition': form_data['opponentPosition'],
-        'opponentHand': opp_hand_list,
-        'buttonPosition': int(form_data['btn']),
-        'potSize': float(form_data['potSize']),
-        'betSize': float(form_data.get('betSize', 0))
+        'small_blind': float(form_data['small_blind']),
+        'big_blind': float(form_data['big_blind']),
+        'hero_stack': float(form_data['hero_stack']),
+        'hero_position': form_data['hero_position'],
+        'hero_hand': hero_hand_list,
+        'board': board_cards_list,
+        'opponent_stack': float(form_data['opponent_stack']),
+        'opponent_position': form_data['opponent_position'],
+        'opponent_hand': opp_hand_list,
+        'pot_size': float(form_data['pot_size']),
+        'bet_size': float(form_data.get('bet_size', 0))
     }
 
     hero_eval_rank = _get_best_plo_rank(hero_hand_list, board_cards_list)
@@ -213,8 +212,8 @@ def process_hand_data(form_data):
     opp_outs_breakdown = calculate_detailed_outs(opp_hand_list, board_cards_list)
     processed_data['opp_outs_breakdown'] = opp_outs_breakdown
 
-    actual_spr = calculate_spr(processed_data['heroStack'], processed_data['opponentStack'], processed_data['potSize'])
-    actual_pot_bets = calculate_pot_sized_bets(processed_data['heroStack'], processed_data['opponentStack'], processed_data['potSize'], processed_data['betSize'])
+    actual_spr = calculate_spr(processed_data['hero_stack'], processed_data['opponent_stack'], processed_data['pot_size'])
+    actual_pot_bets = calculate_pot_sized_bets(processed_data['hero_stack'], processed_data['opponent_stack'], processed_data['pot_size'], processed_data['bet_size'])
 
     processed_data['actual_spr'] = actual_spr
     processed_data['actual_pot_bets'] = actual_pot_bets

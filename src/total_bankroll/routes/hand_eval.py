@@ -1,6 +1,7 @@
 """PLO hand evaluation and spr quiz."""
 
-from flask import Blueprint, render_template, request, session, redirect, url_for
+import logging
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Optional, ValidationError
@@ -60,10 +61,17 @@ def submit_form():
     hand_form = HandForm()
     button_position = session.get('button_position', 1)
 
+    logging.debug(f"Request form data: {request.form}")
+
     if hand_form.validate_on_submit():
         form_data = algo.process_hand_data(request.form)
         session['form_data'] = form_data
         return render_template('hand_details.html', form_data=form_data)
+    else:
+        logging.debug(f"Form validation failed. Errors: {hand_form.errors}")
+        for field, errors in hand_form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(hand_form, field).label.text}: {error}", 'error')
 
     return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
