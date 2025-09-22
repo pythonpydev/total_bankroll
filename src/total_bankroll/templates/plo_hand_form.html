@@ -37,12 +37,12 @@
         <form action="{{ url_for('hand_eval.switch_button_position') }}" method="post" class="button-group">
           {{ button_form.hidden_tag() }}
           <label>Choose button position:</label>
-            <button type="submit" name="button_position" value="1" class="btn btn-primary btn-md">1</button>
-          <button type="submit" name="button_position" value="2" class="btn btn-primary btn-md">2</button>
-          <button type="submit" name="button_position" value="3" class="btn btn-primary btn-md">3</button>
-          <button type="submit" name="button_position" value="4" class="btn btn-primary btn-md">4</button>
-          <button type="submit" name="button_position" value="5" class="btn btn-primary btn-md">5</button>
-            <button type="submit" name="button_position" value="6" class="btn btn-primary btn-md">6</button>
+            <button type="submit" name="button_position" value="1" class="btn {% if button_position == 1 %}btn-success{% else %}btn-primary{% endif %} btn-md">1</button>
+          <button type="submit" name="button_position" value="2" class="btn {% if button_position == 2 %}btn-success{% else %}btn-primary{% endif %} btn-md">2</button>
+          <button type="submit" name="button_position" value="3" class="btn {% if button_position == 3 %}btn-success{% else %}btn-primary{% endif %} btn-md">3</button>
+          <button type="submit" name="button_position" value="4" class="btn {% if button_position == 4 %}btn-success{% else %}btn-primary{% endif %} btn-md">4</button>
+          <button type="submit" name="button_position" value="5" class="btn {% if button_position == 5 %}btn-success{% else %}btn-primary{% endif %} btn-md">5</button>
+            <button type="submit" name="button_position" value="6" class="btn {% if button_position == 6 %}btn-success{% else %}btn-primary{% endif %} btn-md">6</button>
         </form>
 
         <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form" novalidate>
