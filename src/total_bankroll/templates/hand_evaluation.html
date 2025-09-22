@@ -58,9 +58,9 @@
       <p>Outs to a straight flush: <span style="color: red;">{% if 1 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.straight_flush }}{% else %}N/A{% endif %}</span></p>
     </div>
 
-    <div class="button-group">
-      <a href="/hand_details" class="button blue-button">Back to Hand Details</a>
-      <a href="/form" class="button red-button">Setup New Hand</a>
+    <div class="d-grid gap-2 mt-3">
+      <a href="/hand_details" class="btn btn-outline-primary">Back to Hand Details</a>
+      <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-outline-secondary">Setup New Hand</a>
     </div>
   </div>
 

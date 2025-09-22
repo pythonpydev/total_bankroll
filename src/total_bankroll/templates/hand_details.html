@@ -49,18 +49,20 @@
       <form id="sprGuessForm" class="spr-guess-form">
         <div class="form-group">
           <label for="sprGuess">Guess the SPR:</label>
-          <input type="number" id="sprGuess" name="sprGuess" step="0.01" required>
+          <input type="number" id="sprGuess" name="sprGuess" step="0.01" required class="form-control mb-3">
         </div>
         <div class="form-group">
           <label for="potBetsGuess">Guess number of pot sized bets:</label>
-          <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required>
+          <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required class="form-control mb-3">
         </div>
-        <div class="button-group">
-          <button type="submit" class="button">Submit Answers</button>
-          <a href="/hand_evaluation" class="button blue-button">View Hand Evaluation</a>
-          <a href="/form" class="button red-button">Setup New Hand</a>
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-outline-light">Submit Answers</button>
         </div>
       </form>
+      <div class="d-grid gap-2 mt-3">
+        <a href="/hand_evaluation" class="btn btn-outline-info">View Hand Evaluation</a>
+        <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-outline-secondary">Setup New Hand</a>
+      </div>
       <div id="actualSpr" class="spr-result" role="status" aria-live="polite"></div>
       <div id="actualPotBets" class="spr-result" role="status" aria-live="polite"></div>
     </div>
