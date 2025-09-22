@@ -281,4 +281,28 @@ body.dark-mode header.masthead.page-masthead {
 body.dark-mode .bg-light {
     background-color: var(--dark-bg-2) !important;
 }
+
+/* --- PLO Poker Table Seat Positioning --- */
+.image-container {
+    position: relative;
+    max-width: 600px; /* Adjust based on your image's width */
+    margin: 0 auto; /* Centers the container */
 }
+
+.seat {
+    position: absolute;
+    transform: translate(-50%, -50%); /* Center the seat labels on their coordinates */
+    text-align: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+#seat-1 { bottom: 5%; left: 25%; }   /* Bottom-left */
+#seat-2 { top: 20%; left: 15%; }    /* Top-left */
+#seat-3 { top: 5%; left: 50%; }     /* Top-middle */
+#seat-4 { top: 20%; right: 5%; }   /* Top-right */
+#seat-5 { bottom: 5%; right: 15%; }  /* Bottom-right */
+#seat-6 { bottom: -5%; left: 50%; }   /* Bottom-middle */
