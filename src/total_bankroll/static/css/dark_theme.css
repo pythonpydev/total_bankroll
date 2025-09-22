@@ -136,6 +136,10 @@ body.dark-mode .table-custom tbody tr:hover {
     background-color: #2e2e2e;
 }
 
+body.dark-mode .table-custom tbody td {
+    color: var(--dark-text-0);
+}
+
 /* --- List Groups --- */
 
 body.dark-mode .list-group-item {

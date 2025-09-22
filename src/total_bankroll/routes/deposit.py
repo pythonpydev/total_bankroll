@@ -111,3 +111,17 @@ def update_deposit(deposit_id):
         # GET request
         currencies = get_sorted_currencies()
         return render_template("update_deposit.html", deposit=deposit_item, currencies=currencies)
+
+@deposit_bp.route("/delete_deposit/<int:deposit_id>", methods=["POST"])
+@login_required
+def delete_deposit(deposit_id):
+    """Delete a deposit transaction."""
+    from ..models import Deposits
+    deposit_item = db.session.query(Deposits).filter_by(id=deposit_id, user_id=current_user.id).first()
+    if deposit_item:
+        db.session.delete(deposit_item)
+        db.session.commit()
+        flash("Deposit deleted successfully!", "success")
+    else:
+        flash("Deposit not found.", "danger")
+    return redirect(url_for("deposit.deposit"))
