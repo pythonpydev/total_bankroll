@@ -99,7 +99,11 @@ def submit_form():
 @hand_eval_bp.route('/hand_evaluation', methods=['GET'])
 def hand_evaluation():
     form_data = session.get('form_data', {})
-    return render_template('hand_evaluation.html', form_data=form_data)
+    if not form_data:
+        flash('No hand data found. Please submit a hand first.', 'warning')
+        return redirect(url_for('hand_eval.plo_hand_form'))
+
+    return render_template('hand_evaluation.html', form_data=form_data, title="Hand Evaluation")
 
 @hand_eval_bp.route('/decisions')
 def decisions():

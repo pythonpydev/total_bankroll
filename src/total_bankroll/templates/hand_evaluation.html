@@ -14,6 +14,13 @@
       width: 65px; /* Reduced size to fit side-by-side */
       height: auto;
     }
+    .card.border-success, .card.border-danger, .card.border-warning, .card.border-primary, .card.border-secondary {
+      border-width: 2px !important;
+    }
+    /* Increase specificity to override dark theme */
+    .data-display .card.border-primary { border-color: var(--bs-primary) !important; }
+    .data-display .card.border-secondary { border-color: var(--bs-secondary) !important; }
+    }
   </style>
 {% endblock %}
 
@@ -33,7 +40,7 @@
       <div class="row g-4">
         <!-- Hero's Hand Card -->
         <div class="col-lg-6 mb-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm border-primary">
             <div class="card-header bg-dark text-white">Hero's Hand</div>
             <div class="card-body">
               <p><strong>Initial Hand:</strong></p><div id="heroHand" class="mb-3"></div>
@@ -46,7 +53,7 @@
 
         <!-- Opponent's Hand Card -->
         <div class="col-lg-6 mb-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm border-secondary">
             <div class="card-header bg-dark text-white">Opponent's Hand</div>
             <div class="card-body">
               <p><strong>Initial Hand:</strong></p><div id="opponentHand" class="mb-3"></div>
@@ -59,7 +66,15 @@
 
         <!-- Hand Strength Comparison Card -->
         <div class="col-12 mb-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm
+            {% if form_data.hero_eval < form_data.opp_eval %}
+              border-success
+            {% elif form_data.hero_eval > form_data.opp_eval %}
+              border-danger
+            {% else %}
+              border-warning
+            {% endif %}
+          ">
             <div class="card-header bg-dark text-white">Hand Strength Comparison</div>
             <div class="card-body text-center">
               <p><strong>Hero vs Opponent:</strong>
@@ -77,7 +92,7 @@
 
         <!-- Hero's Outs Card -->
         <div class="col-md-6 mb-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm border-primary">
             <div class="card-header bg-dark text-white">Hero's Outs</div>
             <div class="card-body">
               <p><strong>Total Outs:</strong> {{ form_data.hero_outs_breakdown.total }}
@@ -104,7 +119,7 @@
 
         <!-- Opponent's Outs Card -->
         <div class="col-md-6 mb-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm border-secondary">
             <div class="card-header bg-dark text-white">Opponent's Outs</div>
             <div class="card-body">
               <p><strong>Total Outs:</strong> {{ form_data.opp_outs_breakdown.total }}
