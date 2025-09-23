@@ -57,3 +57,8 @@ extend-exclude = '''
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]

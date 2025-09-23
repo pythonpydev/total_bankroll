@@ -3,64 +3,123 @@
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/plo_styles.css') }}">
+  <style>
+    .board-card-container, #heroHand, #heroBestHand, #opponentHand, #opponentBestHand {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .card-image {
+      width: 75px;
+      height: auto;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-  <div class="center-content">
+  <div class="container-fluid mt-4">
     <div class="data-display">
-      <h2>Hand Evaluation</h2>
-      <div class="card-display-row">
-        <p><strong>Hero's Hand:</strong></p>
-        <span id="heroHand"></span>
-      </div>
-      <div class="card-display-row">
-        <p><strong>Board Cards:</strong></p>
-        <span id="boardCardsHero"></span>
-      </div>
-      <p><strong>Hero's Hand Evaluation:</strong> {{ form_data.hero_eval }}</p>
-      <p><strong>Opponent's Hand Evaluation:</strong> {{ form_data.opp_eval }}</p>
-      <p><strong>Hero's Hand Strength:</strong> {{ 'Stronger' if form_data.hero_eval < form_data.opp_eval else 'Weaker' }}</p>
-      <p><strong>Opponent's Hand Strength:</strong> {{ 'Stronger' if form_data.opp_eval < form_data.hero_eval else 'Weaker' }}</p>
-      <div class="card-display-row">
-        <p><strong>Hero's Best Hand:</strong></p>
-        <span id="heroBestHand"></span>
-      </div>
-      <p><strong>Hero's Hand Name:</strong> {{ form_data.hero_hand_name }}</p>
-      <p>Outs to a pair: <span style="color: red;">{% if 8 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to two pair: <span style="color: red;">{% if 7 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to three of a kind: <span style="color: red;">{% if 6 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.trips }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a straight: <span style="color: red;">{% if 5 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.straight }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a flush: <span style="color: red;">{% if 4 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.flush }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a full house: <span style="color: red;">{% if 3 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.full_house }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to four of a kind: <span style="color: red;">{% if 2 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.quads }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a straight flush: <span style="color: red;">{% if 1 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.straight_flush }}{% else %}N/A{% endif %}</span></p>
-      
-      <div class="card-display-row">
-        <p><strong>Opponent's Hand:</strong></p>
-        <span id="opponentHand"></span>
-      </div>
-      <div class="card-display-row">
-        <p><strong>Board Cards:</strong></p>
-        <span id="boardCardsOpponent"></span>
-      </div>
-      <div class="card-display-row">
-        <p><strong>Opponent's Best Hand:</strong></p>
-        <span id="opponentBestHand"></span>
-      </div>
-      <p><strong>Opponent's Hand Name:</strong> {{ form_data.opp_hand_name }}</p>
-      <p>Outs to a pair: <span style="color: red;">{% if 8 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to two pair: <span style="color: red;">{% if 7 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to three of a kind: <span style="color: red;">{% if 6 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.trips }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a straight: <span style="color: red;">{% if 5 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.straight }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a flush: <span style="color: red;">{% if 4 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.flush }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a full house: <span style="color: red;">{% if 3 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.full_house }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to four of a kind: <span style="color: red;">{% if 2 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.quads }}{% else %}N/A{% endif %}</span></p>
-      <p>Outs to a straight flush: <span style="color: red;">{% if 1 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.straight_flush }}{% else %}N/A{% endif %}</span></p>
-    </div>
+      <h2 class="text-center mb-4">Hand Evaluation</h2>
 
-    <div class="d-grid gap-2 mt-3">
-      <a href="/hand_details" class="btn btn-outline-primary">Back to Hand Details</a>
-      <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-outline-secondary">Setup New Hand</a>
+      <!-- Board Cards -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white text-center">Board Cards</div>
+        <div class="card-body">
+          <div id="boardCardsHero" class="board-card-container"></div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Hero's Hand Card -->
+        <div class="col-12 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Hero's Hand</div>
+            <div class="card-body">
+              <p><strong>Initial Hand:</strong></p><div id="heroHand" class="mb-3"></div>
+              <p><strong>Best 5-Card Hand:</strong></p><div id="heroBestHand" class="mb-3"></div>
+              <p><strong>Hand Name:</strong> {{ form_data.hero_hand_name }}</p>
+              <p><strong>Evaluation Rank:</strong> {{ form_data.hero_eval }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opponent's Hand Card -->
+        <div class="col-12 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Opponent's Hand</div>
+            <div class="card-body">
+              <p><strong>Initial Hand:</strong></p><div id="opponentHand" class="mb-3"></div>
+              <p><strong>Best 5-Card Hand:</strong></p><div id="opponentBestHand" class="mb-3"></div>
+              <p><strong>Hand Name:</strong> {{ form_data.opp_hand_name }}</p>
+              <p><strong>Evaluation Rank:</strong> {{ form_data.opp_eval }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hand Strength Comparison Card -->
+        <div class="col-12 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Hand Strength Comparison</div>
+            <div class="card-body text-center">
+              <p><strong>Hero vs Opponent:</strong>
+                {% if form_data.hero_eval < form_data.opp_eval %}
+                  <span class="text-success">Hero is Stronger &#10004;</span>
+                {% elif form_data.hero_eval > form_data.opp_eval %}
+                  <span class="text-danger">Opponent is Stronger &#10060;</span>
+                {% else %}
+                  <span class="text-warning">Hands are Tied &#9876;</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero's Outs Card -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Hero's Outs</div>
+            <div class="card-body">
+              <p><strong>Total Outs:</strong> {{ form_data.hero_outs_breakdown.total }}</p>
+              <ul class="list-unstyled">
+                <li>Pair: <span class="text-info">{% if 8 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></li>
+                <li>Two Pair: <span class="text-info">{% if 7 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></li>
+                <li>Three of a Kind: <span class="text-info">{% if 6 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.trips }}{% else %}N/A{% endif %}</span></li>
+                <li>Straight: <span class="text-info">{% if 5 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.straight }}{% else %}N/A{% endif %}</span></li>
+                <li>Flush: <span class="text-info">{% if 4 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.flush }}{% else %}N/A{% endif %}</span></li>
+                <li>Full House: <span class="text-info">{% if 3 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.full_house }}{% else %}N/A{% endif %}</span></li>
+                <li>Four of a Kind: <span class="text-info">{% if 2 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.quads }}{% else %}N/A{% endif %}</span></li>
+                <li>Straight Flush: <span class="text-info">{% if 1 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.straight_flush }}{% else %}N/A{% endif %}</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opponent's Outs Card -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Opponent's Outs</div>
+            <div class="card-body">
+              <p><strong>Total Outs:</strong> {{ form_data.opp_outs_breakdown.total }}</p>
+              <ul class="list-unstyled">
+                <li>Pair: <span class="text-info">{% if 8 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></li>
+                <li>Two Pair: <span class="text-info">{% if 7 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></li>
+                <li>Three of a Kind: <span class="text-info">{% if 6 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.trips }}{% else %}N/A{% endif %}</span></li>
+                <li>Straight: <span class="text-info">{% if 5 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.straight }}{% else %}N/A{% endif %}</span></li>
+                <li>Flush: <span class="text-info">{% if 4 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.flush }}{% else %}N/A{% endif %}</span></li>
+                <li>Full House: <span class="text-info">{% if 3 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.full_house }}{% else %}N/A{% endif %}</span></li>
+                <li>Four of a Kind: <span class="text-info">{% if 2 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.quads }}{% else %}N/A{% endif %}</span></li>
+                <li>Straight Flush: <span class="text-info">{% if 1 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.straight_flush }}{% else %}N/A{% endif %}</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2 mt-3">
+        <a href="/hand_details" class="btn btn-outline-primary">Back to Hand Details</a>
+        <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-outline-secondary">Setup New Hand</a>
+      </div>
     </div>
   </div>
 
@@ -70,6 +129,7 @@
       const suitOrder = ['s', 'h', 'd', 'c'];
 
       function sortCards(cards) {
+        if (!cards) return [];
         return cards.sort((a, b) => {
           const rankA = rankOrder.indexOf(a[0]);
           const rankB = rankOrder.indexOf(b[0]);
@@ -84,6 +144,8 @@
 
       function displayCards(hand, elementId) {
         const container = document.getElementById(elementId);
+        if (!container) return;
+        container.innerHTML = ''; // Clear previous cards
         hand.forEach(card => {
           const img = document.createElement('img');
           img.src = `{{ url_for('static', filename='images/cards/') }}${card}.png`;
@@ -93,21 +155,19 @@
         });
       }
 
-      const heroBestHand = sortCards({{ form_data.hero_best_hand|tojson }});
-      const oppBestHand = sortCards({{ form_data.opp_best_hand|tojson }});
-
-      displayCards(heroBestHand, 'heroBestHand');
-      displayCards(oppBestHand, 'opponentBestHand');
-
-      // Add these lines to display hero's hand, board cards, and opponent's hand
+      // Get and sort all necessary card data
       const heroHand = sortCards({{ form_data.hero_hand|tojson }});
       const boardCards = sortCards({{ form_data.board|tojson }});
       const opponentHand = sortCards({{ form_data.opponent_hand|tojson }});
+      const heroBestHand = sortCards({{ form_data.hero_best_hand|tojson }});
+      const oppBestHand = sortCards({{ form_data.opp_best_hand|tojson }});
 
+      // Display cards in their respective new spans
       displayCards(heroHand, 'heroHand');
       displayCards(boardCards, 'boardCardsHero');
       displayCards(opponentHand, 'opponentHand');
-      displayCards(boardCards, 'boardCardsOpponent');
+      displayCards(heroBestHand, 'heroBestHand');
+      displayCards(oppBestHand, 'opponentBestHand');
     });
   </script>
 

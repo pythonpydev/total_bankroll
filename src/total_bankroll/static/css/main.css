@@ -97,7 +97,7 @@
 
 .data-display {
     width: 100%; /* Full width for the data display section */
-    max-width: 600px; /* Adjusted to ensure it fits well */
+    max-width: 1200px; /* Adjusted to ensure it fits well */
     margin: 0 auto; /* Center the data display section */
     padding: var(--spacing-lg);
     border-radius: var(--border-radius-md);
