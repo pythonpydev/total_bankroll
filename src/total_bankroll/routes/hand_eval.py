@@ -33,6 +33,11 @@ class HandForm(FlaskForm):
         if field.data and self.hero_position.data and field.data == self.hero_position.data:
             raise ValidationError("Hero and Opponent cannot be in the same position.")
 
+    def validate_bet_size(self, field):
+        if field.data is not None and self.pot_size.data is not None:
+            if field.data > self.pot_size.data:
+                raise ValidationError("Bet size cannot be greater than the pot size.")
+
 @hand_eval_bp.route('/tables')
 def tables():
     """Tables page route"""
