@@ -79,8 +79,8 @@ window.addEventListener('DOMContentLoaded', event => {
             document.getElementById('hero_hand').value = dealCards(4);
             document.getElementById('opponent_hand').value = dealCards(4);
             
-            const boardCardCount = [3, 4, 5][Math.floor(Math.random() * 3)];
-            document.getElementById('board').value = dealCards(boardCardCount);
+            // Always generate 3 cards for the board (flop)
+            document.getElementById('board').value = dealCards(3);
 
             document.getElementById('small_blind').value = 1;
             document.getElementById('big_blind').value = 2;
@@ -94,8 +94,14 @@ window.addEventListener('DOMContentLoaded', event => {
             document.getElementById('bet_size').value = betSize;
 
             const positionOptions = Array.from(document.getElementById('hero_position').options);
-            document.getElementById('hero_position').selectedIndex = Math.floor(Math.random() * positionOptions.length);
-            document.getElementById('opponent_position').selectedIndex = Math.floor(Math.random() * positionOptions.length);
+            let heroPosIndex = Math.floor(Math.random() * positionOptions.length);
+            let oppPosIndex;
+            do {
+                oppPosIndex = Math.floor(Math.random() * positionOptions.length);
+            } while (heroPosIndex === oppPosIndex);
+
+            document.getElementById('hero_position').selectedIndex = heroPosIndex;
+            document.getElementById('opponent_position').selectedIndex = oppPosIndex;
         });
     }
 });

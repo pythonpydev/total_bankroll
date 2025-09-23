@@ -136,8 +136,10 @@
               {% endfor %}
             </div>
           </div>
-          {{ hand_form.submit(class="btn btn-primary mt-4") }}
-          <button type="button" id="random-button" class="btn btn-secondary mt-4">Random</button>
+          <div class="d-flex justify-content-center gap-2 mt-4">
+            {{ hand_form.submit(class="btn btn-primary") }}
+            <button type="button" id="random-button" class="btn btn-secondary">Random</button>
+          </div>
         </form>
       </div>
   </section>

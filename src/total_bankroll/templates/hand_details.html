@@ -8,26 +8,23 @@
   <div class="center-content">
     <h2>Submitted Poker Hand Details</h2>
     <div class="data-display-container">
-        <div class="left-column">
-        <div class="blind-details-row">
-          <p><strong>Small Blind:</strong> {{ form_data.small_blind }}</p>
-          <p><strong>Big Blind:</strong> {{ form_data.big_blind }}</p>
-          <p></p>
+      <div class="row mb-4">
+        <!-- Left Column for Hand Data -->
+        <div class="col-lg-6">
+          <div class="row">
+            <div class="col-sm-6"><strong>Small Blind:</strong> {{ form_data.small_blind|int }}</div>
+            <div class="col-sm-6"><strong>Big Blind:</strong> {{ form_data.big_blind|int }}</div>
+            <div class="col-sm-6"><strong>Pot Size:</strong> {{ form_data.pot_size|int }}</div>
+            <div class="col-sm-6"><strong>Bet Size:</strong> {{ form_data.bet_size|int }}</div>
+            <div class="col-sm-6"><strong>Hero's Stack:</strong> {{ form_data.hero_stack|int }}</div>
+            <div class="col-sm-6"><strong>Opponent's Stack:</strong> {{ form_data.opponent_stack|int }}</div>
+            <div class="col-sm-6"><strong>Hero's Position:</strong> {{ form_data.hero_position }}</div>
+            <div class="col-sm-6"><strong>Opponent's Position:</strong> {{ form_data.opponent_position }}</div>
+            <div class="col-sm-6"><strong>Button Position:</strong> {{ form_data.button_position }}</div>
+          </div>
         </div>
-        <div class="hand-details-row">
-          <p><strong>Pot Size:</strong> {{ form_data.pot_size }}</p>
-          <p><strong>Bet Size:</strong> {{ form_data.bet_size }}</p>
-          <p><strong>Hero's Chip Stack:</strong> {{ form_data.hero_stack }}</p>
-          <p><strong>Opponent's Chip Stack:</strong> {{ form_data.opponent_stack }}</p>
-        </div>
-        <div class="hand-details-row">
-          <p><strong>Hero's Position:</strong> {{ form_data.hero_position }}</p>
-          <p><strong>Opponent's Position:</strong> {{ form_data.opponent_position }}</p>
-          <p><strong>Button Position:</strong> {{ form_data.button_position }}</p>
-        </div>
-      </div>
-      </div>
-      <div class="right-column">
+        <!-- Right Column for Card Images -->
+        <div class="col-lg-6">
         <div class="card-display-row">
           <p><strong>Hero's Hand:</strong></p>
           <span id="heroHand"></span>
@@ -39,6 +36,7 @@
         <div class="card-display-row">
           <p><strong>Opponent's Hand:</strong></p>
           <span id="opponentHand"></span>
+        </div>
         </div>
       </div>
     </div>
