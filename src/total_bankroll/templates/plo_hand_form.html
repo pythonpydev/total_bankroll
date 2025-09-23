@@ -34,7 +34,7 @@
             <div class="position-label"></div>
           </div>
         </div>
-        <form action="{{ url_for('hand_eval.switch_button_position') }}" method="post" class="button-group">
+        <form action="{{ url_for('hand_eval.switch_button_position') }}" method="post" class="button-group mt-4">
           {{ button_form.hidden_tag() }}
           <label>Choose button position:</label>
             <button type="submit" name="button_position" value="1" class="btn {% if button_position == 1 %}btn-success{% else %}btn-primary{% endif %} btn-md">1</button>
@@ -45,7 +45,7 @@
             <button type="submit" name="button_position" value="6" class="btn {% if button_position == 6 %}btn-success{% else %}btn-primary{% endif %} btn-md">6</button>
         </form>
 
-        <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form" novalidate>
+        <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form mt-4" novalidate>
           {{ hand_form.hidden_tag() }}
           <div class="row g-3">
             <!-- Blinds -->
@@ -81,7 +81,10 @@
             </div>
             <div class="col-md-4">
               {{ hand_form.hero_hand.label(class="form-label") }}
-              {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh") }}
+              <div class="input-group">
+                {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", readonly=true) }}
+                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal">Select</button>
+              </div>
               {% for error in hand_form.hero_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -138,4 +141,109 @@
         </form>
       </div>
   </section>
+{% endblock %}
+
+<!-- Card Selector Modal -->
+<div class="modal fade" id="cardSelectorModal" tabindex="-1" aria-labelledby="cardSelectorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cardSelectorModalLabel">Select 4 Cards for Hero's Hand</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-grid">
+          {% set ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] %}
+          {% set suits = ['s', 'h', 'd', 'c'] %}
+          {% for suit in suits %}
+            {% for rank in ranks %}
+              {% set card = rank + suit %}
+              <div class="card-item">
+                <img src="{{ url_for('static', filename='images/cards/' + card + '.png') }}" alt="{{ card }}" id="{{ card }}" class="img-fluid">
+              </div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" id="confirm-hero-hand" class="btn btn-primary">Confirm Selection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cardImages = document.querySelectorAll('#cardSelectorModal .card-item img');
+    const confirmButton = document.getElementById('confirm-hero-hand');
+    const heroHandInput = document.getElementById('hero_hand');
+    let selectedCards = [];
+
+    cardImages.forEach(card => {
+        card.addEventListener('click', () => {
+            const cardId = card.id;
+
+            // Prevent selecting cards used by opponent or board
+            const opponentHand = document.getElementById('opponent_hand').value;
+            const board = document.getElementById('board').value;
+            if (opponentHand.includes(cardId) || board.includes(cardId)) {
+                alert('This card is already in use.');
+                return;
+            }
+
+            if (selectedCards.includes(cardId)) {
+                // Deselect card
+                selectedCards = selectedCards.filter(c => c !== cardId);
+                card.classList.remove('selected');
+            } else {
+                // Select card
+                if (selectedCards.length < 4) {
+                    selectedCards.push(cardId);
+                    card.classList.add('selected');
+                } else {
+                    alert('You can only select 4 cards for the hero\'s hand.');
+                }
+            }
+        });
+    });
+
+    confirmButton.addEventListener('click', () => {
+        if (selectedCards.length !== 4) {
+            alert('Please select exactly 4 cards.');
+            return;
+        }
+        heroHandInput.value = selectedCards.join('');
+        
+        // Hide the modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('cardSelectorModal'));
+        modal.hide();
+    });
+
+    // When the modal is closed, clear the selection for next time
+    document.getElementById('cardSelectorModal').addEventListener('hidden.bs.modal', function () {
+        selectedCards = [];
+        cardImages.forEach(card => card.classList.remove('selected'));
+    });
+});
+</script>
+<style>
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 5px;
+    }
+    .card-item img {
+      width: 100%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      border-radius: 5px;
+    }
+    .card-item img.selected {
+      border-color: #0d6efd; /* Bootstrap primary blue */
+      box-shadow: 0 0 8px #0d6efd;
+    }
+</style>
 {% endblock %}

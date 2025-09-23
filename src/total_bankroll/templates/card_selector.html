@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      padding: 20px;
+    }
+    .card-item img {
+      width: 100%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 5px;
+    }
+    .card-item img.selected {
+      border-color: #007bff;
+      box-shadow: 0 0 10px #007bff;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="text-center my-4">Select 4 Cards</h2>
+  
+  <div class="card-grid">
+    {% set ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] %}
+    {% set suits = ['s', 'h', 'd', 'c'] %}
+    {% for suit in suits %}
+      {% for rank in ranks %}
+        {% set card = rank + suit %}
+        <div class="card-item">
+          <img src="{{ url_for('static', filename='images/cards/' + card + '.png') }}" alt="{{ card }}" id="{{ card }}">
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="text-center my-4">
+    <button id="confirm-selection" class="btn btn-primary">Confirm Selection</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card-item img');
+    const confirmButton = document.getElementById('confirm-selection');
+    let selectedCards = [];
+
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const cardId = card.id;
+            if (selectedCards.includes(cardId)) {
+                // Deselect card
+                selectedCards = selectedCards.filter(c => c !== cardId);
+                card.classList.remove('selected');
+            } else {
+                // Select card
+                if (selectedCards.length < 4) {
+                    selectedCards.push(cardId);
+                    card.classList.add('selected');
+                } else {
+                    alert('You can only select 4 cards.');
+                }
+            }
+        });
+    });
+
+    confirmButton.addEventListener('click', () => {
+        if (selectedCards.length !== 4) {
+            alert('Please select exactly 4 cards.');
+            return;
+        }
+        // This is where we need to pass the data back.
+        // For now, we'll just log it.
+        console.log(selectedCards.join(''));
+        alert('Selected cards: ' + selectedCards.join(''));
+    });
+});
+</script>
+{% endblock %}

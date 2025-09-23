@@ -89,3 +89,8 @@ def decisions():
 def spr_strategy():
     """SPR Strategy page route"""
     return render_template('spr_strategy.html', title='SPR Strategy')
+
+@hand_eval_bp.route('/card_selector')
+def card_selector():
+    """Card selector page route"""
+    return render_template('card_selector.html', title='Card Selector')
