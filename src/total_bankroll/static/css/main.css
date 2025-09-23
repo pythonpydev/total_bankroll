@@ -331,3 +331,10 @@ body.dark-mode .spr-article-box {
     color: var(--dark-text); /* Ensure text is readable in dark mode */
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for dark mode */
 }
+
+/* Dark mode override for alert-success */
+body.dark-mode .alert-success {
+    background-color: var(--dark-bg-2) !important; /* Dark background */
+    color: var(--color-text-success) !important; /* Green text */
+    border-color: var(--color-text-success) !important; /* Green border */
+}

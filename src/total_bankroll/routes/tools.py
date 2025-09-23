@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from flask import Blueprint, render_template, request, current_app, flash
 from flask_security import current_user, login_required, login_required
 from decimal import Decimal, InvalidOperation
@@ -258,9 +259,131 @@ def spr_calculator_page():
     """
     form = SPRCalculatorForm()
     spr = None
+    spr_decision_category = None
+    spr_decision_territory = None
+    spr_detailed_decisions = None
+    spr_detailed_category_header = None
+
+    # Load SPR decision data from decisions.html
+    decisions_html_path = os.path.join(current_app.root_path, 'templates', 'decisions.html')
+    
+    # Data for the summary (Category and Territory)
+    spr_summary_table = []
+    # Data for the detailed decision table
+    spr_detailed_chart_headers = []
+    spr_detailed_chart_data = []
+
+    try:
+        with open(decisions_html_path, 'r') as f:
+            content = f.read()
+            
+            # --- Parse the summary table (SPR, Category, Category 2) ---
+            summary_rows = re.findall(r'<tr class="category-(?:ultra-low|low|mid|high)">\s*<td[^>]*sdval="([\d.]+)"[^>]*>.*?</td>\s*<td[^>]*>.*?</td>\s*<td[^>]*>.*?</td>\s*<td[^>]*data-sheets-value="{[^}]*&quot;2&quot;:\s*&quot;([^&]+)&quot;}"[^>]*>.*?</td>\s*<td[^>]*data-sheets-value="{[^}]*&quot;2&quot;:\s*&quot;([^&]+)&quot;}"[^>]*>.*?</td>\s*</tr>', content, re.DOTALL)
+            for row in summary_rows:
+                try:
+                    spr_val = float(row[0])
+                    category = row[1].strip()
+                    category2 = row[2].strip()
+                    spr_summary_table.append({
+                        'spr': spr_val,
+                        'category': category,
+                        'category2': category2
+                    })
+                except ValueError:
+                    if row[0] == '>13':
+                        spr_summary_table.append({
+                            'spr': float('inf'),
+                            'category': row[1].strip(),
+                            'category2': row[2].strip()
+                        })
+                    else:
+                        current_app.logger.warning(f"Could not parse SPR summary row: {row}")
+            spr_summary_table.sort(key=lambda x: x['spr'])
+
+            # --- Parse the detailed decision table (Hand Type and SPR ranges) ---
+            detailed_table_match = re.search(r'<table class="table table-bordered table-striped table-custom".*?>(.*?)</table>', content, re.DOTALL)
+            if detailed_table_match:
+                table_content = detailed_table_match.group(1)
+                
+                # Extract header row
+                header_row_match = re.search(r'<thead>.*?<tr>(.*?)</tr>.*?</thead>', table_content, re.DOTALL)
+                if header_row_match:
+                    header_cells = re.findall(r'<th[^>]*>(.*?)</th>', header_row_match.group(1))
+                    spr_detailed_chart_headers = [re.sub(r'<.*?>', '', h).strip() for h in header_cells]
+
+                # Extract data rows
+                body_rows = re.findall(r'<tr[^>]*>(.*?)</tr>', table_content.split('<tbody>')[1].split('</tbody>')[0], re.DOTALL)
+                for row_content in body_rows:
+                    cells = re.findall(r'<(?:th|td)[^>]*>(.*?)</(?:th|td)>', row_content, re.DOTALL)
+                    # Clean up HTML tags from cell content
+                    cleaned_cells = [re.sub(r'<.*?>', '', c).strip() for c in cells]
+                    if cleaned_cells:
+                        spr_detailed_chart_data.append(cleaned_cells)
+
+    except FileNotFoundError:
+        flash("SPR decision data file (decisions.html) not found. Please ensure it exists in the templates directory.", "danger")
+    except Exception as e:
+        flash(f"Error loading or parsing SPR decision data: {e}", "danger")
+
+
     if form.validate_on_submit():
         effective_stack = form.effective_stack.data
         pot_size = form.pot_size.data
-        spr = effective_stack / pot_size
+        try:
+            spr = effective_stack / pot_size
+            
+            # --- Determine relevant summary decision ---
+            if spr_summary_table:
+                relevant_summary_row = None
+                for row in spr_summary_table:
+                    if spr >= row['spr']:
+                        relevant_summary_row = row
+                    else:
+                        break
+                if not relevant_summary_row and spr < spr_summary_table[0]['spr']:
+                    relevant_summary_row = spr_summary_table[0]
+                elif not relevant_summary_row and spr > spr_summary_table[-1]['spr'] and spr_summary_table[-1]['spr'] != float('inf'):
+                    relevant_summary_row = spr_summary_table[-1]
 
-    return render_template('spr_calculator.html', form=form, spr=spr)
+                if relevant_summary_row:
+                    spr_decision_category = relevant_summary_row['category']
+                    spr_decision_territory = relevant_summary_row['category2']
+            
+            # --- Determine relevant detailed decision column ---
+            if spr_detailed_chart_headers and spr_detailed_chart_data:
+                # Find the correct header for the calculated SPR
+                spr_header_index = -1
+                if spr <= 1: spr_detailed_category_header = "SPR ≤ 1 (Ultralow)"
+                elif spr <= 4: spr_detailed_category_header = "1 < SPR ≤ 4 (Low)"
+                elif spr <= 13: spr_detailed_category_header = "4 < SPR ≤ 13 (Mid)"
+                else: spr_detailed_category_header = "SPR > 13 (High)"
+                
+                try:
+                    spr_header_index = spr_detailed_chart_headers.index(spr_detailed_category_header)
+                except ValueError:
+                    current_app.logger.warning(f"SPR category header '{spr_detailed_category_header}' not found in detailed chart headers.")
+
+                if spr_header_index != -1:
+                    spr_detailed_decisions = []
+                    for row_data in spr_detailed_chart_data:
+                        if len(row_data) > spr_header_index:
+                            spr_detailed_decisions.append({
+                                'hand_type': row_data[0], # First column is Hand Type
+                                'decision': row_data[spr_header_index]
+                            })
+
+        except InvalidOperation:
+            flash("Invalid input for stack or pot size.", "danger")
+        except ZeroDivisionError:
+            flash("Pot size cannot be zero.", "danger")
+
+
+    return render_template(
+        'spr_calculator.html',
+        form=form,
+        spr=spr,
+        spr_decision_category=spr_decision_category,
+        spr_decision_territory=spr_decision_territory,
+        spr_detailed_decisions=spr_detailed_decisions,
+        spr_detailed_category_header=spr_detailed_category_header
+    )

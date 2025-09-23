@@ -51,6 +51,41 @@
                         <h4 class="alert-heading">Calculated SPR: {{ "%.2f"|format(spr) }}</h4>
                         <p>With an effective stack of ${{ form.effective_stack.data }} and a pot of ${{ form.pot_size.data }}, your Stack-to-Pot Ratio is {{ "%.2f"|format(spr) }}.</p>
                     </div>
+
+                    {% if spr_decision_category and spr_decision_territory %}
+                    <div class="mt-4">
+                        <h5>SPR Decision Category: <span class="text-primary">{{ spr_decision_category }}</span></h5>
+                        <p><strong>Territory:</strong> {{ spr_decision_territory }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if spr_detailed_decisions %}
+                    <div class="mt-4">
+                        <h5>Detailed Decisions for {{ spr_detailed_category_header }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Hand Type</th>
+                                        <th>Decision</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in spr_detailed_decisions %}
+                                    <tr>
+                                        <td>{{ item.hand_type }}</td>
+                                        <td>{{ item.decision }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <p class="text-center mt-3">
+                        <a href="{{ url_for('hand_eval.spr_strategy') }}" class="btn btn-info">View Full SPR Strategy Guide</a>
+                    </p>
                     {% endif %}
                 </div>
             </div>
