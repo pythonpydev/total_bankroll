@@ -70,6 +70,7 @@ def submit_form():
 
     if hand_form.validate_on_submit():
         form_data = algo.process_hand_data(request.form)
+        form_data['button_position'] = button_position # Add button_position to form_data
         session['form_data'] = form_data
         return render_template('hand_details.html', form_data=form_data)
     else:
