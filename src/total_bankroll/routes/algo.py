@@ -5,14 +5,15 @@ from treys import Card, Evaluator, Deck
 
 evaluator = Evaluator()
 
-def calculate_spr(hero_stack, opponent_stack, pot_size):
+def calculate_spr(hero_stack, opponent_stack, pot_size, bet_size=0):
     """
     Calculates the Stack-to-Pot Ratio (SPR).
     """
-    if pot_size <= 0:
+    current_pot_after_bet = pot_size + bet_size
+    if current_pot_after_bet <= 0:
         return None
     smallest_stack = min(hero_stack, opponent_stack)
-    return smallest_stack / pot_size
+    return smallest_stack / current_pot_after_bet
 
 def calculate_pot_sized_bets(hero_stack, opponent_stack, pot_size, bet_size=0):
     """
@@ -212,10 +213,14 @@ def process_hand_data(form_data):
     opp_outs_breakdown = calculate_detailed_outs(opp_hand_list, board_cards_list)
     processed_data['opp_outs_breakdown'] = opp_outs_breakdown
 
-    actual_spr = calculate_spr(processed_data['hero_stack'], processed_data['opponent_stack'], processed_data['pot_size'])
+    smallest_stack = min(processed_data['hero_stack'], processed_data['opponent_stack'])
+    current_pot_after_bet = processed_data['pot_size'] + processed_data['bet_size']
+
+    actual_spr = calculate_spr(processed_data['hero_stack'], processed_data['opponent_stack'], processed_data['pot_size'], processed_data['bet_size'])
     actual_pot_bets = calculate_pot_sized_bets(processed_data['hero_stack'], processed_data['opponent_stack'], processed_data['pot_size'], processed_data['bet_size'])
 
     processed_data['actual_spr'] = actual_spr
     processed_data['actual_pot_bets'] = actual_pot_bets
+    processed_data['actual_spr_calculation_str'] = f"[{smallest_stack} / ({processed_data['pot_size']}+{processed_data['bet_size']})]"
 
     return processed_data

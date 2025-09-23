@@ -109,11 +109,12 @@
 
         if (actualSpr !== null) {
           const sprText = `Actual SPR: ${actualSpr.toFixed(2)}`;
+          const sprCalcStr = `{{ form_data.actual_spr_calculation_str|safe }}`; // Get the calculation string
           const tolerance = actualSpr * SPR_TOLERANCE;
           if (Math.abs(sprGuess - actualSpr) <= tolerance) {
-            actualSprDiv.innerHTML = `<span class="text-success">${sprText} &#10004;</span>`;
+            actualSprDiv.innerHTML = `<span class="text-success">${sprText} &#10004; ${sprCalcStr}</span>`;
           } else {
-            actualSprDiv.innerHTML = `<span class="text-danger">${sprText} &#10060;</span>`;
+            actualSprDiv.innerHTML = `<span class="text-danger">${sprText} &#10060; ${sprCalcStr}</span>`;
           }
         } else {
           actualSprDiv.textContent = 'Actual SPR: N/A';
