@@ -122,22 +122,91 @@ body.dark-mode .table-custom {
     color: var(--dark-text-0);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
 }
+
 body.dark-mode .table-custom thead tr {
     background-color: var(--dark-bg-2);
     color: var(--dark-text-0);
 }
+
 body.dark-mode .table-custom tbody tr {
     border-bottom-color: var(--dark-border);
 }
+
 body.dark-mode .table-custom tbody tr:nth-of-type(even) {
     background-color: #2e2e2e;
 }
+
 body.dark-mode .table-custom tbody tr:hover {
     background-color: #2e2e2e;
 }
 
 body.dark-mode .table-custom tbody td {
     color: var(--dark-text-0);
+}
+
+/* --- Disable Bootstrap's box-shadow overlay for table cells in dark mode --- */
+body.dark-mode .table > :not(caption) > * > * {
+    box-shadow: none !important;
+}
+
+/* --- Override Bootstrap table variant classes in dark mode --- */
+body.dark-mode .table.table-bordered.table-striped .table-success,
+body.dark-mode .table.table-bordered.table-striped .table-success > td,
+body.dark-mode .table-success {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table.table-bordered.table-striped .table-warning,
+body.dark-mode .table.table-bordered.table-striped .table-warning > td,
+body.dark-mode .table-warning {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
+}
+
+body.dark-mode .table.table-bordered.table-striped .table-danger,
+body.dark-mode .table.table-bordered.table-striped .table-danger > td,
+body.dark-mode .table-danger {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+/* --- Override .bg-* classes for tables in dark mode --- */
+body.dark-mode .table tr.bg-success > td,
+body.dark-mode .table tr.bg-success,
+body.dark-mode .bg-success {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table tr.bg-warning > td,
+body.dark-mode .table tr.bg-warning,
+body.dark-mode .bg-warning {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
+}
+
+body.dark-mode .table tr.bg-danger > td,
+body.dark-mode .table tr.bg-danger,
+body.dark-mode .bg-danger {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+/* --- Custom highlighting for .table-custom in dark mode --- */
+body.dark-mode .table-custom .highlight-recommended {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table-custom .highlight-move-up {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+body.dark-mode .table-custom .highlight-move-down {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
 }
 
 /* --- List Groups --- */
@@ -191,6 +260,17 @@ body.dark-mode .btn-outline-dark:hover {
     border-color: var(--dark-text-0);
 }
 
+body.dark-mode .btn-primary {
+    background-color: var(--dark-accent);
+    border-color: var(--dark-accent);
+    color: var(--dark-bg-0);
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #3b9de4; /* A slightly lighter shade for hover */
+    border-color: #3b9de4;
+}
+
 /* --- Table Cell Colors --- */
 
 body.dark-mode .change-positive {
@@ -208,33 +288,7 @@ body.dark-mode .thead-dark th {
     color: var(--dark-text-0) !important; /* Use the primary light text color for dark mode */
 }
 
-body.dark-mode .btn-primary {
-    background-color: var(--dark-accent);
-    border-color: var(--dark-accent);
-    color: var(--dark-bg-0);
-}
-
-body.dark-mode .btn-primary:hover {
-    background-color: #3b9de4; /* A slightly lighter shade for hover */
-    border-color: #3b9de4;
-}
-
-/* Dark mode specific table colors for Bootstrap classes */
-body.dark-mode .table-success {
-    background-color: var(--dark-bg-2) !important;
-    color: #66bb6a !important;
-}
-
-body.dark-mode .table-warning {
-    background-color: var(--dark-bg-2) !important;
-    color: #ffa726 !important;
-}
-
-body.dark-mode .table-danger {
-    background-color: var(--dark-bg-2) !important;
-    color: #ef5350 !important;
-}
-
+/* Dark mode specific table colors for striped tables */
 body.dark-mode .table-bordered.table-striped tbody > tr > * {
     background-color: var(--dark-bg-2) !important;
 }
@@ -247,23 +301,6 @@ body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
     background-color: #2e2e2e;
 }
 
-/* --- Custom Highlighting for Recommendation Tables in Dark Mode --- */
-body.dark-mode .table-custom .highlight-recommended {
-    background-color: rgba(40, 167, 69, 0.2);
-}
-body.dark-mode .table-custom .highlight-move-up {
-    background-color: rgba(220, 53, 69, 0.2);
-}
-body.dark-mode .table-custom .highlight-move-down {
-    background-color: rgba(13, 110, 253, 0.2);
-}
-
 body.dark-mode .table-striped tbody th {
     color: #ffffff; /* White text for table headers in striped tables */
-}
-
-body.dark-mode .table-custom .highlight-recommended,
-body.dark-mode .table-custom .highlight-move-up,
-body.dark-mode .table-custom .highlight-move-down {
-    color: #ffffff; /* White text for highlighted columns */
 }
