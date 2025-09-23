@@ -161,7 +161,7 @@ def find_best_five_card_hand(hole_cards, board_cards):
                 
     return best_hand_cards
 
-def process_hand_data(form_data):
+def process_hand_data(form_data, button_position):
     hero_hand_str = form_data['hero_hand']
     board_cards_str = form_data['board']
     opp_hand_str = form_data['opponent_hand']
@@ -180,6 +180,7 @@ def process_hand_data(form_data):
         'big_blind': float(form_data['big_blind']),
         'hero_stack': float(form_data['hero_stack']),
         'hero_position': form_data['hero_position'],
+        'button_position': button_position,
         'hero_hand': hero_hand_list,
         'board': board_cards_list,
         'opponent_stack': float(form_data['opponent_stack']),

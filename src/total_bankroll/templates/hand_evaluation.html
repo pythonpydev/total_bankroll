@@ -11,7 +11,7 @@
       flex-wrap: wrap;
     }
     .card-image {
-      width: 75px;
+      width: 65px; /* Reduced size to fit side-by-side */
       height: auto;
     }
   </style>
@@ -32,7 +32,7 @@
 
       <div class="row g-4">
         <!-- Hero's Hand Card -->
-        <div class="col-12 mb-4">
+        <div class="col-lg-6 mb-4">
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Hero's Hand</div>
             <div class="card-body">
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Opponent's Hand Card -->
-        <div class="col-12 mb-4">
+        <div class="col-lg-6 mb-4">
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Opponent's Hand</div>
             <div class="card-body">
@@ -80,7 +80,14 @@
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Hero's Outs</div>
             <div class="card-body">
-              <p><strong>Total Outs:</strong> {{ form_data.hero_outs_breakdown.total }}</p>
+              <p><strong>Total Outs:</strong> {{ form_data.hero_outs_breakdown.total }}
+                {% set board_len = form_data.board|length %}
+                {% if board_len == 3 %}
+                  <span class="text-muted"> ({{ (form_data.hero_outs_breakdown.total * 4)|round }}% to hit)</span>
+                {% elif board_len == 4 %}
+                  <span class="text-muted"> ({{ (form_data.hero_outs_breakdown.total * 2)|round }}% to hit)</span>
+                {% endif %}
+              </p>
               <ul class="list-unstyled">
                 <li>Pair: <span class="text-info">{% if 8 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></li>
                 <li>Two Pair: <span class="text-info">{% if 7 < form_data.hero_current_rank_class %}{{ form_data.hero_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></li>
@@ -100,7 +107,14 @@
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Opponent's Outs</div>
             <div class="card-body">
-              <p><strong>Total Outs:</strong> {{ form_data.opp_outs_breakdown.total }}</p>
+              <p><strong>Total Outs:</strong> {{ form_data.opp_outs_breakdown.total }}
+                {% set board_len = form_data.board|length %}
+                {% if board_len == 3 %}
+                  <span class="text-muted"> ({{ (form_data.opp_outs_breakdown.total * 4)|round }}% to hit)</span>
+                {% elif board_len == 4 %}
+                  <span class="text-muted"> ({{ (form_data.opp_outs_breakdown.total * 2)|round }}% to hit)</span>
+                {% endif %}
+              </p>
               <ul class="list-unstyled">
                 <li>Pair: <span class="text-info">{% if 8 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.pair }}{% else %}N/A{% endif %}</span></li>
                 <li>Two Pair: <span class="text-info">{% if 7 < form_data.opp_current_rank_class %}{{ form_data.opp_outs_breakdown.two_pair }}{% else %}N/A{% endif %}</span></li>

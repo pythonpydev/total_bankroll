@@ -21,13 +21,18 @@ class HandForm(FlaskForm):
     hero_stack = IntegerField("Hero's Chip Stack", validators=[DataRequired()])
     hero_position = SelectField("Hero's Position", choices=POSITIONS, validators=[DataRequired()])
     hero_hand = StringField("Hero's Hand", validators=[DataRequired()])
-    board = StringField('Board Cards', validators=[DataRequired()])
+    board = StringField('Board Cards', validators=[DataRequired()]) # Keep DataRequired for presence
     opponent_stack = IntegerField("Opponent's Chip Stack", validators=[DataRequired()])
     opponent_position = SelectField("Opponent's Position", choices=POSITIONS, validators=[DataRequired()])
     opponent_hand = StringField("Opponent's Hand", validators=[DataRequired()])
     pot_size = IntegerField('Pot Size', validators=[DataRequired()])
     bet_size = IntegerField('Bet Size', validators=[Optional()])
     submit = SubmitField('Submit')
+
+    def validate_board(self, field):
+        # Board can be 3, 4, or 5 cards long (6, 8, or 10 characters)
+        if len(field.data) not in [6, 8, 10]:
+            raise ValidationError("Board must contain 3, 4, or 5 cards.")
 
     def validate_opponent_position(self, field):
         if field.data and self.hero_position.data and field.data == self.hero_position.data:
@@ -37,6 +42,17 @@ class HandForm(FlaskForm):
         if field.data is not None and self.pot_size.data is not None:
             if field.data > self.pot_size.data:
                 raise ValidationError("Bet size cannot be greater than the pot size.")
+
+    def validate(self, **kwargs):
+        # Run parent validation first
+        if not super().validate(**kwargs):
+            return False
+        # Custom validation for unique cards across all fields
+        all_cards_str = self.hero_hand.data + self.opponent_hand.data + self.board.data
+        card_list = [all_cards_str[i:i+2] for i in range(0, len(all_cards_str), 2)]
+        if len(card_list) != len(set(card_list)):
+            raise ValidationError("Duplicate cards found between Hero's Hand, Opponent's Hand, and the Board.")
+        return True
 
 @hand_eval_bp.route('/tables')
 def tables():
@@ -69,8 +85,7 @@ def submit_form():
     logging.debug(f"Request form data: {request.form}")
 
     if hand_form.validate_on_submit():
-        form_data = algo.process_hand_data(request.form)
-        form_data['button_position'] = button_position # Add button_position to form_data
+        form_data = algo.process_hand_data(request.form, button_position)
         session['form_data'] = form_data
         return render_template('hand_details.html', form_data=form_data)
     else:

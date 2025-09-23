@@ -55,63 +55,47 @@ window.addEventListener('DOMContentLoaded', event => {
     // --- PLO Hand Form Randomizer ---
     const randomButton = document.getElementById('random-button');
     if (randomButton) {
-        randomButton.addEventListener('click', () => {
-            populateRandomHandData();
+        randomButton.addEventListener('click', function() {
+            const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+            const suits = ['s', 'h', 'd', 'c'];
+            let deck = [];
+            for (const suit of suits) {
+                for (const rank of ranks) {
+                    deck.push(rank + suit);
+                }
+            }
+
+            // Fisher-Yates shuffle
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+
+            function dealCards(num) {
+                return deck.splice(0, num).join('');
+            }
+
+            // Deal cards for each field
+            document.getElementById('hero_hand').value = dealCards(4);
+            document.getElementById('opponent_hand').value = dealCards(4);
+            
+            const boardCardCount = [3, 4, 5][Math.floor(Math.random() * 3)];
+            document.getElementById('board').value = dealCards(boardCardCount);
+
+            document.getElementById('small_blind').value = 1;
+            document.getElementById('big_blind').value = 2;
+            document.getElementById('hero_stack').value = Math.floor(Math.random() * 801) + 200;
+            document.getElementById('opponent_stack').value = Math.floor(Math.random() * 801) + 200;
+
+            const potSize = Math.floor(Math.random() * 91) + 10;
+            document.getElementById('pot_size').value = potSize;
+
+            const betSize = Math.floor(Math.random() * (potSize + 1));
+            document.getElementById('bet_size').value = betSize;
+
+            const positionOptions = Array.from(document.getElementById('hero_position').options);
+            document.getElementById('hero_position').selectedIndex = Math.floor(Math.random() * positionOptions.length);
+            document.getElementById('opponent_position').selectedIndex = Math.floor(Math.random() * positionOptions.length);
         });
-    }
-
-    function createDeck() {
-        const suits = ['h', 'd', 'c', 's'];
-        const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-        let deck = [];
-        for (const suit of suits) {
-            for (const rank of ranks) {
-                deck.push(rank + suit);
-            }
-        }
-        return deck;
-    }
-
-    function shuffleDeck(deck) {
-        for (let i = deck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [deck[i], deck[j]] = [deck[j], deck[i]];
-        }
-    }
-
-    function populateRandomHandData() {
-        const deck = createDeck();
-        shuffleDeck(deck);
-
-        const dealCards = (num) => {
-            let hand = '';
-            for (let i = 0; i < num; i++) {
-                hand += deck.pop();
-            }
-            return hand;
-        };
-
-        const heroHand = dealCards(4);
-        const opponentHand = dealCards(4);
-        const board = dealCards(5);
-
-        const positions = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
-        let heroPosition = positions[Math.floor(Math.random() * positions.length)];
-        let opponentPosition;
-        do {
-            opponentPosition = positions[Math.floor(Math.random() * positions.length)];
-        } while (opponentPosition === heroPosition);
-
-        document.getElementById('small_blind').value = 1;
-        document.getElementById('big_blind').value = 2;
-        document.getElementById('hero_stack').value = Math.floor(Math.random() * 400) + 100; // 100-499
-        document.getElementById('hero_position').value = heroPosition;
-        document.getElementById('hero_hand').value = heroHand;
-        document.getElementById('opponent_stack').value = Math.floor(Math.random() * 400) + 100; // 100-499
-        document.getElementById('opponent_position').value = opponentPosition;
-        document.getElementById('opponent_hand').value = opponentHand;
-        document.getElementById('board').value = board;
-        document.getElementById('pot_size').value = Math.floor(Math.random() * 50) + 10; // 10-59
-        document.getElementById('bet_size').value = 0;
     }
 });
