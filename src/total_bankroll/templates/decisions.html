@@ -1,33 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import page_header %}
 
-{% block head %}
-  {{ super() }}
-  <style>
-    .dark-mode .table-bordered,
-    .dark-mode .table-bordered td,
-    .dark-mode .table-bordered th {
-      border-color: var(--dark-border) !important;
-    }
 
-    .dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
-      color: var(--dark-text-0);
-    }
-
-    .dark-mode .table-striped>tbody>tr:nth-of-type(even) {
-      background-color: var(--dark-bg-2);
-      color: var(--dark-text-0);
-    }
-
-    .dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
-      color: var(--dark-text-0);
-    }
-
-    .dark-mode th[scope="row"] {
-      color: var(--dark-text-0) !important;
-    }
-  </style>
-{% endblock %}
 
 {% block content %}
 {{ page_header('PLO Decisions', 'Guidelines by hand type and SPR for post-flop play.') }}

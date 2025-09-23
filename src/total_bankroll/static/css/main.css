@@ -13,6 +13,7 @@
     --dark-bg-3: #3a3a3a; /* Even lighter dark for article boxes */
     --dark-border: #4a4a4a; /* Dark mode border color */
     --dark-text: #e0e0e0; /* Light text for dark mode */
+    --dark-text-0: var(--dark-text); /* Alias for dark-text for table styles */
 
     /* Spacing & Sizing */
     --spacing-xs: 2px;
@@ -337,4 +338,28 @@ body.dark-mode .alert-success {
     background-color: var(--dark-bg-2) !important; /* Dark background */
     color: var(--color-text-success) !important; /* Green text */
     border-color: var(--color-text-success) !important; /* Green border */
+}
+
+/* Dark mode table styles moved from decisions.html */
+.dark-mode .table-bordered,
+.dark-mode .table-bordered td,
+.dark-mode .table-bordered th {
+  border-color: var(--dark-border) !important;
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
+  color: var(--dark-text-0);
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(even) {
+  background-color: var(--dark-bg-2);
+  color: var(--dark-text-0);
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
+  color: var(--dark-text-0);
+}
+
+.dark-mode th[scope="row"] {
+  color: var(--dark-text-0) !important;
 }
