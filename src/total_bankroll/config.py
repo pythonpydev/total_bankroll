@@ -23,6 +23,7 @@ class Config:
     SECURITY_CHANGEABLE = True
     SECURITY_UNAUTHORIZED_VIEW = '/'
     SECURITY_OAUTH_ENABLE = True
+    SECURITY_OAUTH_BUILTIN_PROVIDERS = []
 
     # Flask-Mail settings
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
