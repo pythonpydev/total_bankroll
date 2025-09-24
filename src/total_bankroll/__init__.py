@@ -136,6 +136,10 @@ def create_app(config_name=None):
         cookie_consent = request.cookies.get('cookie_consent')
         g.cookie_consent_given = cookie_consent == 'true'
 
+    @app.context_processor
+    def inject_config_variables():
+        return dict(config=current_app.config)
+
     return app
 
 if __name__ == '__main__':

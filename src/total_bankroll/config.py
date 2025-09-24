@@ -22,6 +22,7 @@ class Config:
     SECURITY_RECOVERABLE = True
     SECURITY_CHANGEABLE = True
     SECURITY_UNAUTHORIZED_VIEW = '/'
+    SECURITY_OAUTH_ENABLE = True
 
     # Flask-Mail settings
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -31,6 +32,10 @@ class Config:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 class DevelopmentConfig(Config):
     """Development configuration."""
