@@ -129,6 +129,8 @@ sqlalchemy==2.0.43
     #   -r requirements.in
     #   alembic
     #   flask-sqlalchemy
+treys==0.1.8
+    # via -r requirements.in
 typing-extensions==4.15.0
     # via
     #   alembic
