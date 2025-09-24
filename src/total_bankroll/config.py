@@ -46,7 +46,6 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or \
         (f"mysql+pymysql://{os.getenv('DB_USER_PROD')}:{os.getenv('DB_PASS_PROD')}@"
          f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}")
-    print(f"DEBUG: Production SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
 config_by_name = dict(
     development=DevelopmentConfig,
