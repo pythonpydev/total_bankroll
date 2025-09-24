@@ -13,3 +13,4 @@ email_validator
 Flask-Limiter
 Flask-Principal
 Flask-Bcrypt
+pyotp

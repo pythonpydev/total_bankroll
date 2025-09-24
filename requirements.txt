@@ -109,6 +109,8 @@ pygments==2.19.2
     # via rich
 pymysql==1.1.1
     # via -r requirements.in
+pyotp==2.9.0
+    # via -r requirements.in
 python-dotenv==1.1.1
     # via -r requirements.in
 requests==2.32.5
