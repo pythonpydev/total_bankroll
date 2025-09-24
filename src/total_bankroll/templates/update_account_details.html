@@ -77,6 +77,73 @@
                         </form>
                     </div>
                 </div>
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Default Currency</h4>
+                        <p class="text-center text-muted">Set the default currency for new transactions.</p>
+                        <form method="POST" action="{{ url_for('settings.update_default_currency') }}">
+                            {{ currency_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ currency_form.currency(class="form-select", id="currency") }}
+                                <label for="currency">Default Currency</label>
+                                {% for error in currency_form.currency.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ currency_form.submit_currency(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Reset Database Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Reset All My Data</h4>
+                        <p class="text-center text-muted">This will permanently delete all your bankroll data (sites, assets, deposits, withdrawals, history). Your account will remain active.</p>
+                        <form method="POST" action="{{ url_for('settings.reset_database') }}" onsubmit="return confirm('Are you sure you want to reset all your data? This action cannot be undone.');">
+                            {{ reset_database_form.hidden_tag() }}
+                            <div class="d-grid">
+                                {{ reset_database_form.submit(class="btn btn-warning btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Export Data Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Export My Data</h4>
+                        <p class="text-center text-muted">Download all your bankroll data as a JSON file.</p>
+                        <form method="GET" action="{{ url_for('settings.export_data') }}">
+                            {{ export_data_form.hidden_tag() }}
+                            <div class="d-grid">
+                                {{ export_data_form.submit(class="btn btn-info btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Import Data Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Import My Data</h4>
+                        <p class="text-center text-muted">Upload a JSON file to import your bankroll data. This will overwrite your existing data.</p>
+                        <form method="POST" action="{{ url_for('settings.import_data') }}" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to import data? This will overwrite all your existing bankroll data.');">
+                            {{ import_data_form.hidden_tag() }}
+                            <div class="mb-3">
+                                <label for="data_file" class="form-label">Select JSON File</label>
+                                {{ import_data_form.data_file(class="form-control", id="data_file") }}
+                                {% for error in import_data_form.data_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ import_data_form.submit(class="btn btn-success btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                </div>
+
                 <div class="text-center mt-4">
                     <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-xl">Back to Settings</a>
                 </div>

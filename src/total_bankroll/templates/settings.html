@@ -6,6 +6,46 @@
 
 <section class="page-section">
     <div class="container">
+        <!-- Data Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Data Management</h5>
+            </div>
+            <div class="card-body">
+                
+
+                <h6 class="card-title">Export My Data</h6>
+                <p class="card-text">Download all your bankroll data as a JSON file.</p>
+                <form method="GET" action="{{ url_for('settings.export_data') }}">
+                    {{ export_data_form.hidden_tag() }}
+                    {{ export_data_form.submit(class="btn btn-info") }}
+                </form>
+
+                <hr class="my-4">
+
+                <h6 class="card-title">Import My Data</h6>
+                <p class="card-text">Upload a JSON file to import your bankroll data. This will overwrite your existing data.</p>
+                <form method="POST" action="{{ url_for('settings.import_data') }}" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to import data? This will overwrite all your existing bankroll data.');">
+                    {{ import_data_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label for="data_file" class="form-label">Select JSON File</label>
+                        {{ import_data_form.data_file(class="form-control form-control-sm", id="data_file") }}
+                        {% for error in import_data_form.data_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {{ import_data_form.submit(class="btn btn-success") }}
+                </form>
+
+                <hr class="my-4">
+
+                <h6 class="card-title">Reset All My Data</h6>
+                <p class="card-text">This will permanently delete all your bankroll data (sites, assets, deposits, withdrawals, history). Your account will remain active.</p>
+                <form method="POST" action="{{ url_for('settings.reset_database') }}" onsubmit="return confirm('Are you sure you want to reset all your data? This action cannot be undone.');">
+                    {{ reset_database_form.hidden_tag() }}
+                    {{ reset_database_form.submit(class="btn btn-warning") }}
+                </form>
+            </div>
+        </div>
+
         <!-- Account Settings -->
         <div class="card mb-4">
             <div class="card-header">
@@ -40,22 +80,12 @@
                 <h5 class="mb-0">Privacy Settings</h5>
             </div>
             <div class="card-body">
-                <p>You can manage your cookie preferences here. Resetting your preferences will show the cookie consent banner again on your next page load, allowing you to make a new choice.</p>
-                <button id="resetCookieConsent" class="btn btn-secondary">Reset Cookie Preferences</button>
-            </div>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="card border-danger mb-4">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">Danger Zone</h5>
-            </div>
-            <div class="card-body">
                 <h6 class="card-title">Delete Your Account</h6>
                 <p class="card-text">Once you delete your account, there is no going back. All of your data, including bankroll history and transactions, will be permanently removed. Please be certain.</p>
                 <a href="{{ url_for('settings.delete_user_account') }}" class="btn btn-danger">Delete My Account</a>
+
+                
             </div>
-        </div>
     </div>
 </section>
 

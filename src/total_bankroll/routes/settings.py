@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, make_response, current_app, session
 from flask_security import login_required, current_user, logout_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField
+from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
+from flask_wtf.file import FileRequired, FileAllowed
 from ..extensions import db, mail, csrf
-from ..models import User
+from ..models import User, OAuth, Sites, Assets, Deposits, Drawings, SiteHistory, AssetHistory
 from flask_security.utils import hash_password
 from flask_mail import Message 
 from datetime import datetime, UTC
@@ -14,6 +15,7 @@ import pyotp
 import qrcode
 import io
 import base64
+import json
 
 settings_bp = Blueprint("settings", __name__)
 
@@ -52,11 +54,24 @@ class UpdateDefaultCurrencyForm(FlaskForm):
 class DeleteUserForm(FlaskForm):
     submit = SubmitField('Yes, delete my account')
 
+class ResetDatabaseForm(FlaskForm):
+    submit = SubmitField('Yes, reset my data')
+
+class ExportDataForm(FlaskForm):
+    submit = SubmitField('Export My Data')
+
+class ImportDataForm(FlaskForm):
+    data_file = FileField('JSON File', validators=[FileRequired(), FileAllowed(['json'], 'JSON files only!')])
+    submit = SubmitField('Import My Data')
+
 @settings_bp.route("/settings")
 @login_required
 def settings_page():
     """Settings page."""
-    return render_template("settings.html")
+    reset_database_form = ResetDatabaseForm()
+    export_data_form = ExportDataForm()
+    import_data_form = ImportDataForm()
+    return render_template("settings.html", reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form)
 
 @settings_bp.route('/settings/2fa/setup', methods=['GET', 'POST'])
 @login_required
@@ -144,12 +159,237 @@ def delete_user_account_confirmed():
     flash("Invalid request. Please try again.", "danger")
     return redirect(url_for('settings.settings_page'))
 
+@settings_bp.route("/reset_database", methods=["POST"])
+@login_required
+def reset_database():
+    """Resets all user-specific data in the database."""
+    form = ResetDatabaseForm()
+    if form.validate_on_submit():
+        try:
+            user_id = current_user.id
+            # Delete all data associated with the current user from relevant tables
+            AssetHistory.query.filter_by(user_id=user_id).delete()
+            SiteHistory.query.filter_by(user_id=user_id).delete()
+            Deposits.query.filter_by(user_id=user_id).delete()
+            Drawings.query.filter_by(user_id=user_id).delete()
+            Assets.query.filter_by(user_id=user_id).delete()
+            Sites.query.filter_by(user_id=user_id).delete()
+            
+            db.session.commit()
+            flash("All your data has been reset successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error resetting user data: {e}", "danger")
+        return redirect(url_for('settings.settings_page'))
+    flash("Invalid request. Please try again.", "danger")
+    return redirect(url_for('settings.settings_page'))
+
+@settings_bp.route("/export_data", methods=["GET"])
+@login_required
+def export_data():
+    """Exports all user-specific data as a JSON file."""
+    try:
+        user_id = current_user.id
+        user_data = {
+            "user": {
+                "id": current_user.id,
+                "email": current_user.email,
+                "default_currency_code": current_user.default_currency_code,
+                "is_confirmed": current_user.is_confirmed,
+                "confirmed_on": current_user.confirmed_on.isoformat() if current_user.confirmed_on else None,
+                "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+                "last_login_at": current_user.last_login_at.isoformat() if current_user.last_login_at else None,
+                "otp_enabled": current_user.otp_enabled
+            },
+            "sites": [],
+            "assets": [],
+            "deposits": [],
+            "drawings": [],
+            "site_history": [],
+            "asset_history": []
+        }
+
+        # Fetch Sites
+        for site in Sites.query.filter_by(user_id=user_id).all():
+            user_data["sites"].append({
+                "id": site.id,
+                "name": site.name,
+                "display_order": site.display_order
+            })
+
+        # Fetch Assets
+        for asset in Assets.query.filter_by(user_id=user_id).all():
+            user_data["assets"].append({
+                "id": asset.id,
+                "name": asset.name,
+                "display_order": asset.display_order
+            })
+
+        # Fetch Deposits
+        for deposit in Deposits.query.filter_by(user_id=user_id).all():
+            user_data["deposits"].append({
+                "id": deposit.id,
+                "date": deposit.date.isoformat(),
+                "amount": str(deposit.amount),
+                "currency": deposit.currency,
+                "last_updated": deposit.last_updated.isoformat()
+            })
+
+        # Fetch Drawings
+        for drawing in Drawings.query.filter_by(user_id=user_id).all():
+            user_data["drawings"].append({
+                "id": drawing.id,
+                "date": drawing.date.isoformat(),
+                "amount": str(drawing.amount),
+                "currency": drawing.currency,
+                "last_updated": drawing.last_updated.isoformat()
+            })
+
+        # Fetch Site History
+        for sh in SiteHistory.query.filter_by(user_id=user_id).all():
+            user_data["site_history"].append({
+                "id": sh.id,
+                "site_id": sh.site_id,
+                "amount": str(sh.amount),
+                "currency": sh.currency,
+                "recorded_at": sh.recorded_at.isoformat()
+            })
+
+        # Fetch Asset History
+        for ah in AssetHistory.query.filter_by(user_id=user_id).all():
+            user_data["asset_history"].append({
+                "id": ah.id,
+                "asset_id": ah.asset_id,
+                "amount": str(ah.amount),
+                "currency": ah.currency,
+                "recorded_at": ah.recorded_at.isoformat()
+            })
+        
+        response = make_response(json.dumps(user_data, indent=4))
+        response.headers["Content-Disposition"] = "attachment; filename=total_bankroll_data.json"
+        response.headers["Content-Type"] = "application/json"
+        return response
+    except Exception as e:
+        flash(f"Error exporting data: {e}", "danger")
+        return redirect(url_for('settings.settings_page'))
+
+@settings_bp.route("/import_data", methods=["POST"])
+@login_required
+def import_data():
+    """Imports user data from an uploaded JSON file."""
+    form = ImportDataForm()
+    if form.validate_on_submit():
+        try:
+            file = request.files['data_file']
+            imported_data = json.load(file)
+            user_id = current_user.id
+
+            # Clear existing user data before import to prevent conflicts
+            AssetHistory.query.filter_by(user_id=user_id).delete()
+            SiteHistory.query.filter_by(user_id=user_id).delete()
+            Deposits.query.filter_by(user_id=user_id).delete()
+            Drawings.query.filter_by(user_id=user_id).delete()
+            Assets.query.filter_by(user_id=user_id).delete()
+            Sites.query.filter_by(user_id=user_id).delete()
+            # OAuth.query.filter_by(user_id=user_id).delete() # Excluded as per user request
+            db.session.flush() # Ensure deletions are processed before new insertions
+
+            # Import Sites (and map old IDs to new IDs if necessary for history)
+            old_site_id_map = {}
+            for item in imported_data.get("sites", []):
+                site = Sites(
+                    name=item["name"],
+                    display_order=item["display_order"],
+                    user_id=user_id
+                )
+                db.session.add(site)
+                db.session.flush() # Get the new ID
+                old_site_id_map[item["id"]] = site.id
+            
+            # Import Assets (and map old IDs to new IDs if necessary for history)
+            old_asset_id_map = {}
+            for item in imported_data.get("assets", []):
+                asset = Assets(
+                    name=item["name"],
+                    display_order=item["display_order"],
+                    user_id=user_id
+                )
+                db.session.add(asset)
+                db.session.flush() # Get the new ID
+                old_asset_id_map[item["id"]] = asset.id
+
+            # Import Deposits
+            for item in imported_data.get("deposits", []):
+                deposit = Deposits(
+                    date=datetime.fromisoformat(item["date"]),
+                    amount=item["amount"],
+                    currency=item["currency"],
+                    last_updated=datetime.fromisoformat(item["last_updated"]),
+                    user_id=user_id
+                )
+                db.session.add(deposit)
+
+            # Import Drawings
+            for item in imported_data.get("drawings", []):
+                drawing = Drawings(
+                    date=datetime.fromisoformat(item["date"]),
+                    amount=item["amount"],
+                    currency=item["currency"],
+                    last_updated=datetime.fromisoformat(item["last_updated"]),
+                    user_id=user_id
+                )
+                db.session.add(drawing)
+
+            # Import Site History
+            for item in imported_data.get("site_history", []):
+                # Use the new site_id if mapping was done
+                new_site_id = old_site_id_map.get(item["site_id"], None)
+                if new_site_id:
+                    sh = SiteHistory(
+                        site_id=new_site_id,
+                        amount=item["amount"],
+                        currency=item["currency"],
+                        recorded_at=datetime.fromisoformat(item["recorded_at"]),
+                        user_id=user_id
+                    )
+                    db.session.add(sh)
+                else:
+                    flash(f"Warning: Site history record with old site_id {item["site_id"]} could not be linked to a new site. Skipping.", "warning")
+
+            # Import Asset History
+            for item in imported_data.get("asset_history", []):
+                # Use the new asset_id if mapping was done
+                new_asset_id = old_asset_id_map.get(item["asset_id"], None)
+                if new_asset_id:
+                    ah = AssetHistory(
+                        asset_id=new_asset_id,
+                        amount=item["amount"],
+                        currency=item["currency"],
+                        recorded_at=datetime.fromisoformat(item["recorded_at"]),
+                        user_id=user_id
+                    )
+                    db.session.add(ah)
+                else:
+                    flash(f"Warning: Asset history record with old asset_id {item["asset_id"]} could not be linked to a new asset. Skipping.", "warning")
+
+            db.session.commit()
+            flash("User data imported successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error importing data: {e}", "danger")
+        return redirect(url_for('settings.settings_page'))
+    flash("Invalid request. Please try again.", "danger")
+    return redirect(url_for('settings.settings_page'))
+
 @settings_bp.route("/update_account_details")
 @login_required
 def update_account_details():
     email_form = UpdateEmailForm()
     password_form = UpdatePasswordForm()
     currency_form = UpdateDefaultCurrencyForm()
+    reset_database_form = ResetDatabaseForm()
+    export_data_form = ExportDataForm()
+    import_data_form = ImportDataForm()
 
     # Populate currency choices and set the current default
     currencies = get_sorted_currencies()
@@ -157,7 +397,7 @@ def update_account_details():
     if current_user.is_authenticated and hasattr(current_user, 'default_currency_code'):
         currency_form.currency.data = current_user.default_currency_code
 
-    return render_template("update_account_details.html", email_form=email_form, password_form=password_form, currency_form=currency_form)
+    return render_template("update_account_details.html", email_form=email_form, password_form=password_form, currency_form=currency_form, reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form)
 
 @settings_bp.route("/update_email", methods=['POST'])
 @login_required
