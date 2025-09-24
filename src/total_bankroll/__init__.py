@@ -3,7 +3,7 @@ __version__ = "0.1.0"
 from flask import Flask, session, flash, redirect, url_for, current_app, g, request
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
-from .config import config 
+from .config import config_by_name
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
@@ -51,17 +51,9 @@ def create_app(config_name=None):
 
     # App initialization
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
-    app.config.from_object(config[config_name or os.getenv('FLASK_ENV', 'default')])
+    config_obj = config_by_name[config_name or os.getenv('FLASK_ENV', 'development')]
+    app.config.from_object(config_obj)
 
-    # Dynamically construct the database URI after loading config.
-    # This is more robust than constructing it at import time in config.py.
-    if app.config.get('SQLALCHEMY_DATABASE_URI') is None:
-        db_user = app.config.get('DB_USER')
-        db_pass = app.config.get('DB_PASS')
-        db_host = app.config.get('DB_HOST')
-        db_name = app.config.get('DB_NAME')
-        app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}"
-    
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
     log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
