@@ -53,6 +53,7 @@ def create_app(config_name=None):
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
     config_obj = config_by_name[config_name or os.getenv('FLASK_ENV', 'development')]
     app.config.from_object(config_obj)
+    app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
     log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
