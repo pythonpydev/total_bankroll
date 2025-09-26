@@ -363,3 +363,16 @@ body.dark-mode .alert-success {
 .dark-mode th[scope="row"] {
   color: var(--dark-text-0) !important;
 }
+
+/* Bankroll recommendation alert styles */
+.alert-bankroll-safe {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Dark green text */
+    border-color: #155724; /* Darker green border */
+}
+
+body.dark-mode .alert-bankroll-safe {
+    background-color: #155724; /* Dark green */
+    color: #ffffff; /* White text */
+    border-color: #155724;
+}
