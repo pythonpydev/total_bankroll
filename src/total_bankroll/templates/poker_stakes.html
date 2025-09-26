@@ -61,7 +61,7 @@
         {% if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes" %}
         <div class="text-center">
             <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
-            <div class="alert alert-light border" role="alert">
+            <div class="alert alert-bankroll-safe border" role="alert">
                 {{ stake_explanation }}
             </div>
             {% if move_down_message %}
