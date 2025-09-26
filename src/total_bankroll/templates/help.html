@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Help & FAQs', 'Find answers to common questions and learn how to use StakeEasy.net effectively.') }}
+
+<div class="container card shadow-sm p-4 my-4">
+    <h1 class="text-center">How to get the most out of StakeEasy.net</h1>
+
+    <h2 class="text-center">The scenario for you as a poker player:</h2>
+    
+    <ul>
+        <li>When you first join a <span style="font-weight: bold; color: yellow;">poker site</span>, you will initially <span style="font-weight: bold; color: green;">deposit</span> cash, for example, $50.</li>
+        <li>At this point your <span style="font-weight: bold; color: deepskyblue;">total <span style="font-weight: bold; color: deepskyblue;">bankroll</span></span> is $50 and your <span style="font-weight: bold; color: lime;">profit</span> is $0.</li>
+        <li>After playing for a while, your latest <span style="font-weight: bold; color: yellow;">poker site</span> balance is $200.</li>
+        <li>Now, your <span style="font-weight: bold; color: deepskyblue;">total <span style="font-weight: bold; color: deepskyblue;">bankroll</span></span> is $200 and your net <span style="font-weight: bold; color: lime;">profit</span> is now $150.</li>
+        <li>At this point you decide to move $50 from the <span style="font-weight: bold; color: yellow;">poker site</span> and invest it in Bitcoin.</li>
+        <li>Now, your cash on <span style="font-weight: bold; color: yellow;">poker sites</span> is $150, your <span style="font-weight: bold; color: lightgrey;">assets</span> are $50, your net <span style="font-weight: bold; color: lime;">profit</span> is still $150, and your total <span style="font-weight: bold; color: green;">deposit</span>s are $50.</li>
+        <li>You play a while longer, and now have $350 on the <span style="font-weight: bold; color: yellow;">poker site</span> (you are now <span style="font-weight: bold; color: lime;">profiting</span> $350).</li>
+        <li>You then decide to <span style="font-weight: bold; color: red;">withdraw</span> $100 to buy some groceries.</li>
+        <li>At this point you have $250 on the <span style="font-weight: bold; color: yellow;">poker site</span>, $50 in <span style="font-weight: bold; color: lightgrey;">assets</span> (Bitcoin), after making an initial <span style="font-weight: bold; color: green;">deposit</span> of $50 and <span style="font-weight: bold; color: red;">withdrawing</span> $100. Your <span style="font-weight: bold; color: deepskyblue;">total <span style="font-weight: bold; color: deepskyblue;">bankroll</span></span> is $300, and your <span style="font-weight: bold; color: lime;">profit</span> is $350.</li>
+    </ul>
+    
+    <h2 class="text-center">How <span style="font-weight: bold; color: deepskyblue;">total <span style="font-weight: bold; color: deepskyblue;">bankroll</span></span> and <span style="font-weight: bold; color: lime;">profit</span> is calculated</h2>
+    
+    <ul>
+        <li>Using the previous scenario, the formula used on StakeEasy.net to calculate your <span style="font-weight: bold; color: deepskyblue;">bankroll</span> is as follows:</li>
+        <li><span style="font-weight: bold; color: deepskyblue;">Total Bankroll</span> = Amount on Poker Sites + <span style="font-weight: bold; color: lightgrey;">Assets</span></li>
+        <li><span style="font-weight: bold; color: lime;">Profit</span> = <span style="font-weight: bold; color: yellow;">Amount on Poker Sites</span> + <span style="font-weight: bold; color: lightgrey;">Assets</span> - <span style="font-weight: bold; color: green;">Deposits</span> + <span style="font-weight: bold; color: red;">Withdrawals</span></li>
+        <li><span style="font-weight: bold; color: deepskyblue;">Total Bankroll</span> = $250 + $50 = $300</li>
+        <li><span style="font-weight: bold; color: lime;">Profit</span> = $250 + $50 - $50 + $100 = $350</li>
+    </ul>
+</div>
+{% endblock %}
