@@ -86,7 +86,11 @@ def poker_sites_page():
 @login_required
 def add_site():
     form = AddSiteForm()
-    form.currency.choices = [(c['code'], c['name']) for c in get_sorted_currencies()]
+    currencies = get_sorted_currencies()
+    form.currency.choices = [(c['code'], c['name']) for c in currencies]
+    if request.method == 'GET':
+        form.currency.data = current_user.default_currency_code
+
     if form.validate_on_submit():
         new_site = Sites(name=form.name.data, user_id=current_user.id)
         db.session.add(new_site)
