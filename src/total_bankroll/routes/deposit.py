@@ -5,8 +5,17 @@ from decimal import Decimal
 from sqlalchemy import func
 from ..utils import get_user_bankroll_data, get_sorted_currencies
 from ..extensions import db
+from flask_wtf import FlaskForm
+from wtforms import StringField, DecimalField, SelectField, SubmitField, DateField
+from wtforms.validators import DataRequired, NumberRange
 
 deposit_bp = Blueprint("deposit", __name__)
+
+class UpdateDepositForm(FlaskForm):
+    date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', coerce=str, validators=[DataRequired()])
+    submit = SubmitField('Update Deposit')
 
 @deposit_bp.route("/deposit")
 @login_required
@@ -78,41 +87,37 @@ def deposit():
 @login_required
 def update_deposit(deposit_id):
     """Update a deposit transaction."""
-    from ..models import Deposits
-    deposit_item = db.session.query(Deposits).filter_by(id=deposit_id, user_id=current_user.id).first()
+    from ..models import Deposits, Currency
+    deposit_item = db.session.get(Deposits, deposit_id)
     if not deposit_item:
         flash("Deposit not found.", "danger")
         return redirect(url_for("deposit.deposit"))
+    if deposit_item.user_id != current_user.id:
+        flash("Not authorized to update this deposit.", "danger")
+        return redirect(url_for("deposit.deposit"))
 
-    if request.method == "POST":
-        date_str = request.form.get("date", "")
-        amount_str = request.form.get("amount", "")
-        currency_code = request.form.get("currency", "USD")
+    form = UpdateDepositForm(obj=deposit_item)
+    currencies = get_sorted_currencies()
+    form.currency.choices = [(c['code'], c['name']) for c in currencies]
 
-        if not date_str or not amount_str:
-            flash("Date and amount are required", "danger")
-            return redirect(url_for("deposit.deposit"))
-
+    if form.validate_on_submit():
         try:
-            deposit_item.date = datetime.strptime(date_str, "%Y-%m-%d")
-            amount = round(Decimal(amount_str), 2)
-            if amount <= 0:
-                flash("Amount must be positive", "danger")
-                return redirect(url_for("deposit.deposit"))
-            deposit_item.amount = amount
-            deposit_item.currency = currency_code
+            deposit_item.date = form.date.data
+            deposit_item.amount = form.amount.data
+            deposit_item.currency = form.currency.data
             deposit_item.last_updated = datetime.now(UTC)
             db.session.commit()
             flash("Deposit updated successfully!", "success")
         except (ValueError, Exception) as e:
             db.session.rollback()
             flash(f"An error occurred: {e}", "danger")
-        
         return redirect(url_for("deposit.deposit"))
-    else:
-        # GET request
-        currencies = get_sorted_currencies()
-        return render_template("update_deposit.html", deposit=deposit_item, currencies=currencies)
+
+    # For GET request, pre-populate the form
+    if request.method == 'GET':
+        form.currency.data = deposit_item.currency
+
+    return render_template("_modal_form.html", form=form, title="Edit Deposit")
 
 @deposit_bp.route("/delete_deposit/<int:deposit_id>", methods=["POST"])
 @login_required
