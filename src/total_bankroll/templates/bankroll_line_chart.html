@@ -5,13 +5,11 @@
 {{ page_header('Bankroll Value Over Time (Line Chart)', 'Line graph showing total bankroll in USD over time.') }}
 
 <section class="page-section" id="charts-content">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-12">
-                <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary mb-4"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
-                <canvas id="bankrollChart"></canvas>
-            </div>
+    <div class="container">
+        <div class="mb-4">
+            <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
         </div>
+        <canvas id="bankrollChart"></canvas>
     </div>
 </section>
 
