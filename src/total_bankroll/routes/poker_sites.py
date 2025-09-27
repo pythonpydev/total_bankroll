@@ -4,8 +4,8 @@ from sqlalchemy.orm import aliased
 from sqlalchemy import func, and_, inspect
 from decimal import Decimal
 from flask_wtf import FlaskForm
-from wtforms import StringField, DecimalField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, DecimalField, SelectField, SubmitField, DateTimeField
+from wtforms.validators import DataRequired, Length, Optional
 
 from ..extensions import db
 from ..models import Sites, SiteHistory, Currency
@@ -27,6 +27,12 @@ class UpdateSiteForm(FlaskForm):
 class RenameSiteForm(FlaskForm):
     name = StringField('New Site Name', validators=[DataRequired(), Length(min=2, max=50)])
     submit = SubmitField('Rename')
+
+class EditSiteHistoryForm(FlaskForm):
+    recorded_at = DateTimeField('Recorded At (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired()])
+    currency = SelectField('Currency', coerce=str, validators=[DataRequired()])
+    submit = SubmitField('Update Record')
 
 @poker_sites_bp.route("/poker_sites")
 @login_required
@@ -227,18 +233,29 @@ def move_site(site_id, direction):
 def edit_site_history(history_id):
     history_record = db.session.get(SiteHistory, history_id)
     if not history_record:
-        return "History record not found", 404
+        flash('History record not found', 'danger')
+        return redirect(url_for('poker_sites.poker_sites_page'))
     if history_record.user_id != current_user.id:
         flash('Not authorized.', 'danger')
         return redirect(url_for('poker_sites.poker_sites_page'))
 
-    if request.method == 'POST':
-        history_record.recorded_at = datetime.strptime(request.form['recorded_at'], '%Y-%m-%d %H:%M:%S')
-        history_record.amount = Decimal(request.form['amount'])
-        history_record.currency = request.form['currency']
-        db.session.commit()
-        flash('History record updated successfully!', 'success')
+    form = EditSiteHistoryForm(obj=history_record)
+    currencies = get_sorted_currencies()
+    form.currency.choices = [(c['code'], c['name']) for c in currencies]
+
+    if form.validate_on_submit():
+        try:
+            history_record.recorded_at = form.recorded_at.data
+            history_record.amount = form.amount.data
+            history_record.currency = form.currency.data
+            db.session.commit()
+            flash('History record updated successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating record: {e}', 'danger')
         return redirect(url_for('poker_sites.site_history', site_id=history_record.site_id))
 
-    currencies = get_sorted_currencies()
-    return render_template('edit_site_history.html', history_record=history_record, currencies=currencies)
+    if request.method == 'GET':
+        form.currency.data = history_record.currency
+
+    return render_template('_modal_form.html', form=form, title="Edit Site History Record")

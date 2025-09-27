@@ -1,37 +1,21 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="site_history_header">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">History for {{ site.name }}</h2>
-                <hr class="divider divider-light" />
-            </div>
-        </div>
-    </div>
-</section>
+{{ page_header(site.name ~ ' History', 'View the historical balance records for this poker site.') }}
 
-<section class="page-section" id="site_history_content">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-12">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-            </div>
-            <div class="col-lg-12 text-start mb-3">
-                <a href="{{ url_for('poker_sites.poker_sites_page') }}" class="btn btn-secondary"><i class="bi-arrow-left"></i> Back to Poker Sites</a>
-            </div>
-            <!-- Date Filter Form -->
-            <div class="col-lg-12">
+<section class="page-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4">History for {{ site.name }}</h2>
+            <a href="{{ url_for('poker_sites.poker_sites_page') }}" class="btn btn-secondary">
+                <i class="bi-arrow-left me-2"></i>Back to Poker Sites
+            </a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <!-- Date Filter Form -->
                 <form method="get" action="{{ url_for('poker_sites.site_history', site_id=site.id) }}" class="row g-3 align-items-end mb-4 p-3 border rounded bg-light">
                     <div class="col-md-4">
                         <label for="start_date" class="form-label">From</label>
@@ -46,10 +30,9 @@
                         <a href="{{ url_for('poker_sites.site_history', site_id=site.id) }}" class="btn btn-secondary">Clear</a>
                     </div>
                 </form>
-            </div>
-            <div class="col-lg-12">
+
                 <div class="table-responsive">
-                    <table class="table table-custom">
+                    <table class="table table-custom table-striped">
                         <thead>
                             <tr>
                                 <th scope="col">Recorded At</th>
@@ -61,15 +44,19 @@
                         <tbody>
                             {% for record in history %}
                                 <tr>
-                                    <td>{{ record.recorded_at }}</td>
+                                    <td>{{ record.recorded_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                                     <td>{{ record.currency_symbol }}{{ "%.2f" | format(record.amount) }}</td>
                                     <td>{{ record.currency_name }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.edit_site_history', history_id=record.id) }}">Edit</button>
-                                        {% if history|length > 1 %}
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='site_history', item_id=record.id) }}">Delete</button>
-                                        {% endif %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.edit_site_history', history_id=record.id) }}">Edit</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='site_history', item_id=record.id) }}">
+                                            Delete
+                                        </button>
                                     </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No history found for this period.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
