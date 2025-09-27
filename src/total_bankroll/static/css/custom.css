@@ -11,3 +11,34 @@
 .table tr.text-white > td, p.p-3.rounded.text-white {
     color: #fff !important;
 }
+
+/* Text color classes for light mode */
+.text-deposit {
+    font-weight: bold;
+    color: green;
+}
+
+.text-poker-site {
+    font-weight: bold;
+    color: darkorange;
+}
+
+.text-asset {
+    font-weight: bold;
+    color: dimgray;
+}
+
+.text-withdrawal {
+    font-weight: bold;
+    color: darkred;
+}
+
+.text-bankroll {
+    font-weight: bold;
+    color: blue;
+}
+
+.text-profit {
+    font-weight: bold;
+    color: green;
+}

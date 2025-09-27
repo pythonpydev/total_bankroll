@@ -33,6 +33,7 @@ def register_blueprints(app):
     from .routes.tools import tools_bp
     from .routes.hand_eval import hand_eval_bp
     from .routes.legal import legal_bp
+    from .routes.help import help_bp
 
     blueprints = [
         (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
@@ -40,7 +41,7 @@ def register_blueprints(app):
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
         (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None), 
-        (hand_eval_bp, None), (legal_bp, None),
+        (hand_eval_bp, None), (legal_bp, None), (help_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
