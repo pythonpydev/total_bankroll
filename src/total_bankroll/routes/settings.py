@@ -71,7 +71,13 @@ def settings_page():
     reset_database_form = ResetDatabaseForm()
     export_data_form = ExportDataForm()
     import_data_form = ImportDataForm()
-    return render_template("settings.html", reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form)
+    currency_form = UpdateDefaultCurrencyForm()
+    currencies = get_sorted_currencies()
+    currency_form.currency.choices = [(c['code'], c['name']) for c in currencies]
+    if current_user.is_authenticated and hasattr(current_user, 'default_currency_code'):
+        currency_form.currency.data = current_user.default_currency_code
+
+    return render_template("settings.html", reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form, currency_form=currency_form, currencies=currencies)
 
 @settings_bp.route('/settings/2fa/setup', methods=['GET', 'POST'])
 @login_required
@@ -466,7 +472,7 @@ def update_default_currency():
         for field, errors in currency_form.errors.items():
             for error in errors:
                 flash(f"Error in {field}: {error}", 'danger')
-    return redirect(url_for('settings.update_account_details'))
+    return redirect(url_for('settings.settings_page'))
 
 @settings_bp.route('/confirm_new_email/<token>')
 @login_required

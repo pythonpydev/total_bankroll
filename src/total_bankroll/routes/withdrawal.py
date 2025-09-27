@@ -5,9 +5,18 @@ from decimal import Decimal
 from sqlalchemy import func
 from ..utils import get_user_bankroll_data, get_sorted_currencies
 from ..extensions import db
-from ..models import Drawings, Currency
+from ..models import Drawings, Currency, User
+from flask_wtf import FlaskForm
+from wtforms import StringField, DecimalField, SelectField, SubmitField, DateField
+from wtforms.validators import DataRequired, NumberRange
 
 withdrawal_bp = Blueprint("withdrawal", __name__)
+
+class UpdateWithdrawalForm(FlaskForm):
+    date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', coerce=str, validators=[DataRequired()])
+    submit = SubmitField('Update Withdrawal')
 
 @withdrawal_bp.route("/withdrawal")
 @login_required
@@ -80,37 +89,33 @@ def withdrawal():
 @login_required
 def update_withdrawal(withdrawal_id):
     """Update a withdrawal transaction."""
-    withdrawal_item = db.session.query(Drawings).filter_by(id=withdrawal_id, user_id=current_user.id).first()
+    withdrawal_item = db.session.get(Drawings, withdrawal_id)
     if not withdrawal_item:
         flash("Withdrawal not found.", "danger")
         return redirect(url_for("withdrawal.withdrawal"))
+    if withdrawal_item.user_id != current_user.id:
+        flash("Not authorized to update this withdrawal.", "danger")
+        return redirect(url_for("withdrawal.withdrawal"))
 
-    if request.method == "POST":
-        date_str = request.form.get("date", "")
-        amount_str = request.form.get("amount", "")
-        currency_code = request.form.get("currency", "USD")
+    form = UpdateWithdrawalForm(obj=withdrawal_item)
+    currencies = get_sorted_currencies()
+    form.currency.choices = [(c['code'], c['name']) for c in currencies]
 
-        if not date_str or not amount_str:
-            flash("Date and amount are required", "danger")
-            return redirect(url_for("withdrawal.withdrawal"))
-
+    if form.validate_on_submit():
         try:
-            withdrawal_item.date = datetime.strptime(date_str, "%Y-%m-%d")
-            amount = round(Decimal(amount_str), 2)
-            if amount <= 0:
-                flash("Amount must be positive", "danger")
-                return redirect(url_for("withdrawal.withdrawal"))
-            withdrawal_item.amount = amount
-            withdrawal_item.currency = currency_code
+            withdrawal_item.date = form.date.data
+            withdrawal_item.amount = form.amount.data
+            withdrawal_item.currency = form.currency.data
             withdrawal_item.last_updated = datetime.now(UTC)
             db.session.commit()
             flash("Withdrawal updated successfully!", "success")
         except (ValueError, Exception) as e:
             db.session.rollback()
             flash(f"An error occurred: {e}", "danger")
-        
         return redirect(url_for("withdrawal.withdrawal"))
-    else:
-        # GET request
-        currencies = get_sorted_currencies()
-        return render_template("update_withdrawal.html", withdrawal_item=withdrawal_item, currencies=currencies)
+
+    # For GET request, pre-populate the form
+    if request.method == 'GET':
+        form.currency.data = withdrawal_item.currency
+
+    return render_template("_modal_form.html", form=form, title="Edit Withdrawal")
