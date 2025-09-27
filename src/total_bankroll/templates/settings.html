@@ -57,6 +57,19 @@
             </div>
         </div>
 
+        <!-- Currency Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Currency</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Default Currency:</strong> {{ current_user.default_currency_code or 'USD' }}</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#selectCurrencyModal">
+                    Select Default Currency
+                </button>
+            </div>
+        </div>
+
         <!-- Two-Factor Authentication -->
         <div class="card mb-4">
             <div class="card-header">
@@ -88,6 +101,34 @@
             </div>
     </div>
 </section>
+
+<div class="modal fade" id="selectCurrencyModal" tabindex="-1" aria-labelledby="selectCurrencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectCurrencyModalLabel">Select Default Currency</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="selectCurrencyForm" action="{{ url_for('settings.update_default_currency') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="currency" class="form-label">Currency</label>
+                        <select class="form-select" id="currency" name="currency">
+                            {% for currency in currencies %}
+                                <option value="{{ currency.code }}" {% if currency.code == current_user.default_currency_code %}selected{% endif %}>{{ currency.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="selectCurrencyForm">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
