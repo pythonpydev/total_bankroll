@@ -54,10 +54,12 @@ def create_app(config_name=None):
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
     config_obj = config_by_name[config_name or os.getenv('FLASK_ENV', 'development')]
     app.config.from_object(config_obj)
+    if config_name == 'development' or os.getenv('FLASK_ENV') == 'development':
+        app.debug = True
     app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
-    log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
+    log_level = logging.DEBUG if (app.config['DEBUG'] or os.getenv('FLASK_ENV') == 'development') else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
     # Initialize CSRFProtect

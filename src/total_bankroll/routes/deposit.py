@@ -63,12 +63,14 @@ def deposit():
 
     today = datetime.now().strftime("%Y-%m-%d")
     currencies = get_sorted_currencies()
+    default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
 
     return render_template("deposit.html", 
                            deposits=deposit_data, 
                            today=today, 
                            total_net_worth=total_net_worth, 
                            currencies=currencies,
+                           default_currency=default_currency,
                            start_date=start_date_str,
                            end_date=end_date_str)
 
