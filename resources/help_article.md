@@ -34,4 +34,26 @@
 
 ## How you use StakeEasy.net
 
-- 
+- When you begin on your poker journey using a bankroll management strategy, you will likely set aside a sum of money that you can afford to lose.
+
+- To represent this on StakeEasy.net, go to the deposits page, and add a deposit for the amount you have set aside.
+
+- Then, when you choose which site or sites you want to play on, go to the poker sites page, and add the site(s), set their name, currency and the amount you have bought in for. Now you're ready to play!
+
+- After every session, or at regular intervals, update the amount on each poker site.
+
+- If for whatever reason you go bust, go through the same process again, e.g. add a deposit and either add a new poker site or update the amount on the existing site you play on.
+
+- Eventually, you may wish to withdraw money from your poker bankroll to spend on other things, leisure, family etc. or you may wish to set aside part of the bankroll into other investments we call assets.
+
+- For example, you may decide that you don't use all of the money on your poker sites, or you just want to set some aside but keep it in your overall poker bankroll, for you to use at a later date if you decide.
+
+- Assets could include cash (useful for live cash games and tournaments), crypto-currency (e.g. Bitcoin, Ethereum), stocks and shares, gold, silver etc.
+
+- To do this, simply update the amount on the poker site(s), then go to the assets page and add a new asset, for example Bitcoin and the amount you are investing.
+
+- StakeEasy.net will calculate your total bankroll (or net worth), your profit / loss and convert everything in to US dollars ($$) to make comparisons easier as some of the sites and assets may be invested in different currencies.
+
+- The site automatically updates with the latest currency exchange rates so your $$ values should be accurate.
+
+- Finally, from the StakeEasy.net team, we wish you good luck at the tables!

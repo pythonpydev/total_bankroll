@@ -304,3 +304,34 @@ body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
 body.dark-mode .table-striped tbody th {
     color: #ffffff; /* White text for table headers in striped tables */
 }
+
+/* Text color classes */
+.text-deposit {
+    font-weight: bold;
+    color: lime;
+}
+
+.text-poker-site {
+    font-weight: bold;
+    color: yellow;
+}
+
+.text-asset {
+    font-weight: bold;
+    color: lightgrey;
+}
+
+.text-withdrawal {
+    font-weight: bold;
+    color: red;
+}
+
+.text-bankroll {
+    font-weight: bold;
+    color: deepskyblue;
+}
+
+.text-profit {
+    font-weight: bold;
+    color: lime;
+}
