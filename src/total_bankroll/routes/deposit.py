@@ -62,7 +62,7 @@ def deposit():
         deposit_data.append(deposit_dict)
 
     today = datetime.now().strftime("%Y-%m-%d")
-    currencies = [c['name'] for c in get_sorted_currencies()]
+    currencies = get_sorted_currencies()
 
     return render_template("deposit.html", 
                            deposits=deposit_data, 
