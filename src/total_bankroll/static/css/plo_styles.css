@@ -46,7 +46,11 @@ src/total_bankroll/templates/form.html
     color: #fff;
 }
 
+
+
+/* Protected selectors (dynamic/dark mode) */
 .dark-mode .poker-form button {
-    background-color: var(--dark-accent);
+background-color: var(--dark-accent);
     border-color: var(--dark-accent);
 }
+
