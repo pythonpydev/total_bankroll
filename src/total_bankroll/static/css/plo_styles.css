@@ -1,3 +1,8 @@
+/* Used in
+src/total_bankroll/templates/hand_evaluation.html
+src/total_bankroll/templates/form.html
+*/
+
 /* Ensure plo-form-container is centered */
 .plo-form-container {
     display: flex;

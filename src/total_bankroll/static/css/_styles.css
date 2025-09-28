@@ -10981,3 +10981,821 @@ header.masthead h1, header.masthead .h1 {
   }
 }
 
+/* Custom styles for table row and message highlighting */
+.table tr.bg-primary > td, p.p-3.rounded.bg-primary {
+    background-color: #0d6efd !important;
+}
+.table tr.bg-success > td, p.p-3.rounded.bg-success {
+    background-color: #198754 !important;
+}
+.table tr.bg-danger > td, p.p-3.rounded.bg-danger {
+    background-color: #dc3545 !important;
+}
+.table tr.text-white > td, p.p-3.rounded.text-white {
+    color: #fff !important;
+}
+
+/* Text color classes for light mode */
+.text-deposit {
+    font-weight: bold;
+    color: green;
+}
+
+.text-poker-site {
+    font-weight: bold;
+    color: darkorange;
+}
+
+.text-asset {
+    font-weight: bold;
+    color: dimgray;
+}
+
+.text-withdrawal {
+    font-weight: bold;
+    color: darkred;
+}
+
+.text-bankroll {
+    font-weight: bold;
+    color: blue;
+}
+
+.text-profit {
+    font-weight: bold;
+    color: green;
+}/*
+ * Custom Table Styles for StakeEasy.net
+ * This stylesheet provides a modern, clean look for data tables.
+ */
+
+.table-custom {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: 'Merriweather Sans', sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+}
+
+.table-custom thead tr {
+    background-color: #f8f9fa; /* A light grey, less harsh than black */
+    color: #343a40; /* Dark text for contrast */
+    text-align: left;
+    font-weight: bold;
+}
+
+.table-custom th,
+.table-custom td {
+    padding: 12px 15px;
+}
+
+.table-custom tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.table-custom tbody tr:nth-of-type(even) {
+    background-color: #f9fafb; /* Slightly lighter for subtle zebra in light mode */
+}
+
+.table-custom tbody tr:last-of-type {
+    border-bottom: 2px solid #0d6efd; /* Bootstrap primary blue for accent */
+}
+
+.table-custom tbody tr:hover {
+    background-color: #f1f3f5; /* Softer hover in light mode */
+}
+
+/* Custom classes for positive/negative changes */
+.table-custom .change-positive { color: #0f8a4f; font-weight: 600; }
+.table-custom .change-negative { color: #c82333; font-weight: 600; }
+.table-custom .change-zero { color: #6c757d; }
+
+/* Custom highlighting for recommendation tables */
+.table-custom .highlight-recommended {
+    background-color: rgba(25, 135, 84, 0.2); /* Light green */
+    font-weight: bold;
+}
+.table-custom .highlight-move-up {
+    background-color: rgba(220, 53, 69, 0.2); /* Light red */
+    font-weight: bold;
+}
+.table-custom .highlight-move-down {
+    background-color: rgba(13, 110, 253, 0.2); /* Light blue */
+    font-weight: bold;
+}/*
+ * Dark Theme for StakeEasy.net
+ */
+
+:root {
+    --dark-bg-0: #121212; /* Deepest background */
+    --dark-bg-1: #1e1e1e; /* Main background */
+    --dark-bg-2: #2a2a2a; /* Surface background (cards, modals) */
+    --dark-border: #6c757d; /* Bootstrap --bs-gray for better contrast */
+    --dark-text-0: #f5f5f5; /* Primary text */
+    --dark-text-1: #bdbdbd; /* Secondary text (muted) */
+    --dark-accent: #4dabf7; /* A lighter blue for accents */
+}
+
+body.dark-mode {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+
+    /* Override main color variables for dark mode */
+    --color-text-success: #66bb6a; /* Softer green */
+    --color-text-danger: #ef5350;  /* Softer red */
+    --color-text-warning: #ffa726; /* Softer orange */
+    --color-black: #ffffff; /* Invert black for text */
+    --color-white: #121212; /* Invert white for backgrounds */
+}
+
+/* --- Components --- */
+
+body.dark-mode .bg-light {
+    background-color: var(--dark-bg-0) !important;
+}
+
+body.dark-mode .navbar-light {
+    background-color: var(--dark-bg-2) !important;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+body.dark-mode .navbar-brand,
+body.dark-mode .nav-link {
+    color: var(--dark-text-0) !important;
+}
+
+body.dark-mode .navbar-toggler-icon {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: var(--dark-accent);
+    color: var(--dark-bg-0);
+}
+
+body.dark-mode .dropdown-divider {
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .card {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .card.bg-primary {
+    background-color: var(--dark-bg-0) !important;
+    border-color: var(--dark-accent) !important;
+}
+
+body.dark-mode .text-dark {
+    color: var(--dark-text-0) !important;
+}
+
+body.dark-mode .text-muted {
+    color: var(--dark-text-1) !important;
+}
+
+body.dark-mode .divider {
+    background-color: var(--dark-border) !important;
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-bottom-color: var(--dark-border);
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* --- Forms --- */
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+    border-color: var(--dark-border);
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-0);
+    border-color: var(--dark-accent);
+    box-shadow: 0 0 0 0.25rem rgba(77, 171, 247, 0.25);
+}
+
+/* --- Custom Tables --- */
+
+body.dark-mode .table-custom {
+    color: var(--dark-text-0);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .table-custom thead tr {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .table-custom tbody tr {
+    border-bottom-color: var(--dark-border);
+}
+
+body.dark-mode .table-custom tbody tr:nth-of-type(even) {
+    background-color: #2e2e2e;
+}
+
+body.dark-mode .table-custom tbody tr:hover {
+    background-color: #2e2e2e;
+}
+
+body.dark-mode .table-custom tbody td {
+    color: var(--dark-text-0);
+}
+
+/* --- Disable Bootstrap's box-shadow overlay for table cells in dark mode --- */
+body.dark-mode .table > :not(caption) > * > * {
+    box-shadow: none !important;
+}
+
+/* --- Override Bootstrap table variant classes in dark mode --- */
+body.dark-mode .table.table-bordered.table-striped .table-success,
+body.dark-mode .table.table-bordered.table-striped .table-success > td,
+body.dark-mode .table-success {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table.table-bordered.table-striped .table-warning,
+body.dark-mode .table.table-bordered.table-striped .table-warning > td,
+body.dark-mode .table-warning {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
+}
+
+body.dark-mode .table.table-bordered.table-striped .table-danger,
+body.dark-mode .table.table-bordered.table-striped .table-danger > td,
+body.dark-mode .table-danger {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+/* --- Override .bg-* classes for tables in dark mode --- */
+body.dark-mode .table tr.bg-success > td,
+body.dark-mode .table tr.bg-success,
+body.dark-mode .bg-success {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table tr.bg-warning > td,
+body.dark-mode .table tr.bg-warning,
+body.dark-mode .bg-warning {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
+}
+
+body.dark-mode .table tr.bg-danger > td,
+body.dark-mode .table tr.bg-danger,
+body.dark-mode .bg-danger {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+/* --- Custom highlighting for .table-custom in dark mode --- */
+body.dark-mode .table-custom .highlight-recommended {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #66bb6a !important; /* Green text */
+}
+
+body.dark-mode .table-custom .highlight-move-up {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ef5350 !important; /* Red text */
+}
+
+body.dark-mode .table-custom .highlight-move-down {
+    background-color: var(--dark-bg-2) !important; /* #2a2a2a */
+    color: #ffa726 !important; /* Yellow/orange text */
+}
+
+/* --- List Groups --- */
+
+body.dark-mode .list-group-item {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-0);
+}
+
+/* --- Alerts --- */
+
+body.dark-mode .alert {
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .alert-light,
+body.dark-mode .alert-secondary {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-0);
+}
+
+body.dark-mode .alert-light hr,
+body.dark-mode .alert-secondary hr {
+    border-top-color: var(--dark-border);
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    color: #f8d7da;
+}
+
+body.dark-mode .alert-info {
+    background-color: rgba(13, 110, 253, 0.2);
+    border-color: rgba(13, 110, 253, 0.5);
+    color: #cff4fc;
+}
+
+/* --- Buttons --- */
+
+body.dark-mode .btn-outline-dark {
+    color: var(--dark-text-0);
+    border-color: var(--dark-text-0);
+}
+
+body.dark-mode .btn-outline-dark:hover {
+    color: var(--dark-bg-0);
+    background-color: var(--dark-text-0);
+    border-color: var(--dark-text-0);
+}
+
+body.dark-mode .btn-primary {
+    background-color: var(--dark-accent);
+    border-color: var(--dark-accent);
+    color: var(--dark-bg-0);
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #3b9de4; /* A slightly lighter shade for hover */
+    border-color: #3b9de4;
+}
+
+/* --- Table Cell Colors --- */
+
+body.dark-mode .change-positive {
+    color: #66bb6a !important; /* Softer green for dark mode */
+    background-color: transparent !important;
+}
+
+body.dark-mode .change-negative {
+    color: #ef5350 !important; /* Softer red for dark mode */
+    background-color: transparent !important;
+}
+
+/* Ensure table headers are readable in dark mode */
+body.dark-mode .thead-dark th {
+    color: var(--dark-text-0) !important; /* Use the primary light text color for dark mode */
+}
+
+/* Dark mode specific table colors for striped tables */
+body.dark-mode .table-bordered.table-striped tbody > tr > * {
+    background-color: var(--dark-bg-2) !important;
+}
+
+body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
+    background-color: #2e2e2e;
+}
+
+body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
+    background-color: #2e2e2e;
+}
+
+body.dark-mode .table-striped tbody th {
+    color: #ffffff; /* White text for table headers in striped tables */
+}
+
+/* Text color classes */
+.text-deposit {
+    font-weight: bold;
+    color: lime;
+}
+
+.text-poker-site {
+    font-weight: bold;
+    color: yellow;
+}
+
+.text-asset {
+    font-weight: bold;
+    color: lightgrey;
+}
+
+.text-withdrawal {
+    font-weight: bold;
+    color: red;
+}
+
+.text-bankroll {
+    font-weight: bold;
+    color: deepskyblue;
+}
+
+.text-profit {
+    font-weight: bold;
+    color: lime;
+}:root {
+    /* Colors */
+    --color-text-success: #155724;
+    --color-text-danger: #721c24;
+    --color-text-warning: #856404;
+    --color-dark-bg: #343a40;
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    /* Dark Mode Specific Colors */
+    --dark-bg-1: #1a1a1a; /* Very dark for general background */
+    --dark-bg-2: #2a2a2a; /* Slightly lighter dark for sections/cards */
+    --dark-bg-3: #3a3a3a; /* Even lighter dark for article boxes */
+    --dark-border: #4a4a4a; /* Dark mode border color */
+    --dark-text: #e0e0e0; /* Light text for dark mode */
+    --dark-text-0: var(--dark-text); /* Alias for dark-text for table styles */
+
+    /* Spacing & Sizing */
+    --spacing-xs: 2px;
+    --spacing-sm: 5px;
+    --spacing-md: 10px;
+    --spacing-lg: 20px;
+    --spacing-xl: 6rem;
+
+    --border-radius-sm: 5px;
+    --border-radius-md: 8px;
+}
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.center-content h2 {
+    text-align: center;
+}
+
+.data-display h2 {
+    text-align: center; /* Center the heading within its column */
+}
+
+.data-display p {
+    text-align: left;
+}
+
+.card-image {
+    border: 1px solid var(--color-black);
+    height: 70px; /* Example height, adjust as needed */
+    margin: var(--spacing-xs);
+}
+
+.data-display-container {
+    display: flex;
+    justify-content: space-between; /* Changed from space-around */
+    width: 100%;
+    max-width: 1200px; /* Adjusted to ensure it fits well */
+    margin: 0 auto var(--spacing-lg); /* Center the container and add bottom margin */
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+}
+
+.left-column, .right-column {
+    flex: 1;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+}
+
+.left-column {
+    margin-right: var(--spacing-md); /* Space between left and right columns */
+}
+
+.right-column {
+    margin-left: var(--spacing-md); /* Space between left and right columns */
+}
+
+.hand-details-row, .blind-details-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.hand-details-row p, .blind-details-row p {
+    flex: 1;
+    margin-right: var(--spacing-md);
+}
+
+.hand-details-row p:last-child, .blind-details-row p:last-child {
+    margin-right: 0;
+}
+
+.left-column p strong, .right-column p strong {
+    display: inline-block;
+    min-width: 150px; /* Adjusted to ensure better alignment */
+    text-align: left;
+}
+
+.data-display {
+    width: 100%; /* Full width for the data display section */
+    max-width: 1200px; /* Adjusted to ensure it fits well */
+    margin: 0 auto; /* Center the data display section */
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+}
+
+.card-display-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md); /* Add some space between rows */
+}
+
+.card-display-row p {
+    flex-shrink: 0;
+    width: 150px; /* Adjust as needed for consistent label width */
+    text-align: right;
+    margin-right: var(--spacing-md);
+}
+
+.card-display-row span {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md); /* Space between buttons */
+  margin-top: var(--spacing-lg);
+}
+
+.button-group .button {
+  flex-grow: 1;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  text-decoration: none;
+  color: var(--color-white);
+  font-weight: bold;
+  text-align: center;
+  max-width: 200px; /* Adjust as needed for desired button width */
+}
+
+.text-success { color: var(--color-text-success) !important; }
+.text-danger { color: var(--color-text-danger) !important; }
+.text-warning { color: var(--color-text-warning) !important; }
+
+.thead-dark th {
+    background-color: var(--color-dark-bg); /* Explicitly set dark background */
+    color: var(--color-white) !important; /* Ensure text is white */
+}
+
+/* Styles from custom.css */
+.page-section {
+    padding: var(--spacing-xl) 0;
+}
+
+/* Subtle page masthead for internal pages */
+header.masthead.page-masthead {
+    background-color: #f8f9fa;
+    padding: var(--spacing-lg) 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    height: auto !important;
+    min-height: 0 !important;
+    background-image: none !important;
+    background-attachment: initial !important;
+    background-size: initial !important;
+}
+
+body.dark-mode header.masthead.page-masthead {
+    background-color: var(--dark-bg-2);
+    border-bottom-color: var(--dark-border);
+}
+
+/* Styles from custom_tables.css */
+/* (No styles were present in the file) */
+
+/* --- Responsive Styles --- */
+@media (max-width: 768px) {
+    .data-display-container {
+        flex-direction: column;
+        padding: var(--spacing-md);
+    }
+
+    .left-column, .right-column {
+        margin-right: 0;
+        margin-left: 0;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .right-column {
+        margin-bottom: 0;
+    }
+
+    .hand-details-row, .blind-details-row {
+        flex-direction: column;
+    }
+
+    .card-display-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card-display-row p {
+        width: auto;
+        text-align: left;
+        margin-right: 0;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* --- SPR Guess Form --- */
+.spr-guess-form {
+    text-align: center;
+}
+
+.spr-guess-form .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.spr-guess-form label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.spr-result {
+    font-weight: bold;
+    margin-top: var(--spacing-md);
+    text-align: center;
+}
+
+/* --- Back to Top Button --- */
+#backToTopBtn {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: var(--dark-accent);
+    color: var(--color-white);
+    cursor: pointer;
+    padding: 12px 16px;
+    border-radius: var(--border-radius-md);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+/* --- Cookie Consent Banner --- */
+#cookieConsentBanner {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #2a2a2a; /* A neutral dark color that works on both themes */
+    color: #f5f5f5;
+    padding: var(--spacing-md);
+    z-index: 1050; /* Ensure it's above other content */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    font-size: 14px;
+}
+
+#cookieConsentBanner .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cookieConsentBanner a {
+    color: var(--dark-accent);
+    text-decoration: underline;
+}
+
+#cookieConsentBanner .btn-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+    margin-left: var(--spacing-lg);
+}
+
+/* Dark mode overrides for light background utilities */
+body.dark-mode .bg-light {
+    background-color: var(--dark-bg-2) !important;
+}
+
+/* --- PLO Poker Table Seat Positioning --- */
+.image-container {
+    position: relative;
+    max-width: 600px; /* Adjust based on your image's width */
+    margin: 0 auto; /* Centers the container */
+}
+
+.seat {
+    position: absolute;
+    transform: translate(-50%, -50%); /* Center the seat labels on their coordinates */
+    text-align: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+#seat-1 { bottom: 5%; left: 25%; }   /* Bottom-left */
+#seat-2 { top: 20%; left: 15%; }    /* Top-left */
+#seat-3 { top: 5%; left: 50%; }     /* Top-middle */
+#seat-4 { top: 20%; right: 5%; }   /* Top-right */
+#seat-5 { bottom: 5%; right: 15%; }  /* Bottom-right */
+#seat-6 { bottom: -5%; left: 50%; }   /* Bottom-middle */
+
+/* SPR Article Box Styles */
+.spr-article-box {
+    border: 1px solid #dee2e6; /* Light gray border */
+    border-radius: 0.5rem; /* Curved corners */
+    padding: 1.5rem; /* Inner spacing */
+    margin-top: 1.5rem; /* Space from the header */
+    margin-bottom: 1.5rem; /* Space from the button below */
+    background-color: #f8f9fa; /* Light background for the article */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle shadow */
+}
+
+body.dark-mode .spr-article-box {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text); /* Ensure text is readable in dark mode */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for dark mode */
+}
+
+/* Dark mode override for alert-success */
+body.dark-mode .alert-success {
+    background-color: var(--dark-bg-2) !important; /* Dark background */
+    color: var(--color-text-success) !important; /* Green text */
+    border-color: var(--color-text-success) !important; /* Green border */
+}
+
+/* Dark mode table styles moved from decisions.html */
+.dark-mode .table-bordered,
+.dark-mode .table-bordered td,
+.dark-mode .table-bordered th {
+  border-color: var(--dark-border) !important;
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
+  color: var(--dark-text-0);
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(even) {
+  background-color: var(--dark-bg-2);
+  color: var(--dark-text-0);
+}
+
+.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
+  color: var(--dark-text-0);
+}
+
+.dark-mode th[scope="row"] {
+  color: var(--dark-text-0) !important;
+}
+
+/* Bankroll recommendation alert styles */
+.alert-bankroll-safe {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Dark green text */
+    border-color: #155724; /* Darker green border */
+}
+
+body.dark-mode .alert-bankroll-safe {
+    background-color: #155724; /* Dark green */
+    color: #ffffff; /* White text */
+    border-color: #155724;
+}
