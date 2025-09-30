@@ -7161,11 +7161,12 @@ hr.divider-light {
 header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 4.5rem);
-  background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%), url("../assets/img/bg-masthead.jpg");
+  background: linear-gradient(to bottom, rgba(var(--bs-primary-rgb), 0.8) 0%, rgba(var(--bs-primary-rgb), 1) 100%);
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: scroll;
   background-size: cover;
+  color: #fff;
 }
 header.masthead h1, header.masthead .h1 {
   font-size: 2.25rem;
@@ -7432,14 +7433,8 @@ header.masthead h1, header.masthead .h1 {
 
 /* Subtle page masthead for internal pages */
 header.masthead.page-masthead {
-    background-color: #f8f9fa;
-    padding: var(--spacing-lg) 0;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    height: auto !important;
-    min-height: 0 !important;
-    background-image: none !important;
-    background-attachment: initial !important;
-    background-size: initial !important;
+  height: 20rem;
+  background: linear-gradient(to bottom, rgba(var(--bs-primary-rgb), 0.8) 0%, rgba(var(--bs-primary-rgb), 1) 100%);
 }
 
 /* Styles from custom_tables.css */

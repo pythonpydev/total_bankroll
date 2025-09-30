@@ -50,11 +50,11 @@
                                     <td>{{ deposit.currency_name }}</td>
                                     <td>${{ deposit.amount_usd|round(2) }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        <button type="button" class="btn btn-sm btn-primary" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#generalModal" 
                                                 data-url="{{ url_for('deposit.update_deposit', deposit_id=deposit.id) }}">Edit</button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='deposit', item_id=deposit.id) }}">
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='deposit', item_id=deposit.id) }}">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             Delete
                                         </button>
