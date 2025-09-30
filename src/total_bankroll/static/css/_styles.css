@@ -34,7 +34,7 @@
   --bs-gray-700: #495057;
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
-  --bs-primary: #355E3B;
+  --bs-primary: #343a40;
   --bs-secondary: #6c757d;
   --bs-success: #198754;
   --bs-info: #0dcaf0;
@@ -11071,9 +11071,8 @@ flex-grow: 1;
   max-width: 200px;
 }
 
-body.dark-mode header.masthead.page-masthead {
-background-color: var(--dark-bg-2);
-    border-bottom-color: var(--dark-border);
+.dark-mode header.masthead {
+  background: #343a40;
 }
 
 body.dark-mode .bg-light {
