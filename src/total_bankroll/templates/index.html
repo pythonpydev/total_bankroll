@@ -122,13 +122,13 @@
 
     <!-- Bankroll Chart -->
     <div class="row gx-4 gx-lg-5 justify-content-center mt-5">
-        <div class="col-lg-10">
+        <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <a href="{{ url_for('charts.charts_page') }}" class="text-decoration-none">
                         <h4 class="card-title text-center mb-3">Bankroll Over Time</h4>
                     </a>
-                    <canvas id="dashboardBankrollChart"></canvas>
+                    <canvas id="dashboardBankrollChart" style="max-height: 400px;"></canvas>
                 </div>
             </div>
         </div>
