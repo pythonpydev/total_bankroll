@@ -1,148 +1,22 @@
-CSS Analysis Results (Rules 301 to 600, starting from CSS line 1)
+CSS Analysis Results (Rules 501 to 600, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
-a>code
-.form-floating>.form-select
-.tab-content>.tab-pane
-.card>hr
-.card>.list-group
-
-Skipped selectors (pseudo-elements or parsing errors):
-header.masthead h1,header.masthead .h1
-.table-custom th,.table-custom td
-.table-custom tbody tr:nth-of-type(even)
-.table-custom tbody tr:last-of-type
-:root
-:root
-sub,sup
-a:hover
-a:not([href]):not([class]),a:not([href]):not([class]):hover
-button:focus:not(:focus-visible)
-select:disabled
-legend+*
-[type=search]
-.list-inline-item:not(:last-child)
-.blockquote>:last-child
-.row-cols-auto>*
-.row-cols-1>*
-.row-cols-2>*
-.row-cols-3>*
-.row-cols-4>*
-.row-cols-5>*
-.row-cols-6>*
-.table-sm>:not(caption)>*>*
-.table-borderless>:not(caption)>*>*
-.table-borderless>:not(:first-child)
-.table-striped-columns>:not(caption)>tr>:nth-child(even)
-.table-hover>tbody>tr:hover>*
-.form-control:focus
-.form-control-plaintext:focus
-.form-control-plaintext.form-control-sm,.form-control-plaintext.form-control-lg
-.form-control-color:not(:disabled):not([readonly])
-.form-select:focus
-.form-select[multiple],.form-select[size]:not([size="1"])
-.form-select:disabled
-.form-check-input[type=checkbox]
-.form-check-input[type=radio]
-.form-check-input:active
-.form-check-input:focus
-.form-check-input:checked
-.form-check-input:checked[type=checkbox]
-.form-check-input:checked[type=radio]
-.form-check-input[type=checkbox]:indeterminate
-.form-check-input:disabled
-.form-check-input[disabled]~.form-check-label,.form-check-input:disabled~.form-check-label
-.form-switch .form-check-input:focus
-.form-switch .form-check-input:checked
-.btn-check[disabled]+.btn,.btn-check:disabled+.btn
-.form-range:focus
-.form-range:disabled
-.form-floating>.form-control,.form-floating>.form-control-plaintext,.form-floating>.form-select
-.form-floating>.form-control,.form-floating>.form-control-plaintext
-.form-floating>.form-control:focus,.form-floating>.form-control:not(:placeholder-shown),.form-floating>.form-control-plaintext:focus,.form-floating>.form-control-plaintext:not(:placeholder-shown)
-.form-floating>.form-control:focus~label,.form-floating>.form-control:not(:placeholder-shown)~label,.form-floating>.form-control-plaintext~label,.form-floating>.form-select~label
-.form-floating>.form-control-plaintext~label
-.input-group>.form-control,.input-group>.form-select,.input-group>.form-floating
-.input-group>.form-control:focus,.input-group>.form-select:focus,.input-group>.form-floating:focus-within
-.input-group .btn:focus
-.input-group-lg>.form-control,.input-group-lg>.form-select,.input-group-lg>.input-group-text,.input-group-lg>.btn
-.input-group-sm>.form-control,.input-group-sm>.form-select,.input-group-sm>.input-group-text,.input-group-sm>.btn
-.input-group-lg>.form-select,.input-group-sm>.form-select
-.input-group:not(.has-validation)>:not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),.input-group:not(.has-validation)>.dropdown-toggle:nth-last-child(n+3),.input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-control,.input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-select
-.input-group.has-validation>:nth-last-child(n+3):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),.input-group.has-validation>.dropdown-toggle:nth-last-child(n+4),.input-group.has-validation>.form-floating:nth-last-child(n+3)>.form-control,.input-group.has-validation>.form-floating:nth-last-child(n+3)>.form-select
-.input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback)
-.input-group>.form-floating:not(:first-child)>.form-control,.input-group>.form-floating:not(:first-child)>.form-select
-.form-check-inline .form-check-input~.valid-feedback
-.form-check-inline .form-check-input~.invalid-feedback
-.btn:hover
-.btn-check+.btn:hover
-.btn:focus-visible
-.btn-check:focus-visible+.btn
-.btn-check:checked+.btn,:not(.btn-check)+.btn:active,.btn:first-child:active,.btn.active,.btn.show
-.btn-check:checked+.btn:focus-visible,:not(.btn-check)+.btn:active:focus-visible,.btn:first-child:active:focus-visible,.btn.active:focus-visible,.btn.show:focus-visible
-.btn:disabled,.btn.disabled,fieldset:disabled .btn
-.btn-link:focus-visible
-.btn-link:hover
-.dropdown-item:hover,.dropdown-item:focus
-.dropdown-item.active,.dropdown-item:active
-.dropdown-item.disabled,.dropdown-item:disabled
-.btn-group>.btn-check:checked+.btn,.btn-group>.btn-check:focus+.btn,.btn-group>.btn:hover,.btn-group>.btn:focus,.btn-group>.btn:active,.btn-group>.btn.active,.btn-group-vertical>.btn-check:checked+.btn,.btn-group-vertical>.btn-check:focus+.btn,.btn-group-vertical>.btn:hover,.btn-group-vertical>.btn:focus,.btn-group-vertical>.btn:active,.btn-group-vertical>.btn.active
-.btn-sm+.dropdown-toggle-split,.btn-group-sm>.btn+.dropdown-toggle-split
-.btn-lg+.dropdown-toggle-split,.btn-group-lg>.btn+.dropdown-toggle-split
-.btn-group-vertical>.btn,.btn-group-vertical>.btn-group
-.btn-group-vertical>.btn:not(:first-child),.btn-group-vertical>.btn-group:not(:first-child)
-.btn-group-vertical>.btn:not(:last-child):not(.dropdown-toggle),.btn-group-vertical>.btn-group:not(:last-child)>.btn
-.btn-group-vertical>.btn~.btn,.btn-group-vertical>.btn-group:not(:first-child)>.btn
-.nav-link:hover,.nav-link:focus
-.nav-tabs .nav-link:hover,.nav-tabs .nav-link:focus
-.nav-tabs .nav-link.disabled,.nav-tabs .nav-link:disabled
-.nav-tabs .nav-link.active,.nav-tabs .nav-item.show .nav-link
-.nav-pills .nav-link:disabled
-.nav-pills .nav-link.active,.nav-pills .show>.nav-link
-.nav-justified>.nav-link,.nav-justified .nav-item
-.nav-fill .nav-item .nav-link,.nav-justified .nav-item .nav-link
-.navbar-brand:hover,.navbar-brand:focus
-.navbar-nav .show>.nav-link,.navbar-nav .nav-link.active
-.navbar-text a,.navbar-text a:hover,.navbar-text a:focus
-.navbar-toggler:hover
-.navbar-toggler:focus
-.card>.list-group:first-child
-.card>.list-group:last-child
-.card>.card-header+.list-group,.card>.list-group+.card-footer
-.card-link+.card-link
-.card-footer:last-child
-.card-img,.card-img-top,.card-img-bottom
-.card-img,.card-img-top
-.card-img,.card-img-bottom
-.accordion-button:not(.collapsed)
 .accordion-button:hover
 .accordion-button:focus
 .accordion-item:first-of-type
 .accordion-item:first-of-type .accordion-button
-.accordion-item:not(:first-of-type)
 .accordion-item:last-of-type
-.accordion-item:last-of-type .accordion-button.collapsed
 .accordion-item:last-of-type .accordion-collapse
 .accordion-flush .accordion-item:first-child
 .accordion-flush .accordion-item:last-child
-.accordion-flush .accordion-item .accordion-button,.accordion-flush .accordion-item .accordion-button.collapsed
 .breadcrumb-item+.breadcrumb-item
 .page-link:hover
 .page-link:focus
-.page-link.active,.active>.page-link
-.page-link.disabled,.disabled>.page-link
-.page-item:not(:first-child) .page-link
 .page-item:first-child .page-link
 .page-item:last-child .page-link
 .badge:empty
 .list-group-item-action:hover,.list-group-item-action:focus
 .list-group-item-action:active
-.list-group-item.disabled,.list-group-item:disabled
-.list-group-item+.list-group-item.active
-.list-group-horizontal>.list-group-item:first-child:not(:last-child)
-.list-group-horizontal>.list-group-item:last-child:not(:first-child)
-.list-group-horizontal>.list-group-item+.list-group-item
-.list-group-horizontal>.list-group-item+.list-group-item.active
 .list-group-item-primary.list-group-item-action:hover,.list-group-item-primary.list-group-item-action:focus
 .list-group-item-secondary.list-group-item-action:hover,.list-group-item-secondary.list-group-item-action:focus
 .list-group-item-success.list-group-item-action:hover,.list-group-item-success.list-group-item-action:focus
@@ -153,30 +27,18 @@ legend+*
 .list-group-item-dark.list-group-item-action:hover,.list-group-item-dark.list-group-item-action:focus
 .btn-close:hover
 .btn-close:focus
-.btn-close:disabled,.btn-close.disabled
-.toast:not(.show)
-.toast-container>:not(:last-child)
 .modal-fullscreen .modal-header,.modal-fullscreen .modal-footer
 .bs-tooltip-top .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow
 .bs-tooltip-end .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow
 .bs-tooltip-bottom .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow
 .bs-tooltip-start .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow
-.bs-popover-end>.popover-arrow,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow
-.bs-popover-start>.popover-arrow,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow
 .popover-header:empty
-.carousel-item.active,.carousel-item-next,.carousel-item-prev
-.carousel-item-next:not(.carousel-item-start),.active.carousel-item-end
-.carousel-item-prev:not(.carousel-item-end),.active.carousel-item-start
-.carousel-fade .carousel-item.active,.carousel-fade .carousel-item-next.carousel-item-start,.carousel-fade .carousel-item-prev.carousel-item-end
-.carousel-fade .active.carousel-item-start,.carousel-fade .active.carousel-item-end
 .carousel-control-prev,.carousel-control-next
 .carousel-control-prev:hover,.carousel-control-prev:focus,.carousel-control-next:hover,.carousel-control-next:focus
 .carousel-control-prev-icon,.carousel-control-next-icon
 .carousel-dark .carousel-control-prev-icon,.carousel-dark .carousel-control-next-icon
 .spinner-grow,.spinner-border
 .offcanvas,.offcanvas-xxl,.offcanvas-xl,.offcanvas-lg,.offcanvas-md,.offcanvas-sm
-.offcanvas.showing,.offcanvas.show:not(.hiding)
-.offcanvas.showing,.offcanvas.hiding,.offcanvas.show
 .link-primary:hover,.link-primary:focus
 .link-secondary:hover,.link-secondary:focus
 .link-success:hover,.link-success:focus
@@ -186,199 +48,62 @@ legend+*
 .link-light:hover,.link-light:focus
 .link-dark:hover,.link-dark:focus
 #mainNav .navbar-nav .nav-item .nav-link:hover,#mainNav .navbar-nav .nav-item .nav-link:active
+.table-custom tbody tr:hover
+
+Skipped selectors (pseudo-elements or parsing errors):
+.accordion-button:not(.collapsed)
+.accordion-item:not(:first-of-type)
+.page-link.active,.active>.page-link
+.page-link.disabled,.disabled>.page-link
+.page-item:not(:first-child) .page-link
+.list-group-horizontal>.list-group-item:first-child:not(:last-child)
+.list-group-horizontal>.list-group-item:last-child:not(:first-child)
+.list-group-horizontal>.list-group-item.active
+.list-group-horizontal>.list-group-item+.list-group-item
+.list-group-horizontal>.list-group-item+.list-group-item.active
+.toast:not(.show)
+.toast-container>:not(:last-child)
+.bs-popover-end>.popover-arrow,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow
+.bs-popover-start>.popover-arrow,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow
+.carousel-item-next:not(.carousel-item-start),.active.carousel-item-end
+.carousel-item-prev:not(.carousel-item-end),.active.carousel-item-start
+.offcanvas.showing,.offcanvas.show:not(.hiding)
 .table tr.bg-primary>td,p.p-3.rounded.bg-primary
 .table tr.bg-success>td,p.p-3.rounded.bg-success
 .table tr.bg-danger>td,p.p-3.rounded.bg-danger
 .table tr.text-white>td,p.p-3.rounded.text-white
-.table-custom tbody tr:hover
+
+Pseudo-element selectors:
+<none>
 
 Problematic rules (logged for review):
-Invalid selector syntax: header.masthead h1,header.masthead .h1
-Invalid selector syntax: .table-custom th,.table-custom td
-Invalid selector syntax: .table-custom tbody tr:nth-of-type(even)
-Invalid selector syntax: .table-custom tbody tr:last-of-type
-Invalid selector syntax: sub,sup
-Invalid selector syntax: a:hover
-Invalid selector syntax: a:not([href]):not([class]),a:not([href]):not([class]):hover
-Invalid selector syntax: button:focus:not(:focus-visible)
-Invalid selector syntax: select:disabled
-Invalid selector syntax: legend+*
-Invalid selector syntax: [type=search]
-Invalid selector syntax: .list-inline-item:not(:last-child)
-Invalid selector syntax: .blockquote>:last-child
-Invalid selector syntax: .row-cols-auto>*
-Invalid selector syntax: .row-cols-1>*
-Invalid selector syntax: .row-cols-2>*
-Invalid selector syntax: .row-cols-3>*
-Invalid selector syntax: .row-cols-4>*
-Invalid selector syntax: .row-cols-5>*
-Invalid selector syntax: .row-cols-6>*
-Invalid selector syntax: .table-sm>:not(caption)>*>*
-Invalid selector syntax: .table-borderless>:not(caption)>*>*
-Invalid selector syntax: .table-borderless>:not(:first-child)
-Invalid selector syntax: .table-striped-columns>:not(caption)>tr>:nth-child(even)
-Invalid selector syntax: .table-hover>tbody>tr:hover>*
-Invalid selector syntax: .form-control:focus
-Invalid selector syntax: .form-control-plaintext:focus
-Invalid selector syntax: .form-control-plaintext.form-control-sm,.form-control-plaintext.form-control-lg
-Invalid selector syntax: .form-control-color:not(:disabled):not([readonly])
-Invalid selector syntax: .form-select:focus
-Invalid selector syntax: .form-select[multiple],.form-select[size]:not([size="1"])
-Invalid selector syntax: .form-select:disabled
-Invalid selector syntax: .form-check-input[type=checkbox]
-Invalid selector syntax: .form-check-input[type=radio]
-Invalid selector syntax: .form-check-input:active
-Invalid selector syntax: .form-check-input:focus
-Invalid selector syntax: .form-check-input:checked
-Invalid selector syntax: .form-check-input:checked[type=checkbox]
-Invalid selector syntax: .form-check-input:checked[type=radio]
-Invalid selector syntax: .form-check-input[type=checkbox]:indeterminate
-Invalid selector syntax: .form-check-input:disabled
-Invalid selector syntax: .form-check-input[disabled]~.form-check-label,.form-check-input:disabled~.form-check-label
-Invalid selector syntax: .form-switch .form-check-input:focus
-Invalid selector syntax: .form-switch .form-check-input:checked
-Invalid selector syntax: .btn-check[disabled]+.btn,.btn-check:disabled+.btn
-Invalid selector syntax: .form-range:focus
-Invalid selector syntax: .form-range:disabled
-Invalid selector syntax: .form-floating>.form-control,.form-floating>.form-control-plaintext,.form-floating>.form-select
-Invalid selector syntax: .form-floating>.form-control,.form-floating>.form-control-plaintext
-Invalid selector syntax: .form-floating>.form-control:focus,.form-floating>.form-control:not(:placeholder-shown),.form-floating>.form-control-plaintext:focus,.form-floating>.form-control-plaintext:not(:placeholder-shown)
-Invalid selector syntax: .form-floating>.form-control:focus~label,.form-floating>.form-control:not(:placeholder-shown)~label,.form-floating>.form-control-plaintext~label,.form-floating>.form-select~label
-Invalid selector syntax: .form-floating>.form-control-plaintext~label
-Invalid selector syntax: .input-group>.form-control,.input-group>.form-select,.input-group>.form-floating
-Invalid selector syntax: .input-group>.form-control:focus,.input-group>.form-select:focus,.input-group>.form-floating:focus-within
-Invalid selector syntax: .input-group .btn:focus
-Invalid selector syntax: .input-group-lg>.form-control,.input-group-lg>.form-select,.input-group-lg>.input-group-text,.input-group-lg>.btn
-Invalid selector syntax: .input-group-sm>.form-control,.input-group-sm>.form-select,.input-group-sm>.input-group-text,.input-group-sm>.btn
-Invalid selector syntax: .input-group-lg>.form-select,.input-group-sm>.form-select
-Invalid selector syntax: .input-group:not(.has-validation)>:not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),.input-group:not(.has-validation)>.dropdown-toggle:nth-last-child(n+3),.input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-control,.input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-select
-Invalid selector syntax: .input-group.has-validation>:nth-last-child(n+3):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),.input-group.has-validation>.dropdown-toggle:nth-last-child(n+4),.input-group.has-validation>.form-floating:nth-last-child(n+3)>.form-control,.input-group.has-validation>.form-floating:nth-last-child(n+3)>.form-select
-Invalid selector syntax: .input-group>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback)
-Invalid selector syntax: .input-group>.form-floating:not(:first-child)>.form-control,.input-group>.form-floating:not(:first-child)>.form-select
-Invalid selector syntax: .form-check-inline .form-check-input~.valid-feedback
-Invalid selector syntax: .form-check-inline .form-check-input~.invalid-feedback
-Invalid selector syntax: .btn:hover
-Invalid selector syntax: .btn-check+.btn:hover
-Invalid selector syntax: .btn:focus-visible
-Invalid selector syntax: .btn-check:focus-visible+.btn
-Invalid selector syntax: .btn-check:checked+.btn,:not(.btn-check)+.btn:active,.btn:first-child:active,.btn.active,.btn.show
-Invalid selector syntax: .btn-check:checked+.btn:focus-visible,:not(.btn-check)+.btn:active:focus-visible,.btn:first-child:active:focus-visible,.btn.active:focus-visible,.btn.show:focus-visible
-Invalid selector syntax: .btn:disabled,.btn.disabled,fieldset:disabled .btn
-Invalid selector syntax: .btn-link:focus-visible
-Invalid selector syntax: .btn-link:hover
-Invalid selector syntax: .dropdown-item:hover,.dropdown-item:focus
-Invalid selector syntax: .dropdown-item.active,.dropdown-item:active
-Invalid selector syntax: .dropdown-item.disabled,.dropdown-item:disabled
-Invalid selector syntax: .btn-group>.btn-check:checked+.btn,.btn-group>.btn-check:focus+.btn,.btn-group>.btn:hover,.btn-group>.btn:focus,.btn-group>.btn:active,.btn-group>.btn.active,.btn-group-vertical>.btn-check:checked+.btn,.btn-group-vertical>.btn-check:focus+.btn,.btn-group-vertical>.btn:hover,.btn-group-vertical>.btn:focus,.btn-group-vertical>.btn:active,.btn-group-vertical>.btn.active
-Invalid selector syntax: .btn-sm+.dropdown-toggle-split,.btn-group-sm>.btn+.dropdown-toggle-split
-Invalid selector syntax: .btn-lg+.dropdown-toggle-split,.btn-group-lg>.btn+.dropdown-toggle-split
-Invalid selector syntax: .btn-group-vertical>.btn,.btn-group-vertical>.btn-group
-Invalid selector syntax: .btn-group-vertical>.btn:not(:first-child),.btn-group-vertical>.btn-group:not(:first-child)
-Invalid selector syntax: .btn-group-vertical>.btn:not(:last-child):not(.dropdown-toggle),.btn-group-vertical>.btn-group:not(:last-child)>.btn
-Invalid selector syntax: .btn-group-vertical>.btn~.btn,.btn-group-vertical>.btn-group:not(:first-child)>.btn
-Invalid selector syntax: .nav-link:hover,.nav-link:focus
-Invalid selector syntax: .nav-tabs .nav-link:hover,.nav-tabs .nav-link:focus
-Invalid selector syntax: .nav-tabs .nav-link.disabled,.nav-tabs .nav-link:disabled
-Invalid selector syntax: .nav-tabs .nav-link.active,.nav-tabs .nav-item.show .nav-link
-Invalid selector syntax: .nav-pills .nav-link:disabled
-Invalid selector syntax: .nav-pills .nav-link.active,.nav-pills .show>.nav-link
-Invalid selector syntax: .nav-justified>.nav-link,.nav-justified .nav-item
-Invalid selector syntax: .nav-fill .nav-item .nav-link,.nav-justified .nav-item .nav-link
-Invalid selector syntax: .navbar-brand:hover,.navbar-brand:focus
-Invalid selector syntax: .navbar-nav .show>.nav-link,.navbar-nav .nav-link.active
-Invalid selector syntax: .navbar-text a,.navbar-text a:hover,.navbar-text a:focus
-Invalid selector syntax: .navbar-toggler:hover
-Invalid selector syntax: .navbar-toggler:focus
-Invalid selector syntax: .card>.list-group:first-child
-Invalid selector syntax: .card>.list-group:last-child
-Invalid selector syntax: .card>.card-header+.list-group,.card>.list-group+.card-footer
-Invalid selector syntax: .card-link+.card-link
-Invalid selector syntax: .card-footer:last-child
-Invalid selector syntax: .card-img,.card-img-top,.card-img-bottom
-Invalid selector syntax: .card-img,.card-img-top
-Invalid selector syntax: .card-img,.card-img-bottom
 Invalid selector syntax: .accordion-button:not(.collapsed)
-Invalid selector syntax: .accordion-button:hover
-Invalid selector syntax: .accordion-button:focus
-Invalid selector syntax: .accordion-item:first-of-type
-Invalid selector syntax: .accordion-item:first-of-type .accordion-button
 Invalid selector syntax: .accordion-item:not(:first-of-type)
-Invalid selector syntax: .accordion-item:last-of-type
-Invalid selector syntax: .accordion-item:last-of-type .accordion-button.collapsed
-Invalid selector syntax: .accordion-item:last-of-type .accordion-collapse
-Invalid selector syntax: .accordion-flush .accordion-item:first-child
-Invalid selector syntax: .accordion-flush .accordion-item:last-child
-Invalid selector syntax: .accordion-flush .accordion-item .accordion-button,.accordion-flush .accordion-item .accordion-button.collapsed
-Invalid selector syntax: .breadcrumb-item+.breadcrumb-item
-Invalid selector syntax: .page-link:hover
-Invalid selector syntax: .page-link:focus
 Invalid selector syntax: .page-link.active,.active>.page-link
 Invalid selector syntax: .page-link.disabled,.disabled>.page-link
 Invalid selector syntax: .page-item:not(:first-child) .page-link
-Invalid selector syntax: .page-item:first-child .page-link
-Invalid selector syntax: .page-item:last-child .page-link
-Invalid selector syntax: .badge:empty
-Invalid selector syntax: .list-group-item-action:hover,.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-action:active
-Invalid selector syntax: .list-group-item.disabled,.list-group-item:disabled
-Invalid selector syntax: .list-group-item+.list-group-item.active
 Invalid selector syntax: .list-group-horizontal>.list-group-item:first-child:not(:last-child)
 Invalid selector syntax: .list-group-horizontal>.list-group-item:last-child:not(:first-child)
+Invalid selector syntax: .list-group-horizontal>.list-group-item.active
 Invalid selector syntax: .list-group-horizontal>.list-group-item+.list-group-item
 Invalid selector syntax: .list-group-horizontal>.list-group-item+.list-group-item.active
-Invalid selector syntax: .list-group-item-primary.list-group-item-action:hover,.list-group-item-primary.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-secondary.list-group-item-action:hover,.list-group-item-secondary.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-success.list-group-item-action:hover,.list-group-item-success.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-info.list-group-item-action:hover,.list-group-item-info.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-warning.list-group-item-action:hover,.list-group-item-warning.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-danger.list-group-item-action:hover,.list-group-item-danger.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-light.list-group-item-action:hover,.list-group-item-light.list-group-item-action:focus
-Invalid selector syntax: .list-group-item-dark.list-group-item-action:hover,.list-group-item-dark.list-group-item-action:focus
-Invalid selector syntax: .btn-close:hover
-Invalid selector syntax: .btn-close:focus
-Invalid selector syntax: .btn-close:disabled,.btn-close.disabled
 Invalid selector syntax: .toast:not(.show)
 Invalid selector syntax: .toast-container>:not(:last-child)
-Invalid selector syntax: .modal-fullscreen .modal-header,.modal-fullscreen .modal-footer
-Invalid selector syntax: .bs-tooltip-top .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow
-Invalid selector syntax: .bs-tooltip-end .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow
-Invalid selector syntax: .bs-tooltip-bottom .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow
-Invalid selector syntax: .bs-tooltip-start .tooltip-arrow,.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow
 Invalid selector syntax: .bs-popover-end>.popover-arrow,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow
 Invalid selector syntax: .bs-popover-start>.popover-arrow,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow
-Invalid selector syntax: .popover-header:empty
-Invalid selector syntax: .carousel-item.active,.carousel-item-next,.carousel-item-prev
 Invalid selector syntax: .carousel-item-next:not(.carousel-item-start),.active.carousel-item-end
 Invalid selector syntax: .carousel-item-prev:not(.carousel-item-end),.active.carousel-item-start
-Invalid selector syntax: .carousel-fade .carousel-item.active,.carousel-fade .carousel-item-next.carousel-item-start,.carousel-fade .carousel-item-prev.carousel-item-end
-Invalid selector syntax: .carousel-fade .active.carousel-item-start,.carousel-fade .active.carousel-item-end
-Invalid selector syntax: .carousel-control-prev,.carousel-control-next
-Invalid selector syntax: .carousel-control-prev:hover,.carousel-control-prev:focus,.carousel-control-next:hover,.carousel-control-next:focus
-Invalid selector syntax: .carousel-control-prev-icon,.carousel-control-next-icon
-Invalid selector syntax: .carousel-dark .carousel-control-prev-icon,.carousel-dark .carousel-control-next-icon
-Invalid selector syntax: .spinner-grow,.spinner-border
-Invalid selector syntax: .offcanvas,.offcanvas-xxl,.offcanvas-xl,.offcanvas-lg,.offcanvas-md,.offcanvas-sm
 Invalid selector syntax: .offcanvas.showing,.offcanvas.show:not(.hiding)
-Invalid selector syntax: .offcanvas.showing,.offcanvas.hiding,.offcanvas.show
-Invalid selector syntax: .link-primary:hover,.link-primary:focus
-Invalid selector syntax: .link-secondary:hover,.link-secondary:focus
-Invalid selector syntax: .link-success:hover,.link-success:focus
-Invalid selector syntax: .link-info:hover,.link-info:focus
-Invalid selector syntax: .link-warning:hover,.link-warning:focus
-Invalid selector syntax: .link-danger:hover,.link-danger:focus
-Invalid selector syntax: .link-light:hover,.link-light:focus
-Invalid selector syntax: .link-dark:hover,.link-dark:focus
-Invalid selector syntax: #mainNav .navbar-nav .nav-item .nav-link:hover,#mainNav .navbar-nav .nav-item .nav-link:active
 Invalid selector syntax: .table tr.bg-primary>td,p.p-3.rounded.bg-primary
 Invalid selector syntax: .table tr.bg-success>td,p.p-3.rounded.bg-success
 Invalid selector syntax: .table tr.bg-danger>td,p.p-3.rounded.bg-danger
 Invalid selector syntax: .table tr.text-white>td,p.p-3.rounded.text-white
-Invalid selector syntax: .table-custom tbody tr:hover
 
 Summary:
-Total unused selectors: 5
-Total skipped selectors: 183
-Total problematic rules: 181
+Total unused selectors: 48
+Total skipped selectors: 21
+Total pseudo-element selectors: 0
+Total problematic rules: 21
 Total HTML files checked: 78
 Total JS files checked: 4
 Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show
