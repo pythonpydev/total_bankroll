@@ -1,0 +1,74 @@
+CSS Analysis Results (Rules 301 to 670, starting from CSS line 1)
+==================================================
+Unused CSS selectors (excluding dynamic classes):
+<none>
+
+Skipped selectors (pseudo-elements or parsing errors):
+body.dark-mode .navbar-brand,body.dark-mode .nav-link
+body.dark-mode .dropdown-item:hover
+body.dark-mode .modal-header,body.dark-mode .modal-footer
+body.dark-mode .form-control,body.dark-mode .form-select
+body.dark-mode .form-control:focus,body.dark-mode .form-select:focus
+body.dark-mode .table-custom tbody tr:nth-of-type(even)
+body.dark-mode .table-custom tbody tr:hover
+body.dark-mode .table>:not(caption)>*>*
+body.dark-mode .table.table-bordered.table-striped .table-success,body.dark-mode .table.table-bordered.table-striped .table-success>td,body.dark-mode .table-success
+body.dark-mode .table.table-bordered.table-striped .table-warning,body.dark-mode .table.table-bordered.table-striped .table-warning>td,body.dark-mode .table-warning
+body.dark-mode .table.table-bordered.table-striped .table-danger,body.dark-mode .table.table-bordered.table-striped .table-danger>td,body.dark-mode .table-danger
+body.dark-mode .table tr.bg-success>td,body.dark-mode .table tr.bg-success,body.dark-mode .bg-success
+body.dark-mode .table tr.bg-warning>td,body.dark-mode .table tr.bg-warning,body.dark-mode .bg-warning
+body.dark-mode .table tr.bg-danger>td,body.dark-mode .table tr.bg-danger,body.dark-mode .bg-danger
+body.dark-mode .alert-light,body.dark-mode .alert-secondary
+body.dark-mode .alert-light hr,body.dark-mode .alert-secondary hr
+body.dark-mode .btn-outline-dark:hover
+body.dark-mode .btn-primary:hover
+body.dark-mode .table-bordered.table-striped tbody>tr>*
+body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>*
+body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>*
+.hand-details-row p,.blind-details-row p
+.hand-details-row p:last-child,.blind-details-row p:last-child
+.left-column p strong,.right-column p strong
+.dark-mode .table-bordered,.dark-mode .table-bordered td,.dark-mode .table-bordered th
+.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>*
+.dark-mode .table-striped>tbody>tr:nth-of-type(even)
+.dark-mode .table-striped>tbody>tr:nth-of-type(even)>*
+.dark-mode th[scope="row"]
+
+Problematic rules (logged for review):
+Invalid selector syntax: body.dark-mode .navbar-brand,body.dark-mode .nav-link
+Invalid selector syntax: body.dark-mode .dropdown-item:hover
+Invalid selector syntax: body.dark-mode .modal-header,body.dark-mode .modal-footer
+Invalid selector syntax: body.dark-mode .form-control,body.dark-mode .form-select
+Invalid selector syntax: body.dark-mode .form-control:focus,body.dark-mode .form-select:focus
+Invalid selector syntax: body.dark-mode .table-custom tbody tr:nth-of-type(even)
+Invalid selector syntax: body.dark-mode .table-custom tbody tr:hover
+Invalid selector syntax: body.dark-mode .table>:not(caption)>*>*
+Invalid selector syntax: body.dark-mode .table.table-bordered.table-striped .table-success,body.dark-mode .table.table-bordered.table-striped .table-success>td,body.dark-mode .table-success
+Invalid selector syntax: body.dark-mode .table.table-bordered.table-striped .table-warning,body.dark-mode .table.table-bordered.table-striped .table-warning>td,body.dark-mode .table-warning
+Invalid selector syntax: body.dark-mode .table.table-bordered.table-striped .table-danger,body.dark-mode .table.table-bordered.table-striped .table-danger>td,body.dark-mode .table-danger
+Invalid selector syntax: body.dark-mode .table tr.bg-success>td,body.dark-mode .table tr.bg-success,body.dark-mode .bg-success
+Invalid selector syntax: body.dark-mode .table tr.bg-warning>td,body.dark-mode .table tr.bg-warning,body.dark-mode .bg-warning
+Invalid selector syntax: body.dark-mode .table tr.bg-danger>td,body.dark-mode .table tr.bg-danger,body.dark-mode .bg-danger
+Invalid selector syntax: body.dark-mode .alert-light,body.dark-mode .alert-secondary
+Invalid selector syntax: body.dark-mode .alert-light hr,body.dark-mode .alert-secondary hr
+Invalid selector syntax: body.dark-mode .btn-outline-dark:hover
+Invalid selector syntax: body.dark-mode .btn-primary:hover
+Invalid selector syntax: body.dark-mode .table-bordered.table-striped tbody>tr>*
+Invalid selector syntax: body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>*
+Invalid selector syntax: body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>*
+Invalid selector syntax: .hand-details-row p,.blind-details-row p
+Invalid selector syntax: .hand-details-row p:last-child,.blind-details-row p:last-child
+Invalid selector syntax: .left-column p strong,.right-column p strong
+Invalid selector syntax: .dark-mode .table-bordered,.dark-mode .table-bordered td,.dark-mode .table-bordered th
+Invalid selector syntax: .dark-mode .table-striped>tbody>tr:nth-of-type(odd)>*
+Invalid selector syntax: .dark-mode .table-striped>tbody>tr:nth-of-type(even)
+Invalid selector syntax: .dark-mode .table-striped>tbody>tr:nth-of-type(even)>*
+Invalid selector syntax: .dark-mode th[scope="row"]
+
+Summary:
+Total unused selectors: 0
+Total skipped selectors: 29
+Total problematic rules: 29
+Total HTML files checked: 78
+Total JS files checked: 4
+Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show

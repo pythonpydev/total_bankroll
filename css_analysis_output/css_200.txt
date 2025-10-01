@@ -1,15 +1,10 @@
 CSS Analysis Results (Rules 101 to 200, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
-.btn-outline-primary
-.btn-outline-secondary
-.btn-outline-success
-.btn-outline-info
-.btn-outline-danger
-.btn-outline-light
-.btn-outline-dark
+<none>
 
 Skipped selectors (pseudo-elements or parsing errors):
+:root
 *,*::before,*::after
 h6,.h6,h5,.h5,h4,.h4,h3,.h3,h2,.h2,h1,.h1
 h1,.h1
@@ -132,6 +127,7 @@ button:not(:disabled),[type=button]:not(:disabled),[type=reset]:not(:disabled),[
 .accordion-button:not(.collapsed)::after
 .accordion-button::after
 .breadcrumb-item+.breadcrumb-item::before
+.list-group-numbered>.list-group-item::before
 
 Problematic rules (logged for review):
 Invalid selector syntax: h6,.h6,h5,.h5,h4,.h4,h3,.h3,h2,.h2,h1,.h1
@@ -212,8 +208,8 @@ Invalid selector syntax: .card-text:last-child
 Invalid selector syntax: .card-header:first-child
 
 Summary:
-Total unused selectors: 7
-Total skipped selectors: 122
+Total unused selectors: 0
+Total skipped selectors: 124
 Total problematic rules: 76
 Total HTML files checked: 78
 Total JS files checked: 4

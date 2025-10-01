@@ -1,10 +1,9 @@
-CSS Analysis Results (Rules 1 to 300, starting from CSS line 1)
+CSS Analysis Results (Rules 201 to 300, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
 <none>
 
 Skipped selectors (pseudo-elements or parsing errors):
-.list-group-numbered>.list-group-item::before
 .list-group-item:first-child
 .list-group-item:last-child
 .list-group-item+.list-group-item
@@ -46,7 +45,7 @@ Invalid selector syntax: .visually-hidden,.visually-hidden-focusable:not(:focus)
 
 Summary:
 Total unused selectors: 0
-Total skipped selectors: 31
+Total skipped selectors: 30
 Total problematic rules: 6
 Total HTML files checked: 78
 Total JS files checked: 4
