@@ -44,8 +44,8 @@
                                 <td>{{ drawing.currency_symbol }}{{ "%.2f" | format(drawing.original_amount) }} ({{ drawing.currency }})</td>
                                 <td>${{ "%.2f" | format(drawing.amount_usd) }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('withdrawal.update_withdrawal', withdrawal_id=drawing.id) }}">Edit</button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='withdrawal', item_id=drawing.id) }}">Delete</button>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('withdrawal.update_withdrawal', withdrawal_id=drawing.id) }}">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type='withdrawal', item_id=drawing.id) }}">Delete</button>
                                 </td>
                             </tr>
                             {% endfor %}

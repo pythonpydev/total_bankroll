@@ -45,21 +45,21 @@
                 <td>
                     <div class="btn-group" role="group">
                         {% if item_type == 'site' %}
-                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.update_site', site_id=item.id) }}">Update</button>
-                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.rename_site', site_id=item.id) }}">Rename</button>
-                            <a href="{{ url_for('poker_sites.site_history', site_id=item.id) }}" class="btn btn-sm btn-outline-secondary">History</a>
+                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.update_site', site_id=item.id) }}">Update</button>
+                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.rename_site', site_id=item.id) }}">Rename</button>
+                            <a href="{{ url_for('poker_sites.site_history', site_id=item.id) }}" class="btn btn-sm btn-secondary">History</a>
                         {% elif item_type == 'asset' %}
-                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.update_asset', asset_id=item.id) }}">Update</button>
-                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.rename_asset', asset_id=item.id) }}">Rename</button>
-                            <a href="{{ url_for('assets.asset_history', asset_id=item.id) }}" class="btn btn-sm btn-outline-secondary">History</a>
+                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.update_asset', asset_id=item.id) }}">Update</button>
+                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('assets.rename_asset', asset_id=item.id) }}">Rename</button>
+                            <a href="{{ url_for('assets.asset_history', asset_id=item.id) }}" class="btn btn-sm btn-secondary">History</a>
                         {% endif %}
-                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type=item_type, item_id=item.id) }}">Delete</button>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('common.confirm_delete', item_type=item_type, item_id=item.id) }}">Delete</button>
                         {% if item_type == 'site' %}
-                            <a href="{{ url_for('poker_sites.move_site', site_id=item.id, direction='up') }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-up"></i></a>
-                            <a href="{{ url_for('poker_sites.move_site', site_id=item.id, direction='down') }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-down"></i></a>
+                            <a href="{{ url_for('poker_sites.move_site', site_id=item.id, direction='up') }}" class="btn btn-sm btn-dark"><i class="bi bi-arrow-up"></i></a>
+                            <a href="{{ url_for('poker_sites.move_site', site_id=item.id, direction='down') }}" class="btn btn-sm btn-dark"><i class="bi bi-arrow-down"></i></a>
                         {% elif item_type == 'asset' %}
-                            <a href="{{ url_for('assets.move_asset', asset_id=item.id, direction='up') }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-up"></i></a>
-                            <a href="{{ url_for('assets.move_asset', asset_id=item.id, direction='down') }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-down"></i></a>
+                            <a href="{{ url_for('assets.move_asset', asset_id=item.id, direction='up') }}" class="btn btn-sm btn-dark"><i class="bi bi-arrow-up"></i></a>
+                            <a href="{{ url_for('assets.move_asset', asset_id=item.id, direction='down') }}" class="btn btn-sm btn-dark"><i class="bi bi-arrow-down"></i></a>
                         {% endif %}
                     </div>
                 </td>

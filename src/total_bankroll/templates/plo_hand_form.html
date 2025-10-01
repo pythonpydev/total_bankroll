@@ -83,7 +83,7 @@
               {{ hand_form.hero_hand.label(class="form-label") }}
               <div class="input-group">
                 {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", readonly=true) }}
-                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal">Select</button>
+                <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal">Select</button>
               </div>
               {% for error in hand_form.hero_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
