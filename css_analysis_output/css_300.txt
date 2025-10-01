@@ -1,0 +1,53 @@
+CSS Analysis Results (Rules 1 to 300, starting from CSS line 1)
+==================================================
+Unused CSS selectors (excluding dynamic classes):
+<none>
+
+Skipped selectors (pseudo-elements or parsing errors):
+.list-group-numbered>.list-group-item::before
+.list-group-item:first-child
+.list-group-item:last-child
+.list-group-item+.list-group-item
+.list-group-flush>.list-group-item:last-child
+.modal-footer>*
+.tooltip .tooltip-arrow::before
+.bs-tooltip-top .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before
+.bs-tooltip-end .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow::before
+.bs-tooltip-bottom .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before
+.bs-tooltip-start .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow::before
+.popover .popover-arrow::before,.popover .popover-arrow::after
+.bs-popover-top>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::before,.bs-popover-top>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::after
+.bs-popover-top>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::before
+.bs-popover-top>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::after
+.bs-popover-end>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::before,.bs-popover-end>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::after
+.bs-popover-end>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::before
+.bs-popover-end>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::after
+.bs-popover-bottom>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::before,.bs-popover-bottom>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::after
+.bs-popover-bottom>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::before
+.bs-popover-bottom>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::after
+.bs-popover-bottom .popover-header::before,.bs-popover-auto[data-popper-placement^=bottom] .popover-header::before
+.bs-popover-start>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::before,.bs-popover-start>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::after
+.bs-popover-start>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::before
+.bs-popover-start>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::after
+.carousel-inner::after
+.placeholder.btn::before
+.clearfix::after
+.ratio::before
+.visually-hidden,.visually-hidden-focusable:not(:focus):not(:focus-within)
+.stretched-link::after
+
+Problematic rules (logged for review):
+Invalid selector syntax: .list-group-item:first-child
+Invalid selector syntax: .list-group-item:last-child
+Invalid selector syntax: .list-group-item+.list-group-item
+Invalid selector syntax: .list-group-flush>.list-group-item:last-child
+Invalid selector syntax: .modal-footer>*
+Invalid selector syntax: .visually-hidden,.visually-hidden-focusable:not(:focus):not(:focus-within)
+
+Summary:
+Total unused selectors: 0
+Total skipped selectors: 31
+Total problematic rules: 6
+Total HTML files checked: 78
+Total JS files checked: 4
+Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show
