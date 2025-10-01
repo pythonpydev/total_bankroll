@@ -1,4 +1,4 @@
-CSS Analysis Results (Rules 501 to 600, starting from CSS line 1)
+CSS Analysis Results (Rules 301 to 600, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
 a>code

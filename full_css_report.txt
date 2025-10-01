@@ -1,5 +1,272 @@
+CSS Analysis Results (Rules 101 to 200, starting from CSS line 1)
+==================================================
+Unused CSS selectors (excluding dynamic classes):
+<none>
 
-CSS Analysis Results (Rules 501 to 600, starting from CSS line 1)
+Skipped selectors (pseudo-elements or parsing errors):
+:root
+*,*::before,*::after
+h6,.h6,h5,.h5,h4,.h4,h3,.h3,h2,.h2,h1,.h1
+h1,.h1
+h2,.h2
+h3,.h3
+h4,.h4
+h5,.h5
+h6,.h6
+ol,ul
+ol,ul,dl
+ol ol,ul ul,ol ul,ul ol
+b,strong
+small,.small
+pre,code,kbd,samp
+img,svg
+thead,tbody,tfoot,tr,td,th
+input,button,select,optgroup,textarea
+button,select
+[role=button]
+[list]:not([type=date]):not([type=datetime-local]):not([type=month]):not([type=week]):not([type=time])::-webkit-calendar-picker-indicator
+button,[type=button],[type=reset],[type=submit]
+button:not(:disabled),[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled)
+::-moz-focus-inner
+::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-text,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-year-field
+::-webkit-inner-spin-button
+::-webkit-search-decoration
+::-webkit-color-swatch-wrapper
+::file-selector-button
+.blockquote-footer::before
+.container,.container-fluid,.container-xxl,.container-xl,.container-lg,.container-md,.container-sm
+.row>*
+.g-3,.gx-3
+.g-3,.gy-3
+.g-4,.gx-4
+.g-4,.gy-4
+.table>:not(caption)>*>*
+.table-bordered>:not(caption)>*
+.table-bordered>:not(caption)>*>*
+.table-striped>tbody>tr:nth-of-type(odd)>*
+.table-striped>tbody>tr:nth-of-type(even)>*
+.form-control[type=file]
+.form-control[type=file]:not(:disabled):not([readonly])
+.form-control::-webkit-date-and-time-value
+.form-control::-moz-placeholder
+.form-control::placeholder
+.form-control:disabled
+.form-control::file-selector-button
+.form-control:hover:not(:disabled):not([readonly])::file-selector-button
+.form-control-sm::file-selector-button
+.form-control-lg::file-selector-button
+.form-control-color::-moz-color-swatch
+.form-control-color::-webkit-color-swatch
+.form-select:-moz-focusring
+.form-range:focus::-webkit-slider-thumb
+.form-range:focus::-moz-range-thumb
+.form-range::-moz-focus-outer
+.form-range::-webkit-slider-thumb
+.form-range::-webkit-slider-runnable-track
+.form-range::-moz-range-thumb
+.form-range::-moz-range-track
+.form-range:disabled::-webkit-slider-thumb
+.form-range:disabled::-moz-range-thumb
+.form-floating>.form-control::-moz-placeholder,.form-floating>.form-control-plaintext::-moz-placeholder
+.form-floating>.form-control::placeholder,.form-floating>.form-control-plaintext::placeholder
+.form-floating>.form-control:not(:-moz-placeholder-shown),.form-floating>.form-control-plaintext:not(:-moz-placeholder-shown)
+.form-floating>.form-control:-webkit-autofill,.form-floating>.form-control-plaintext:-webkit-autofill
+.form-floating>.form-control:not(:-moz-placeholder-shown)~label
+.form-floating>.form-control:-webkit-autofill~label
+.was-validated :valid~.valid-feedback,.was-validated :valid~.valid-tooltip,.is-valid~.valid-feedback,.is-valid~.valid-tooltip
+.was-validated .form-control:valid,.form-control.is-valid
+.was-validated .form-control:valid:focus,.form-control.is-valid:focus
+.was-validated textarea.form-control:valid,textarea.form-control.is-valid
+.was-validated .form-select:valid,.form-select.is-valid
+.was-validated .form-select:valid:not([multiple]):not([size]),.was-validated .form-select:valid:not([multiple])[size="1"],.form-select.is-valid:not([multiple]):not([size]),.form-select.is-valid:not([multiple])[size="1"]
+.was-validated .form-select:valid:focus,.form-select.is-valid:focus
+.was-validated .form-control-color:valid,.form-control-color.is-valid
+.was-validated .form-check-input:valid,.form-check-input.is-valid
+.was-validated .form-check-input:valid:checked,.form-check-input.is-valid:checked
+.was-validated .form-check-input:valid:focus,.form-check-input.is-valid:focus
+.was-validated .form-check-input:valid~.form-check-label,.form-check-input.is-valid~.form-check-label
+.was-validated .input-group>.form-control:not(:focus):valid,.input-group>.form-control:not(:focus).is-valid,.was-validated .input-group>.form-select:not(:focus):valid,.input-group>.form-select:not(:focus).is-valid,.was-validated .input-group>.form-floating:not(:focus-within):valid,.input-group>.form-floating:not(:focus-within).is-valid
+.was-validated :invalid~.invalid-feedback,.was-validated :invalid~.invalid-tooltip,.is-invalid~.invalid-feedback,.is-invalid~.invalid-tooltip
+.was-validated .form-control:invalid,.form-control.is-invalid
+.was-validated .form-control:invalid:focus,.form-control.is-invalid:focus
+.was-validated textarea.form-control:invalid,textarea.form-control.is-invalid
+.was-validated .form-select:invalid,.form-select.is-invalid
+.was-validated .form-select:invalid:not([multiple]):not([size]),.was-validated .form-select:invalid:not([multiple])[size="1"],.form-select.is-invalid:not([multiple]):not([size]),.form-select.is-invalid:not([multiple])[size="1"]
+.was-validated .form-select:invalid:focus,.form-select.is-invalid:focus
+.was-validated .form-control-color:invalid,.form-control-color.is-invalid
+.was-validated .form-check-input:invalid,.form-check-input.is-invalid
+.was-validated .form-check-input:invalid:checked,.form-check-input.is-invalid:checked
+.was-validated .form-check-input:invalid:focus,.form-check-input.is-invalid:focus
+.was-validated .form-check-input:invalid~.form-check-label,.form-check-input.is-invalid~.form-check-label
+.was-validated .input-group>.form-control:not(:focus):invalid,.input-group>.form-control:not(:focus).is-invalid,.was-validated .input-group>.form-select:not(:focus):invalid,.input-group>.form-select:not(:focus).is-invalid,.was-validated .input-group>.form-floating:not(:focus-within):invalid,.input-group>.form-floating:not(:focus-within).is-invalid
+.btn-sm,.btn-group-sm>.btn
+.fade:not(.show)
+.collapse:not(.show)
+.dropup,.dropend,.dropdown,.dropstart,.dropup-center,.dropdown-center
+.dropdown-toggle::after
+.dropdown-toggle:empty::after
+.dropup .dropdown-toggle::after
+.dropup .dropdown-toggle:empty::after
+.dropend .dropdown-toggle::after
+.dropend .dropdown-toggle:empty::after
+.dropend .dropdown-toggle::after
+.dropstart .dropdown-toggle::after
+.dropstart .dropdown-toggle::after
+.dropstart .dropdown-toggle::before
+.dropstart .dropdown-toggle:empty::after
+.dropstart .dropdown-toggle::before
+.btn-group,.btn-group-vertical
+.btn-group>.btn,.btn-group-vertical>.btn
+.btn-group>.btn:not(:last-child):not(.dropdown-toggle),.btn-group>.btn.dropdown-toggle-split:first-child,.btn-group>.btn-group:not(:last-child)>.btn
+.btn-group>.btn:nth-child(n+3),.btn-group>:not(.btn-check)+.btn,.btn-group>.btn-group:not(:first-child)>.btn
+.dropdown-toggle-split::after,.dropup .dropdown-toggle-split::after,.dropend .dropdown-toggle-split::after
+.dropstart .dropdown-toggle-split::before
+.navbar>.container,.navbar>.container-fluid,.navbar>.container-sm,.navbar>.container-md,.navbar>.container-lg,.navbar>.container-xl,.navbar>.container-xxl
+.card-text:last-child
+.card-header:first-child
+.accordion-button:not(.collapsed)::after
+.accordion-button::after
+.breadcrumb-item+.breadcrumb-item::before
+.list-group-numbered>.list-group-item::before
+
+Problematic rules (logged for review):
+Invalid selector syntax: h6,.h6,h5,.h5,h4,.h4,h3,.h3,h2,.h2,h1,.h1
+Invalid selector syntax: h1,.h1
+Invalid selector syntax: h2,.h2
+Invalid selector syntax: h3,.h3
+Invalid selector syntax: h4,.h4
+Invalid selector syntax: h5,.h5
+Invalid selector syntax: h6,.h6
+Invalid selector syntax: ol,ul
+Invalid selector syntax: ol,ul,dl
+Invalid selector syntax: ol ol,ul ul,ol ul,ul ol
+Invalid selector syntax: b,strong
+Invalid selector syntax: small,.small
+Invalid selector syntax: pre,code,kbd,samp
+Invalid selector syntax: img,svg
+Invalid selector syntax: thead,tbody,tfoot,tr,td,th
+Invalid selector syntax: input,button,select,optgroup,textarea
+Invalid selector syntax: button,select
+Invalid selector syntax: [role=button]
+Invalid selector syntax: button,[type=button],[type=reset],[type=submit]
+Invalid selector syntax: button:not(:disabled),[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled)
+Invalid selector syntax: .container,.container-fluid,.container-xxl,.container-xl,.container-lg,.container-md,.container-sm
+Invalid selector syntax: .row>*
+Invalid selector syntax: .g-3,.gx-3
+Invalid selector syntax: .g-3,.gy-3
+Invalid selector syntax: .g-4,.gx-4
+Invalid selector syntax: .g-4,.gy-4
+Invalid selector syntax: .table>:not(caption)>*>*
+Invalid selector syntax: .table-bordered>:not(caption)>*
+Invalid selector syntax: .table-bordered>:not(caption)>*>*
+Invalid selector syntax: .table-striped>tbody>tr:nth-of-type(odd)>*
+Invalid selector syntax: .table-striped>tbody>tr:nth-of-type(even)>*
+Invalid selector syntax: .form-control[type=file]
+Invalid selector syntax: .form-control[type=file]:not(:disabled):not([readonly])
+Invalid selector syntax: .form-control:disabled
+Invalid selector syntax: .form-select:-moz-focusring
+Invalid selector syntax: .form-floating>.form-control:not(:-moz-placeholder-shown),.form-floating>.form-control-plaintext:not(:-moz-placeholder-shown)
+Invalid selector syntax: .form-floating>.form-control:-webkit-autofill,.form-floating>.form-control-plaintext:-webkit-autofill
+Invalid selector syntax: .form-floating>.form-control:not(:-moz-placeholder-shown)~label
+Invalid selector syntax: .form-floating>.form-control:-webkit-autofill~label
+Invalid selector syntax: .was-validated :valid~.valid-feedback,.was-validated :valid~.valid-tooltip,.is-valid~.valid-feedback,.is-valid~.valid-tooltip
+Invalid selector syntax: .was-validated .form-control:valid,.form-control.is-valid
+Invalid selector syntax: .was-validated .form-control:valid:focus,.form-control.is-valid:focus
+Invalid selector syntax: .was-validated textarea.form-control:valid,textarea.form-control.is-valid
+Invalid selector syntax: .was-validated .form-select:valid,.form-select.is-valid
+Invalid selector syntax: .was-validated .form-select:valid:not([multiple]):not([size]),.was-validated .form-select:valid:not([multiple])[size="1"],.form-select.is-valid:not([multiple]):not([size]),.form-select.is-valid:not([multiple])[size="1"]
+Invalid selector syntax: .was-validated .form-select:valid:focus,.form-select.is-valid:focus
+Invalid selector syntax: .was-validated .form-control-color:valid,.form-control-color.is-valid
+Invalid selector syntax: .was-validated .form-check-input:valid,.form-check-input.is-valid
+Invalid selector syntax: .was-validated .form-check-input:valid:checked,.form-check-input.is-valid:checked
+Invalid selector syntax: .was-validated .form-check-input:valid:focus,.form-check-input.is-valid:focus
+Invalid selector syntax: .was-validated .form-check-input:valid~.form-check-label,.form-check-input.is-valid~.form-check-label
+Invalid selector syntax: .was-validated .input-group>.form-control:not(:focus):valid,.input-group>.form-control:not(:focus).is-valid,.was-validated .input-group>.form-select:not(:focus):valid,.input-group>.form-select:not(:focus).is-valid,.was-validated .input-group>.form-floating:not(:focus-within):valid,.input-group>.form-floating:not(:focus-within).is-valid
+Invalid selector syntax: .was-validated :invalid~.invalid-feedback,.was-validated :invalid~.invalid-tooltip,.is-invalid~.invalid-feedback,.is-invalid~.invalid-tooltip
+Invalid selector syntax: .was-validated .form-control:invalid,.form-control.is-invalid
+Invalid selector syntax: .was-validated .form-control:invalid:focus,.form-control.is-invalid:focus
+Invalid selector syntax: .was-validated textarea.form-control:invalid,textarea.form-control.is-invalid
+Invalid selector syntax: .was-validated .form-select:invalid,.form-select.is-invalid
+Invalid selector syntax: .was-validated .form-select:invalid:not([multiple]):not([size]),.was-validated .form-select:invalid:not([multiple])[size="1"],.form-select.is-invalid:not([multiple]):not([size]),.form-select.is-invalid:not([multiple])[size="1"]
+Invalid selector syntax: .was-validated .form-select:invalid:focus,.form-select.is-invalid:focus
+Invalid selector syntax: .was-validated .form-control-color:invalid,.form-control-color.is-invalid
+Invalid selector syntax: .was-validated .form-check-input:invalid,.form-check-input.is-invalid
+Invalid selector syntax: .was-validated .form-check-input:invalid:checked,.form-check-input.is-invalid:checked
+Invalid selector syntax: .was-validated .form-check-input:invalid:focus,.form-check-input.is-invalid:focus
+Invalid selector syntax: .was-validated .form-check-input:invalid~.form-check-label,.form-check-input.is-invalid~.form-check-label
+Invalid selector syntax: .was-validated .input-group>.form-control:not(:focus):invalid,.input-group>.form-control:not(:focus).is-invalid,.was-validated .input-group>.form-select:not(:focus):invalid,.input-group>.form-select:not(:focus).is-invalid,.was-validated .input-group>.form-floating:not(:focus-within):invalid,.input-group>.form-floating:not(:focus-within).is-invalid
+Invalid selector syntax: .btn-sm,.btn-group-sm>.btn
+Invalid selector syntax: .fade:not(.show)
+Invalid selector syntax: .collapse:not(.show)
+Invalid selector syntax: .dropup,.dropend,.dropdown,.dropstart,.dropup-center,.dropdown-center
+Invalid selector syntax: .btn-group,.btn-group-vertical
+Invalid selector syntax: .btn-group>.btn,.btn-group-vertical>.btn
+Invalid selector syntax: .btn-group>.btn:not(:last-child):not(.dropdown-toggle),.btn-group>.btn.dropdown-toggle-split:first-child,.btn-group>.btn-group:not(:last-child)>.btn
+Invalid selector syntax: .btn-group>.btn:nth-child(n+3),.btn-group>:not(.btn-check)+.btn,.btn-group>.btn-group:not(:first-child)>.btn
+Invalid selector syntax: .navbar>.container,.navbar>.container-fluid,.navbar>.container-sm,.navbar>.container-md,.navbar>.container-lg,.navbar>.container-xl,.navbar>.container-xxl
+Invalid selector syntax: .card-text:last-child
+Invalid selector syntax: .card-header:first-child
+
+Summary:
+Total unused selectors: 0
+Total skipped selectors: 124
+Total problematic rules: 76
+Total HTML files checked: 78
+Total JS files checked: 4
+Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show
+CSS Analysis Results (Rules 201 to 300, starting from CSS line 1)
+==================================================
+Unused CSS selectors (excluding dynamic classes):
+<none>
+
+Skipped selectors (pseudo-elements or parsing errors):
+.list-group-item:first-child
+.list-group-item:last-child
+.list-group-item+.list-group-item
+.list-group-flush>.list-group-item:last-child
+.modal-footer>*
+.tooltip .tooltip-arrow::before
+.bs-tooltip-top .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before
+.bs-tooltip-end .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow::before
+.bs-tooltip-bottom .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before
+.bs-tooltip-start .tooltip-arrow::before,.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow::before
+.popover .popover-arrow::before,.popover .popover-arrow::after
+.bs-popover-top>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::before,.bs-popover-top>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::after
+.bs-popover-top>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::before
+.bs-popover-top>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=top]>.popover-arrow::after
+.bs-popover-end>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::before,.bs-popover-end>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::after
+.bs-popover-end>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::before
+.bs-popover-end>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=right]>.popover-arrow::after
+.bs-popover-bottom>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::before,.bs-popover-bottom>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::after
+.bs-popover-bottom>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::before
+.bs-popover-bottom>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=bottom]>.popover-arrow::after
+.bs-popover-bottom .popover-header::before,.bs-popover-auto[data-popper-placement^=bottom] .popover-header::before
+.bs-popover-start>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::before,.bs-popover-start>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::after
+.bs-popover-start>.popover-arrow::before,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::before
+.bs-popover-start>.popover-arrow::after,.bs-popover-auto[data-popper-placement^=left]>.popover-arrow::after
+.carousel-inner::after
+.placeholder.btn::before
+.clearfix::after
+.ratio::before
+.visually-hidden,.visually-hidden-focusable:not(:focus):not(:focus-within)
+.stretched-link::after
+
+Problematic rules (logged for review):
+Invalid selector syntax: .list-group-item:first-child
+Invalid selector syntax: .list-group-item:last-child
+Invalid selector syntax: .list-group-item+.list-group-item
+Invalid selector syntax: .list-group-flush>.list-group-item:last-child
+Invalid selector syntax: .modal-footer>*
+Invalid selector syntax: .visually-hidden,.visually-hidden-focusable:not(:focus):not(:focus-within)
+
+Summary:
+Total unused selectors: 0
+Total skipped selectors: 30
+Total problematic rules: 6
+Total HTML files checked: 78
+Total JS files checked: 4
+Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show
+CSS Analysis Results (Rules 301 to 600, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
 a>code
@@ -383,7 +650,7 @@ Total problematic rules: 181
 Total HTML files checked: 78
 Total JS files checked: 4
 Detected dynamic classes: active, card-image, collapsed, dark-mode, disabled, fade, focus, hidden, hover, in, navbar-shrink, open, selected, show
-CSS Analysis Results (Rules 301 to 670, starting from CSS line 1)
+CSS Analysis Results (Rules 1501 to 670, starting from CSS line 1)
 ==================================================
 Unused CSS selectors (excluding dynamic classes):
 <none>
