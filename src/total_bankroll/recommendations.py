@@ -3,6 +3,11 @@ import json
 from decimal import Decimal
 from flask import current_app
 
+def _format_stake_string(stake_row):
+    """Helper to create a consistent stake string like '0.50/1.00'."""
+    sb = Decimal(str(stake_row['small_blind']).replace('$', '').replace(',', ''))
+    bb = Decimal(str(stake_row['big_blind']).replace('$', '').replace(',', ''))
+    return f"{sb:.2f}/{bb:.2f}"
 class RecommendationEngine:
     def __init__(self):
         config_path = os.path.join(current_app.root_path, 'data', 'recommendation_logic.json')
@@ -68,27 +73,27 @@ class RecommendationEngine:
             stake_row = cash_stakes_list[i]
             max_buy_in = Decimal(str(stake_row['max_buy_in']).replace('$', '').replace(',', ''))
             if total_bankroll >= buy_in_multiple * max_buy_in:
-                recs["recommended_stake"] = f"{stake_row['small_blind']}/{stake_row['big_blind']}"
+                recs["recommended_stake"] = _format_stake_string(stake_row)
                 recs["stake_explanation"] = (
                     f"Based on your bankroll of ${total_bankroll:.2f}, you have {total_bankroll / max_buy_in:.1f} "
                     f"buy-ins for {stake_row['small_blind']}/{stake_row['big_blind']} stakes. With the recommended {buy_in_multiple:.0f} "
                     f"buy-in rule, you can comfortably play at these stakes."
                 )
                 recs["recommended_stake_index"] = i
-                break
-        else:
-            # Handle case where bankroll is below the smallest stake
-            if cash_stakes_list:
-                smallest_stake_row = cash_stakes_list[0]
-                min_buy_in = Decimal(str(smallest_stake_row['min_buy_in']).replace('$', '').replace(',', ''))
-                if total_bankroll < buy_in_multiple * min_buy_in:
-                    recs["recommended_stake"] = "Below Smallest Stakes"
-                    recs["stake_explanation"] = (
-                        f"Your bankroll of ${total_bankroll:.2f} is less than {buy_in_multiple:.0f} times the minimum buy-in "
-                        f"for the smallest available stakes ({smallest_stake_row['small_blind']}/{smallest_stake_row['big_blind']}). "
-                        f"Consider depositing more funds to comfortably play at these stakes."
-                    )
-                    recs["next_stake_level"] = f"{smallest_stake_row['small_blind']}/{smallest_stake_row['big_blind']}"
+                break # Found the highest playable stake, so we stop.
+
+        # Handle case where bankroll is below the smallest stake
+        if recs["recommended_stake_index"] == -1 and cash_stakes_list:
+            smallest_stake_row = cash_stakes_list[0]
+            min_buy_in = Decimal(str(smallest_stake_row['min_buy_in']).replace('$', '').replace(',', ''))
+            if total_bankroll < buy_in_multiple * min_buy_in:
+                recs["recommended_stake"] = "Below Smallest Stakes"
+                recs["stake_explanation"] = (
+                    f"Your bankroll of ${total_bankroll:.2f} is less than {buy_in_multiple:.0f} times the minimum buy-in "
+                    f"for the smallest available stakes ({smallest_stake_row['small_blind']}/{smallest_stake_row['big_blind']}). "
+                    f"Consider depositing more funds to comfortably play at these stakes."
+                )
+                recs["next_stake_level"] = _format_stake_string(smallest_stake_row)
 
         if recs["recommended_stake_index"] == -1:
             return recs
@@ -96,7 +101,7 @@ class RecommendationEngine:
         # Calculate "move up" message
         if recs["recommended_stake_index"] < len(cash_stakes_list) - 1:
             next_stake_row = cash_stakes_list[recs["recommended_stake_index"] + 1]
-            recs["next_stake_level"] = f"{next_stake_row['small_blind']}/{next_stake_row['big_blind']}"
+            recs["next_stake_level"] = _format_stake_string(next_stake_row)
             next_max_buy_in = Decimal(str(next_stake_row['max_buy_in']).replace('$', '').replace(',', ''))
             required_bankroll = buy_in_multiple * next_max_buy_in
             additional_needed = required_bankroll - total_bankroll
@@ -108,8 +113,8 @@ class RecommendationEngine:
 
         # Calculate "move down" message
         if recs["recommended_stake_index"] > 0:
-            move_down_stake_row = cash_stakes_list[recs["recommended_stake_index"] - 1]
-            recs["move_down_stake_level"] = f"{move_down_stake_row['small_blind']}/{move_down_stake_row['big_blind']}"
+            # The "move down" stake is the one below the current recommended one.
+            recs["move_down_stake_level"] = _format_stake_string(cash_stakes_list[recs["recommended_stake_index"] - 1])
             
             current_stake_row = cash_stakes_list[recs["recommended_stake_index"]]
             current_min_buy_in = Decimal(str(current_stake_row['min_buy_in']).replace('$', '').replace(',', ''))
