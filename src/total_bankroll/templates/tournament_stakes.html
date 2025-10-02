@@ -138,4 +138,33 @@
         </div>
     </div>
 </section>
+
+<style>
+    .highlight-recommended {
+        background-color: #d4edda !important; /* Light green */
+        color: #155724;
+    }
+    .highlight-move-up {
+        background-color: #f8d7da !important; /* Light red */
+        color: #721c24;
+    }
+    .highlight-move-down {
+        background-color: #cce5ff !important; /* Light blue */
+        color: #004085;
+    }
+
+    /* Dark Mode Overrides */
+    body.dark-mode .table-custom tbody tr.highlight-recommended {
+        background-color: #1c4b27 !important; /* Darker, rich green */
+        color: #d4edda;
+    }
+    body.dark-mode .table-custom tbody tr.highlight-move-up {
+        background-color: #5a1a21 !important; /* Darker, rich red */
+        color: #f8d7da;
+    }
+    body.dark-mode .table-custom tbody tr.highlight-move-down {
+        background-color: #003366 !important; /* Darker, rich blue */
+        color: #cce5ff;
+    }
+</style>
 {% endblock %}
