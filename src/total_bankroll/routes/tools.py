@@ -5,6 +5,7 @@ import html
 from flask import Blueprint, render_template, request, current_app, flash
 from flask_security import current_user, login_required, login_required
 from decimal import Decimal, InvalidOperation
+import math
 from flask_wtf import FlaskForm
 from wtforms import DecimalField, SubmitField
 from wtforms.validators import DataRequired, NumberRange
@@ -15,6 +16,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 tools_bp = Blueprint('tools', __name__)
+
+class BankrollGoalsForm(FlaskForm):
+    """Form for the Bankroll Goals Calculator."""
+    target_bankroll = DecimalField('Target Bankroll', validators=[DataRequired(), NumberRange(min=0.01, message="Target must be greater than zero.")])
+    monthly_profit = DecimalField('Expected Monthly Profit / Contribution', validators=[DataRequired(), NumberRange(min=0.01, message="Monthly profit must be greater than zero.")])
+    submit = SubmitField('Calculate Goal')
 
 class SPRCalculatorForm(FlaskForm):
     effective_stack = DecimalField('Effective Stack Size', validators=[DataRequired(), NumberRange(min=0)])
@@ -416,3 +423,46 @@ def spr_calculator_page():
         spr_detailed_decisions=spr_detailed_decisions,
         spr_detailed_category_header=spr_detailed_category_header
     )
+
+@tools_bp.route('/tools/bankroll-goals', methods=['GET', 'POST'])
+@login_required
+def bankroll_goals_page():
+    """Renders the Bankroll Goals Calculator page and handles calculations."""
+    form = BankrollGoalsForm()
+    bankroll_data = get_user_bankroll_data(current_user.id)
+    current_bankroll = bankroll_data['total_bankroll']
+    result = None
+
+    if form.validate_on_submit():
+        target_bankroll = form.target_bankroll.data
+        monthly_profit = form.monthly_profit.data
+
+        amount_needed = target_bankroll - current_bankroll
+
+        if amount_needed <= 0:
+            result = f"Congratulations! Your current bankroll of ${current_bankroll:,.2f} already meets or exceeds your target of ${target_bankroll:,.2f}."
+        elif monthly_profit <= 0:
+            result = "With a monthly profit of zero or less, you cannot reach your target bankroll. Please enter a positive value."
+        else:
+            months_needed = math.ceil(amount_needed / monthly_profit)
+            years = months_needed // 12
+            months = months_needed % 12
+
+            time_str = ""
+            if years > 0:
+                time_str += f"{years} year{'s' if years > 1 else ''}"
+            if months > 0:
+                if years > 0:
+                    time_str += " and "
+                time_str += f"{months} month{'s' if months > 1 else ''}"
+            
+            if not time_str: # Should not happen with ceil, but as a fallback
+                time_str = "less than a month"
+
+            result = (f"To reach your target bankroll of ${target_bankroll:,.2f}, you need to accumulate an additional ${amount_needed:,.2f}. "
+                      f"At a rate of ${monthly_profit:,.2f} per month, it will take you approximately {time_str}.")
+
+    return render_template('bankroll_goals.html',
+                           form=form,
+                           current_bankroll=current_bankroll,
+                           result=result)
