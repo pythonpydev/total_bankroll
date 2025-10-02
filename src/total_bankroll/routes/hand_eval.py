@@ -82,13 +82,19 @@ def submit_form():
     hand_form = HandForm()
     button_position = session.get('button_position', 1)
 
-    logging.debug(f"Request form data: {request.form}")
+    # If it's a GET request and we have data, show the details page.
+    if request.method == 'GET' and 'form_data' in session:
+        return render_template('hand_details.html', form_data=session['form_data'])
 
+    # If it's a POST request (form submission), validate and process.
     if hand_form.validate_on_submit():
+        logging.debug(f"Request form data: {request.form}")
         form_data = algo.process_hand_data(request.form, button_position)
         session['form_data'] = form_data
         return render_template('hand_details.html', form_data=form_data)
-    else:
+
+    # If validation fails on POST, or it's a GET without session data, show the form.
+    if request.method == 'POST': # Only flash errors on a failed POST
         logging.debug(f"Form validation failed. Errors: {hand_form.errors}")
         for field, errors in hand_form.errors.items():
             for error in errors:
