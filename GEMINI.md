@@ -204,6 +204,71 @@ To run the Flask application locally for development, follow these steps.
 
 After running the last command, you should see output indicating the server is running, and you'll be able to access it in your web browser, typically at `http://127.0.0.1:5000/`.
 
+## Core Application Logic
+
+This section details the business logic behind some of the application's key features.
+
+### Tournament Stake Recommendations
+
+The logic for calculating tournament stake recommendations is handled by the `get_tournament_recommendation_data` method in `src/total_bankroll/recommendations.py`. It follows these steps:
+
+1.  **Calculate the "Ideal" Average Buy-in**:
+    *   First, it determines a "buy-in multiple" based on the user's selections (Game Type, Skill Level, Risk Tolerance). This multiple, which represents how many buy-ins a user should have in their bankroll (e.g., 100 for aggressive, 200 for conservative), is calculated from rules defined in `src/total_bankroll/data/recommendation_logic.json`.
+    *   It then calculates the user's ideal average buy-in by dividing their total bankroll by this multiple: `ideal_buy_in = total_bankroll / buy_in_multiple`.
+
+2.  **Find the Closest Standard Stake**:
+    *   The system compares the "ideal" buy-in against a list of standard tournament buy-ins available on poker sites.
+    *   It iterates backward from the highest stake to find the first one that is less than or equal to the user's ideal average buy-in. This becomes the "recommended stake".
+
+3.  **Generate "Move Up" and "Move Down" Messages**:
+    *   **Move Up**: The system calculates the bankroll required to play the next highest stake (e.g., $11 if the recommended is $5.50). It then informs the user exactly how much more money they need to accumulate to safely play at that level.
+    *   **Move Down**: To help with risk management, the system calculates the minimum bankroll required for the *current* recommended stake. It then shows the user how much they can afford to lose before they should drop down to the next lowest stake to protect their bankroll.
+
+4.  **Handle Edge Cases**:
+    *   If a user's bankroll is too small for even the lowest available stakes, the system provides a clear explanation and calculates the amount needed to start playing, giving the user their first concrete goal.
+
+In summary, the tournament recommendation engine provides a holistic view: it tells you what you can play **today**, what you need to do to **move up**, and how much you can risk before you need to **move down**.
+
+### Cash Game Stake Recommendations
+
+The logic for cash game recommendations is handled by the `get_cash_game_recommendation_data` method in `src/total_bankroll/recommendations.py`. It's designed to find the highest stake a user can comfortably play while providing clear guidance on bankroll progression.
+
+1.  **Calculate a Personalized "Buy-in Multiple"**:
+    *   The function first calls `_calculate_weighted_range` to get a personalized `buy_in_multiple` based on the user's selections. For cash games, this multiple represents the number of maximum buy-ins a user should have in their bankroll (e.g., 75).
+
+2.  **Find the Highest Playable Stake**:
+    *   It iterates *backwards* through the list of available cash game stakes (from highest to lowest).
+    *   For each stake, it calculates the required bankroll: `required_bankroll = max_buy_in * buy_in_multiple`.
+    *   The first stake it finds where the user's `total_bankroll` is greater than or equal to the `required_bankroll` is set as the recommended stake. Because the loop is backwards, this is guaranteed to be the highest stake they are properly bankrolled for.
+
+3.  **Generate "Move Up" and "Move Down" Messages**:
+    *   **Move Up**: If the recommended stake isn't the highest available, the system calculates the bankroll needed for the next stake up and tells the user how much more they need to accumulate.
+    *   **Move Down (Stop-Loss)**: This is a key risk management feature. It calculates a "stop-loss" threshold for the current recommended stake, based on the stake's *minimum* buy-in (`move_down_threshold = buy_in_multiple * current_min_buy_in`). It then tells the user the exact amount they can lose before they should move down to the next lowest stake to protect their bankroll.
+
+4.  **Handle Edge Cases**:
+    *   If the user's bankroll is too small for even the lowest available stakes, the system sets the recommendation to "Below Smallest Stakes" and provides a clear explanation of how much more money is needed to start playing.
+
+### The `_calculate_weighted_range` Function
+
+The `_calculate_weighted_range` function in `src/total_bankroll/recommendations.py` is the intelligent core of the recommendation engine. It creates a personalized bankroll rule for a user by blending their preferences, rather than just applying a single, rigid rule.
+
+#### How It Works
+
+The function's logic is driven by `src/total_bankroll/data/recommendation_logic.json`, which defines two key things:
+
+1.  **`weights`**: The importance of each user selection (e.g., `risk_tolerance` has a higher weight than `game_environment`).
+2.  **`ranges`**: The base "rules" for each selection (e.g., a conservative tournament player should have 100-200 buy-ins).
+
+The calculation follows these steps:
+
+1.  **Initialize Sums**: It starts with `total_weight`, `weighted_low_sum`, and `weighted_high_sum` at zero.
+2.  **Iterate Through Selections**: For each user preference (like "Conservative" risk tolerance), it retrieves the corresponding weight and range from the JSON file.
+3.  **Calculate Weighted Sums**: It multiplies the low and high ends of the range by the selection's weight and adds them to the running totals.
+4.  **Calculate Final Averages**: After processing all selections, it divides the `weighted_low_sum` and `weighted_high_sum` by the `total_weight` to get a final, custom range (e.g., 98 to 192 buy-ins).
+5.  **Calculate Average Multiple**: It finds the midpoint of this new custom range (e.g., 145). This single number is what the cash game and tournament recommendation functions use to calculate the required bankroll for a given stake.
+
+This process creates a nuanced, personalized bankroll management rule based on a user's specific context, making the application's advice far more relevant and useful.
+
 # Cash-Game Stakes (Typical)
 
 Typical buy-in ranges (often 40bb minimum — 100bb maximum). Values shown in USD.
