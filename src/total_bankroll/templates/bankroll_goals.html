@@ -14,7 +14,7 @@
                             {{ form.hidden_tag() }}
                             <div class="mb-3">
                                 {{ form.calculation_mode.label(class="form-label") }}
-                                {{ form.calculation_mode(class="form-select", onchange="toggleFields()") }}
+                                {{ form.calculation_mode(class="form-select") }}
                                 {% for error in form.calculation_mode.errors %}
                                     <div class="invalid-feedback d-block">{{ error }}</div>
                                 {% endfor %}
@@ -73,70 +73,97 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} {# Includes scripts from base.html if any are defined there #}
 <script>
-    function toggleFields() {
-        const mode = document.getElementById('calculation_mode').value;
-        const profitField = document.getElementById('monthly_profit_field');
-        const timeframeField = document.getElementById('timeframe_field');
+    // Function to show/hide fields based on calculation mode
 
-        if (mode === 'time') {
-            profitField.style.display = 'block';
-            timeframeField.style.display = 'none';
-        } else {
-            profitField.style.display = 'none';
-            timeframeField.style.display = 'block';
-        }
-    }
-
-    // Initialize the fields on page load
     document.addEventListener('DOMContentLoaded', function() {
+        // Initial call to set the correct fields on page load
+        function toggleFields() {
+            const mode = document.getElementById('calculation_mode').value;
+            const profitField = document.getElementById('monthly_profit_field');
+            const timeframeField = document.getElementById('timeframe_field');
+
+            if (mode === 'time') { // Corrected from 'time_needed'
+                profitField.style.display = 'block';
+                timeframeField.style.display = 'none';
+            } else { // Assumes 'profit'
+                profitField.style.display = 'none';
+                timeframeField.style.display = 'block';
+            }
+        }
         toggleFields();
 
-        // Chart.js rendering
-        const chartData = {{ chart_data|tojson|safe }};
-        if (chartData && chartData.labels && chartData.data) {
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.87)';
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        // Add event listener for the dropdown
+        document.getElementById('calculation_mode').addEventListener('change', toggleFields);
 
-            const ctx = document.getElementById('bankrollGrowthChart').getContext('2d');
-            const chartOptions = {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Projected Bankroll Growth',
-                        font: { size: 18 },
-                        color: textColor
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: { 
-                        title: { display: true, text: 'Time (Months)', color: textColor },
-                        ticks: { color: textColor },
-                        grid: { color: gridColor }
-                    },
-                    y: { 
-                        beginAtZero: false, 
-                        title: { display: true, text: 'Bankroll (USD)', color: textColor },
-                        ticks: { color: textColor },
-                        grid: { color: gridColor }
-                    }
+        // Chart rendering logic
+        {% if chart_data %}
+            let bankrollChart = null; // Variable to hold the chart instance
+
+            // Function to render or re-render the chart
+            function renderChart() {
+                // Destroy the existing chart instance if it exists
+                if (bankrollChart) {
+                    bankrollChart.destroy();
                 }
-            };
-            const data = {
-                labels: chartData.labels,
-                datasets: [{
-                    data: chartData.data,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    fill: false // Ensure it's a line chart without filling the area
-                }]
-            };
-            createChart(ctx, 'line', data, chartOptions);
-        }
+
+                const ctx = document.getElementById('bankrollGrowthChart').getContext('2d');
+                const backendData = {{ chart_data|tojson }};
+
+                // Correctly structure the data for createChart utility
+                const chartData = {
+                    labels: backendData.labels,
+                    datasets: [{
+                        label: 'Projected Bankroll',
+                        data: backendData.data
+                    }]
+                };
+
+                const customOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Projected Bankroll Growth',
+                            font: {
+                                size: 18,
+                                family: "'Merriweather Sans', sans-serif",
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Bankroll ($)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                };
+
+                bankrollChart = createChart(ctx, 'line', chartData, customOptions);
+            }
+
+            // Initial render
+            renderChart();
+
+            // Re-render the chart when the theme changes
+            document.addEventListener('theme-changed', renderChart);
+        {% endif %}
     });
 </script>
 {% endblock %}
