@@ -83,7 +83,7 @@
               {{ hand_form.hero_hand.label(class="form-label") }}
               <div class="input-group">
                 {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", onfocus="this.blur();", style="cursor: pointer;") }}
-                <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal">Select</button>
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="hero_hand" data-limit-min="4" data-limit-max="4" data-title="Select 4 Cards for Hero's Hand">Select</button>
               </div>
               {% for error in hand_form.hero_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
@@ -107,7 +107,10 @@
             </div>
             <div class="col-md-4">
               {{ hand_form.opponent_hand.label(class="form-label") }}
-              {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else ""), placeholder="e.g., 2s2h3d4c") }}
+              <div class="input-group">
+                {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else ""), placeholder="e.g., 2s2h3d4c", onfocus="this.blur();", style="cursor: pointer;") }}
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="opponent_hand" data-limit-min="4" data-limit-max="4" data-title="Select 4 Cards for Opponent's Hand">Select</button>
+              </div>
               {% for error in hand_form.opponent_hand.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -116,7 +119,10 @@
             <!-- Game State -->
             <div class="col-md-4">
               {{ hand_form.board.label(class="form-label") }}
-              {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else ""), placeholder="e.g., AcKcTc") }}
+              <div class="input-group">
+                {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else ""), placeholder="e.g., AcKcTc", onfocus="this.blur();", style="cursor: pointer;") }}
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="board" data-limit-min="3" data-limit-max="5" data-title="Select 3 to 5 Board Cards">Select</button>
+              </div>
               {% for error in hand_form.board.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -148,7 +154,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cardSelectorModalLabel">Select 4 Cards for Hero's Hand</h5>
+        <h5 class="modal-title" id="cardSelectorModalLabel">Select Cards</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -167,7 +173,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" id="confirm-hero-hand" class="btn btn-primary">Confirm Selection</button>
+        <button type="button" id="confirm-selection" class="btn btn-primary">Confirm Selection</button>
       </div>
     </div>
   </div>
@@ -180,17 +186,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     const cardSelectorModal = document.getElementById('cardSelectorModal');
     const cardImages = document.querySelectorAll('#cardSelectorModal .card-item img');
-    const confirmButton = document.getElementById('confirm-hero-hand');
-    const heroHandInput = document.getElementById('hero_hand');
+    const confirmButton = document.getElementById('confirm-selection');
+    const modalTitle = document.getElementById('cardSelectorModalLabel');
+
+    // State variables for the modal
     let selectedCards = [];
     let usedCards = new Set();
+    let currentTargetInput = null;
+    let minLimit = 0;
+    let maxLimit = 0;
 
     cardImages.forEach(card => {
         card.addEventListener('click', () => {
             const cardId = card.id;
 
-            // Prevent selecting cards used by opponent or board
-            const opponentHand = document.getElementById('opponent_hand').value;
+            // Prevent selecting cards that are already used in other fields
             if (usedCards.has(cardId)) {
                 // Card is visually disabled, so this is a backup.
                 return;
@@ -202,48 +212,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.classList.remove('selected');
             } else {
                 // Select card
-                if (selectedCards.length < 4) {
+                if (selectedCards.length < maxLimit) {
                     selectedCards.push(cardId);
                     card.classList.add('selected');
                 } else {
-                    alert('You can only select 4 cards for the hero\'s hand.');
+                    alert(`You can only select up to ${maxLimit} cards.`);
                 }
             }
         });
     });
 
     confirmButton.addEventListener('click', () => {
-        if (selectedCards.length !== 4) {
-            alert('Please select exactly 4 cards.');
+        if (selectedCards.length < minLimit || selectedCards.length > maxLimit) {
+            if (minLimit === maxLimit) {
+                alert(`Please select exactly ${minLimit} cards.`);
+            } else {
+                alert(`Please select between ${minLimit} and ${maxLimit} cards.`);
+            }
             return;
         }
-        heroHandInput.value = selectedCards.join('');
+        if (currentTargetInput) {
+            currentTargetInput.value = selectedCards.join('');
+        }
         
         // Hide the modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('cardSelectorModal'));
+        var modal = bootstrap.Modal.getInstance(cardSelectorModal);
         modal.hide();
     });
 
     // When the modal is about to be shown, update which cards are disabled
-    cardSelectorModal.addEventListener('show.bs.modal', function () {
+    cardSelectorModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; // Button that triggered the modal
+        const targetInputId = button.getAttribute('data-target-input');
+        
+        // Set modal state from button's data attributes
+        currentTargetInput = document.getElementById(targetInputId);
+        minLimit = parseInt(button.getAttribute('data-limit-min'), 10);
+        maxLimit = parseInt(button.getAttribute('data-limit-max'), 10);
+        modalTitle.textContent = button.getAttribute('data-title');
+
         // Reset selections and used cards
         selectedCards = [];
         usedCards.clear();
 
-        // Get cards from other fields
-        const opponentHand = document.getElementById('opponent_hand').value;
-        const board = document.getElementById('board').value;
-        const allUsedCardsStr = opponentHand + board;
-        for (let i = 0; i < allUsedCardsStr.length; i += 2) {
+        // Determine which fields to check for used cards
+        const fieldsToCheck = ['hero_hand', 'opponent_hand', 'board'].filter(id => id !== targetInputId);
+        let allUsedCardsStr = '';
+        fieldsToCheck.forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                allUsedCardsStr += input.value;
+            }
+        });
+
+        // Populate the usedCards set
+        for (let i = 0; i + 1 < allUsedCardsStr.length; i += 2) {
             usedCards.add(allUsedCardsStr.substring(i, i + 2));
+        }
+
+        // Pre-select cards if the target input already has a value
+        const currentCards = currentTargetInput.value;
+        for (let i = 0; i + 1 < currentCards.length; i += 2) {
+            selectedCards.push(currentCards.substring(i, i + 2));
         }
 
         // Update visual state of all cards
         cardImages.forEach(card => {
             card.classList.remove('selected', 'disabled');
-            if (usedCards.has(card.id)) {
-                card.classList.add('disabled');
-            }
+            if (usedCards.has(card.id)) card.classList.add('disabled');
+            if (selectedCards.includes(card.id)) card.classList.add('selected');
         });
     });
 });
