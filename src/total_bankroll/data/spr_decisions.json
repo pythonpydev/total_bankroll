@@ -1,0 +1,61 @@
+{
+  "summary": [
+    { "spr": 0, "category": "Ultra-Low SPR", "territory": "All-in or Fold" },
+    { "spr": 1, "category": "Low SPR", "territory": "Commitment Threshold" },
+    { "spr": 4, "category": "Mid SPR", "territory": "Maneuvering Zone" },
+    { "spr": 13, "category": "High SPR", "territory": "Deep Stack Play" }
+  ],
+  "detailed": {
+    "headers": [
+      "Hand Type",
+      "SPR ≤ 1 (Ultralow)",
+      "1 < SPR ≤ 4 (Low)",
+      "4 < SPR ≤ 13 (Mid)",
+      "SPR > 13 (High)"
+    ],
+    "rows": [
+      [
+        { "content": "Overpair (AAxx on K72)", "class": "" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Pot control", "class": "table-warning" },
+        { "content": "Pot control", "class": "table-warning" }
+      ],
+      [
+        { "content": "Top Two Pair (KQxx on KQ7)", "class": "" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Proceed cautiously", "class": "table-warning" },
+        { "content": "Fold to heavy aggression", "class": "table-danger" }
+      ],
+      [
+        { "content": "Top Set (KKxx on K83)", "class": "" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Value bet, but be wary of straights/flushes", "class": "table-warning" }
+      ],
+      [
+        { "content": "Bare Nut Flush Draw", "class": "" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Semi-bluff", "class": "table-warning" },
+        { "content": "Semi-bluff, but need good pot odds", "class": "table-warning" },
+        { "content": "Play passively, draw cheaply", "class": "table-danger" }
+      ],
+      [
+        { "content": "Combo Draw (e.g., Set + Flush Draw)", "class": "" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Stack off", "class": "table-success" },
+        { "content": "Get it in", "class": "table-success" }
+      ],
+      [
+        { "content": "Weak Made Hand (Bottom Pair)", "class": "" },
+        { "content": "Fold", "class": "table-danger" },
+        { "content": "Fold", "class": "table-danger" },
+        { "content": "Fold", "class": "table-danger" },
+        { "content": "Fold", "class": "table-danger" }
+      ]
+    ]
+  }
+}

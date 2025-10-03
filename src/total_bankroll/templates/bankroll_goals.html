@@ -2,7 +2,7 @@
 {% from "_macros.html" import page_header %}
 
 {% block content %}
-{{ page_header('Bankroll Goals Calculator', 'Set a target and see how long it will take to reach it.') }}
+{{ page_header('Bankroll Goals Calculator', 'Plan your path to higher stakes.') }}
 
 <section class="page-section">
     <div class="container px-4 px-lg-5">
@@ -12,6 +12,13 @@
                     <div class="card-body">
                         <form method="POST">
                             {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.calculation_mode.label(class="form-label") }}
+                                {{ form.calculation_mode(class="form-select", onchange="toggleFields()") }}
+                                {% for error in form.calculation_mode.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="current_bankroll" class="form-label">Current Bankroll</label>
@@ -27,10 +34,17 @@
                                         <div class="invalid-feedback">{{ error }}</div>
                                     {% endfor %}
                                 </div>
-                                <div class="col-md-12">
+                                <div class="col-md-12" id="monthly_profit_field">
                                     <label for="monthly_profit" class="form-label">Expected Monthly Profit / Contribution</label>
                                     {{ form.monthly_profit(class="form-control" + (" is-invalid" if form.monthly_profit.errors else "")) }}
                                     {% for error in form.monthly_profit.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-12" id="timeframe_field" style="display: none;">
+                                    <label for="timeframe_months" class="form-label">Timeframe (in months)</label>
+                                    {{ form.timeframe_months(class="form-control" + (" is-invalid" if form.timeframe_months.errors else "")) }}
+                                    {% for error in form.timeframe_months.errors %}
                                         <div class="invalid-feedback">{{ error }}</div>
                                     {% endfor %}
                                 </div>
@@ -46,10 +60,83 @@
                                 <p>{{ result }}</p>
                             </div>
                         {% endif %}
+
+                        {% if chart_data %}
+                        <div class="mt-4">
+                            <canvas id="bankrollGrowthChart" aria-label="Bankroll Growth Chart" role="img"></canvas>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    function toggleFields() {
+        const mode = document.getElementById('calculation_mode').value;
+        const profitField = document.getElementById('monthly_profit_field');
+        const timeframeField = document.getElementById('timeframe_field');
+
+        if (mode === 'time') {
+            profitField.style.display = 'block';
+            timeframeField.style.display = 'none';
+        } else {
+            profitField.style.display = 'none';
+            timeframeField.style.display = 'block';
+        }
+    }
+
+    // Initialize the fields on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleFields();
+
+        // Chart.js rendering
+        const chartData = {{ chart_data|tojson|safe }};
+        if (chartData && chartData.labels && chartData.data) {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.87)';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+            const ctx = document.getElementById('bankrollGrowthChart').getContext('2d');
+            const chartOptions = {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Projected Bankroll Growth',
+                        font: { size: 18 },
+                        color: textColor
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Time (Months)', color: textColor },
+                        ticks: { color: textColor },
+                        grid: { color: gridColor }
+                    },
+                    y: { 
+                        beginAtZero: false, 
+                        title: { display: true, text: 'Bankroll (USD)', color: textColor },
+                        ticks: { color: textColor },
+                        grid: { color: gridColor }
+                    }
+                }
+            };
+            const data = {
+                labels: chartData.labels,
+                datasets: [{
+                    data: chartData.data,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false // Ensure it's a line chart without filling the area
+                }]
+            };
+            createChart(ctx, 'line', data, chartOptions);
+        }
+    });
+</script>
 {% endblock %}

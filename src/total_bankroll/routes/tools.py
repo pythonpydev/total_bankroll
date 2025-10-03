@@ -1,17 +1,28 @@
 import json
 import os
-import re
 import html
 from flask import Blueprint, render_template, request, current_app, flash
 from flask_security import current_user, login_required, login_required
 from decimal import Decimal, InvalidOperation
 import math
 from flask_wtf import FlaskForm
-from wtforms import DecimalField, SubmitField
-from wtforms.validators import DataRequired, NumberRange
+from wtforms import DecimalField, SubmitField, SelectField, IntegerField
+from wtforms.validators import DataRequired, NumberRange, Optional
 from ..utils import get_user_bankroll_data
 from ..recommendations import RecommendationEngine
 import logging
+
+# --- Caching for SPR Data ---
+_spr_decision_data = None
+
+def get_spr_decision_data():
+    """Loads SPR decision data from JSON and caches it."""
+    global _spr_decision_data
+    if _spr_decision_data is None:
+        json_path = os.path.join(current_app.root_path, 'data', 'spr_decisions.json')
+        with open(json_path, 'r') as f:
+            _spr_decision_data = json.load(f)
+    return _spr_decision_data
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,9 +30,22 @@ tools_bp = Blueprint('tools', __name__)
 
 class BankrollGoalsForm(FlaskForm):
     """Form for the Bankroll Goals Calculator."""
+    calculation_mode = SelectField('Calculation Type', choices=[('time', 'Calculate Time to Goal'), ('profit', 'Calculate Required Monthly Profit')], default='time')
     target_bankroll = DecimalField('Target Bankroll', validators=[DataRequired(), NumberRange(min=0.01, message="Target must be greater than zero.")])
-    monthly_profit = DecimalField('Expected Monthly Profit / Contribution', validators=[DataRequired(), NumberRange(min=0.01, message="Monthly profit must be greater than zero.")])
+    monthly_profit = DecimalField('Expected Monthly Profit / Contribution', validators=[Optional(), NumberRange(min=0.01, message="Monthly profit must be greater than zero.")])
+    timeframe_months = IntegerField('Timeframe (in months)', validators=[Optional(), NumberRange(min=1, message="Timeframe must be at least 1 month.")])
     submit = SubmitField('Calculate Goal')
+
+    def validate(self, **kwargs):
+        if not super().validate(**kwargs):
+            return False
+        if self.calculation_mode.data == 'time' and self.monthly_profit.data is None:
+            self.monthly_profit.errors.append('This field is required for this calculation.')
+            return False
+        if self.calculation_mode.data == 'profit' and self.timeframe_months.data is None:
+            self.timeframe_months.errors.append('This field is required for this calculation.')
+            return False
+        return True
 
 class SPRCalculatorForm(FlaskForm):
     effective_stack = DecimalField('Effective Stack Size', validators=[DataRequired(), NumberRange(min=0)])
@@ -274,139 +298,51 @@ def spr_calculator_page():
     spr_decision_territory = None
     spr_detailed_decisions = None
     spr_detailed_category_header = None
-
-    # Load SPR decision data from decisions.html
-    decisions_html_path = os.path.join(current_app.root_path, 'templates', 'decisions.html')
-    
-    # Data for the summary (Category and Territory)
-    spr_summary_table = []
-    # Data for the detailed decision table
-    spr_detailed_chart_headers = []
-    spr_detailed_chart_data = []
+    spr_data = None
 
     try:
-        with open(decisions_html_path, 'r') as f:
-            content = f.read()
-            logging.debug(f"Loaded decisions.html content length: {len(content)}")
-            
-            # --- Parse the summary table (SPR, Category, Category 2) ---
-            summary_rows = re.findall(
-                r'<tr class="category-(?:ultra-low|low|mid|high)">\s*'
-                r'<td[^>]*sdval="([\d.]+)"[^>]*>.*?</td>\s*' # Group 1: SPR value from sdval
-                r'<td[^>]*>.*?</td>\s*' # Skip Equity
-                r'<td[^>]*>.*?</td>\s*' # Skip Pot-Sized Bets
-                r'<td[^>]*data-sheets-value="{[^}]*&quot;2&quot;:\s*&quot;([^&]+)&quot;}"[^>]*>.*?</td>\s*' # Group 2: Category
-                r'<td[^>]*data-sheets-value="{[^}]*&quot;2&quot;:\s*&quot;([^&]+)&quot;}"[^>]*>.*?</td>\s*' # Group 3: Category 2
-                r'</tr>',
-                content, re.DOTALL
-            )
-            logging.debug(f"Found {len(summary_rows)} summary rows.")
-            for row in summary_rows:
-                try:
-                    spr_val = float(row[0]) # row[0] is now directly the sdval
-                    category = row[1].strip() # row[1] is now directly the category from data-sheets-value
-                    category2 = row[2].strip() # row[2] is now directly the category2 from data-sheets-value
-                    spr_summary_table.append({
-                        'spr': spr_val,
-                        'category': category,
-                        'category2': category2
-                    })
-                except ValueError:
-                    if row[0] == '>13': # Check if sdval was '>13' (though regex should prevent this for float)
-                        spr_summary_table.append({
-                            'spr': float('inf'),
-                            'category': row[1].strip(),
-                            'category2': row[2].strip()
-                        })
-                    else:
-                        current_app.logger.warning(f"Could not parse SPR summary row: {row}")
-            spr_summary_table.sort(key=lambda x: x['spr'])
-            logging.debug(f"Parsed spr_summary_table: {spr_summary_table}")
-
-            # --- Parse the detailed decision table (Hand Type and SPR ranges) ---
-            detailed_table_match = re.search(r'<table class="table table-bordered table-striped table-custom".*?>(.*?)</table>', content, re.DOTALL)
-            if detailed_table_match:
-                table_content = detailed_table_match.group(1)
-                logging.debug(f"Found detailed table content length: {len(table_content)}")
-                
-                # Extract header row
-                header_row_match = re.search(r'<thead[^>]*>.*?<tr>(.*?)</tr>.*?</thead>', table_content, re.DOTALL)
-                if header_row_match:
-                    header_cells = re.findall(r'<th[^>]*>(.*?)</th>', header_row_match.group(1))
-                    spr_detailed_chart_headers = [html.unescape(re.sub(r'<.*?>', '', h)).strip() for h in header_cells]
-                    logging.debug(f"Parsed spr_detailed_chart_headers: {spr_detailed_chart_headers}")
-
-                # Extract data rows
-                body_rows = re.findall(r'<tr[^>]*>(.*?)</tr>', table_content.split('<tbody>')[1].split('</tbody>')[0], re.DOTALL)
-                for row_content in body_rows:
-                    row_cells_data = []
-                    # Find all <th> or <td> tags and capture their class and content
-                    cell_matches = re.findall(r'<(?:th|td)(?: class="(table-(?:success|warning|danger))")?[^>]*>(.*?)</(?:th|td)>', row_content, re.DOTALL)
-                    for class_attr, cell_content in cell_matches:
-                        cleaned_content = html.unescape(re.sub(r'<.*?>', '', cell_content)).strip()
-                        row_cells_data.append({'content': cleaned_content, 'class': class_attr if class_attr else ''})
-                    if row_cells_data:
-                        spr_detailed_chart_data.append(row_cells_data)
-                logging.debug(f"Parsed spr_detailed_chart_data: {spr_detailed_chart_data}")
-
+        spr_data = get_spr_decision_data()
     except FileNotFoundError:
-        flash("SPR decision data file (decisions.html) not found. Please ensure it exists in the templates directory.", "danger")
-        logging.error(f"FileNotFoundError: {decisions_html_path}")
+        flash("SPR decision data file (spr_decisions.json) not found.", "danger")
+        logging.error("spr_decisions.json not found in the data directory.")
     except Exception as e:
         flash(f"Error loading or parsing SPR decision data: {e}", "danger")
-        logging.error(f"Error parsing decisions.html: {e}", exc_info=True)
-
+        logging.error(f"Error parsing spr_decisions.json: {e}", exc_info=True)
 
     if form.validate_on_submit():
         effective_stack = form.effective_stack.data
         pot_size = form.pot_size.data
         try:
             spr = effective_stack / pot_size
-            logging.debug(f"Calculated SPR: {spr}")
-            
-            # --- Determine relevant summary decision ---
-            if spr_summary_table:
-                relevant_summary_row = None
-                for row in spr_summary_table:
-                    if spr >= row['spr']:
-                        relevant_summary_row = row
-                    else:
-                        break
-                if not relevant_summary_row and spr < spr_summary_table[0]['spr']:
-                    relevant_summary_row = spr_summary_table[0]
-                elif not relevant_summary_row and spr > spr_summary_table[-1]['spr'] and spr_summary_table[-1]['spr'] != float('inf'):
-                    relevant_summary_row = spr_summary_table[-1]
 
-                if relevant_summary_row:
-                    spr_decision_category = relevant_summary_row['category']
-                    spr_decision_territory = relevant_summary_row['category2']
-                    logging.debug(f"Summary Decision: Category={spr_decision_category}, Territory={spr_decision_territory}")
-            
-            # --- Determine relevant detailed decision column ---
-            if spr_detailed_chart_headers and spr_detailed_chart_data:
-                # Find the correct header for the calculated SPR
-                spr_header_index = -1
-                if spr <= 1: spr_detailed_category_header = "SPR ≤ 1 (Ultralow)"
-                elif spr <= 4: spr_detailed_category_header = "1 < SPR ≤ 4 (Low)"
-                elif spr <= 13: spr_detailed_category_header = "4 < SPR ≤ 13 (Mid)"
-                else: spr_detailed_category_header = "SPR > 13 (High)"
+            if spr_data:
+                # --- Determine relevant summary decision ---
+                # Find the last summary row where the calculated SPR is greater than or equal to the row's SPR
+                summary_row = next((row for row in reversed(spr_data['summary']) if spr >= row['spr']), spr_data['summary'][0])
+                spr_decision_category = summary_row['category']
+                spr_decision_territory = summary_row['territory']
+
+                # --- Determine relevant detailed decision column ---
+                detailed_headers = spr_data['detailed']['headers']
+                spr_header_index = 0 # Default to first column
+                if spr > 13:
+                    spr_header_index = 4
+                elif spr > 4:
+                    spr_header_index = 3
+                elif spr > 1:
+                    spr_header_index = 2
+                else:
+                    spr_header_index = 1
                 
-                try:
-                    spr_header_index = spr_detailed_chart_headers.index(spr_detailed_category_header)
-                    logging.debug(f"Matched detailed category header: {spr_detailed_category_header} at index {spr_header_index}")
-                except ValueError:
-                    current_app.logger.warning(f"SPR category header '{spr_detailed_category_header}' not found in detailed chart headers.")
-
-                if spr_header_index != -1:
+                if 0 < spr_header_index < len(detailed_headers):
+                    spr_detailed_category_header = detailed_headers[spr_header_index]
                     spr_detailed_decisions = []
-                    for row_data in spr_detailed_chart_data:
-                        if len(row_data) > spr_header_index:
-                            spr_detailed_decisions.append({
-                                'hand_type': row_data[0]['content'], # First column is Hand Type content
-                                'decision': row_data[spr_header_index]['content'], # Decision content
-                                'decision_class': row_data[spr_header_index]['class'] # Decision class
-                            })
-                    logging.debug(f"Filtered spr_detailed_decisions: {spr_detailed_decisions}")
+                    for row_data in spr_data['detailed']['rows']:
+                        spr_detailed_decisions.append({
+                            'hand_type': row_data[0]['content'],
+                            'decision': row_data[spr_header_index]['content'],
+                            'decision_class': row_data[spr_header_index]['class']
+                        })
 
         except InvalidOperation:
             flash("Invalid input for stack or pot size.", "danger")
@@ -432,37 +368,70 @@ def bankroll_goals_page():
     bankroll_data = get_user_bankroll_data(current_user.id)
     current_bankroll = bankroll_data['total_bankroll']
     result = None
+    chart_data = None
 
     if form.validate_on_submit():
+        calculation_mode = form.calculation_mode.data
         target_bankroll = form.target_bankroll.data
-        monthly_profit = form.monthly_profit.data
 
         amount_needed = target_bankroll - current_bankroll
 
         if amount_needed <= 0:
             result = f"Congratulations! Your current bankroll of ${current_bankroll:,.2f} already meets or exceeds your target of ${target_bankroll:,.2f}."
-        elif monthly_profit <= 0:
-            result = "With a monthly profit of zero or less, you cannot reach your target bankroll. Please enter a positive value."
         else:
-            months_needed = math.ceil(amount_needed / monthly_profit)
-            years = months_needed // 12
-            months = months_needed % 12
+            labels = []
+            data_points = []
 
-            time_str = ""
-            if years > 0:
-                time_str += f"{years} year{'s' if years > 1 else ''}"
-            if months > 0:
-                if years > 0:
-                    time_str += " and "
-                time_str += f"{months} month{'s' if months > 1 else ''}"
+            if calculation_mode == 'time':
+                monthly_profit = form.monthly_profit.data
+                if monthly_profit <= 0:
+                    result = "With a monthly profit of zero or less, you cannot reach your target bankroll. Please enter a positive value."
+                else:
+                    months_needed = math.ceil(amount_needed / monthly_profit)
+                    
+                    # Generate chart data
+                    for i in range(int(months_needed) + 1):
+                        labels.append(f"Month {i}")
+                        projected_val = min(current_bankroll + (monthly_profit * i), target_bankroll)
+                        data_points.append(float(projected_val))
+                    chart_data = {'labels': labels, 'data': data_points}
+
+                    years = months_needed // 12
+                    months = months_needed % 12
+
+                    time_str = ""
+                    if years > 0:
+                        time_str += f"{years} year{'s' if years > 1 else ''}"
+                    if months > 0:
+                        if years > 0:
+                            time_str += " and "
+                        time_str += f"{months} month{'s' if months > 1 else ''}"
+                    
+                    if not time_str:
+                        time_str = "less than a month"
+
+                    result = (f"To reach your target bankroll of ${target_bankroll:,.2f}, you need to accumulate an additional ${amount_needed:,.2f}. "
+                              f"At a rate of ${monthly_profit:,.2f} per month, it will take you approximately {time_str}.")
             
-            if not time_str: # Should not happen with ceil, but as a fallback
-                time_str = "less than a month"
+            elif calculation_mode == 'profit':
+                timeframe_months = form.timeframe_months.data
+                if timeframe_months <= 0:
+                    result = "Timeframe must be a positive number of months."
+                else:
+                    required_profit = amount_needed / Decimal(timeframe_months)
 
-            result = (f"To reach your target bankroll of ${target_bankroll:,.2f}, you need to accumulate an additional ${amount_needed:,.2f}. "
-                      f"At a rate of ${monthly_profit:,.2f} per month, it will take you approximately {time_str}.")
+                    # Generate chart data
+                    for i in range(int(timeframe_months) + 1):
+                        labels.append(f"Month {i}")
+                        projected_val = min(current_bankroll + (Decimal(required_profit) * i), target_bankroll)
+                        data_points.append(float(projected_val))
+                    chart_data = {'labels': labels, 'data': data_points}
+
+                    result = (f"To grow your bankroll from ${current_bankroll:,.2f} to ${target_bankroll:,.2f} in {timeframe_months} months, "
+                              f"you will need to achieve an average monthly profit of ${required_profit:,.2f}.")
 
     return render_template('bankroll_goals.html',
                            form=form,
                            current_bankroll=current_bankroll,
-                           result=result)
+                           result=result,
+                           chart_data=chart_data)

@@ -129,11 +129,21 @@ function createChart(ctx, chartType, chartData, customOptions = {}) {
     // Deep merge custom options into default options
     const finalOptions = _.merge(defaultOptions, customOptions);
 
-    // Special handling for chart title color which is not a default scale property
-    if (finalOptions.plugins && finalOptions.plugins.title) {
+    // If no custom title color is provided, apply the theme default.
+    if (finalOptions.plugins?.title && !customOptions.plugins?.title?.color) {
         finalOptions.plugins.title.color = isDarkMode ? '#f5f5f5' : '#343a40';
     }
 
+    // If no custom scale colors are provided, apply theme defaults.
+    // This prevents the default theme from overwriting specific colors passed from a page.
+    ['x', 'y', 'r'].forEach(axis => {
+        if (finalOptions.scales?.[axis] && !customOptions.scales?.[axis]?.ticks?.color) {
+            finalOptions.scales[axis].ticks.color = isDarkMode ? 'rgba(255, 255, 255, 0.7)' : '#343a40';
+            finalOptions.scales[axis].grid.color = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            if (finalOptions.scales[axis].title) finalOptions.scales[axis].title.color = isDarkMode ? '#f5f5f5' : '#343a40';
+        }
+    });
+    
     return new Chart(ctx, {
         type: chartType,
         data: chartData,
