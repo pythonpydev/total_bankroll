@@ -6253,7 +6253,7 @@
     }.page-section {
     padding: var(--spacing-xl) 0
     }header.masthead.page-masthead {
-    height: 20rem
+    height: 8rem
     }@media (max-width: 768px) {
     .data-display-container {
         flex-direction: column;
