@@ -82,7 +82,7 @@
             <div class="col-md-4">
               {{ hand_form.hero_hand.label(class="form-label") }}
               <div class="input-group">
-                {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", readonly=true) }}
+                {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", onfocus="this.blur();", style="cursor: pointer;") }}
                 <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal">Select</button>
               </div>
               {% for error in hand_form.hero_hand.errors %}
@@ -143,10 +143,8 @@
         </form>
       </div>
   </section>
-{% endblock %}
-
-<!-- Card Selector Modal -->
-<div class="modal fade" id="cardSelectorModal" tabindex="-1" aria-labelledby="cardSelectorModalLabel" aria-hidden="true">
+  <!-- Card Selector Modal -->
+  <div class="modal fade" id="cardSelectorModal" tabindex="-1" aria-labelledby="cardSelectorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -173,16 +171,19 @@
       </div>
     </div>
   </div>
-</div>
+  </div>
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const cardSelectorModal = document.getElementById('cardSelectorModal');
     const cardImages = document.querySelectorAll('#cardSelectorModal .card-item img');
     const confirmButton = document.getElementById('confirm-hero-hand');
     const heroHandInput = document.getElementById('hero_hand');
     let selectedCards = [];
+    let usedCards = new Set();
 
     cardImages.forEach(card => {
         card.addEventListener('click', () => {
@@ -190,9 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Prevent selecting cards used by opponent or board
             const opponentHand = document.getElementById('opponent_hand').value;
-            const board = document.getElementById('board').value;
-            if (opponentHand.includes(cardId) || board.includes(cardId)) {
-                alert('This card is already in use.');
+            if (usedCards.has(cardId)) {
+                // Card is visually disabled, so this is a backup.
                 return;
             }
 
@@ -224,10 +224,27 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.hide();
     });
 
-    // When the modal is closed, clear the selection for next time
-    document.getElementById('cardSelectorModal').addEventListener('hidden.bs.modal', function () {
+    // When the modal is about to be shown, update which cards are disabled
+    cardSelectorModal.addEventListener('show.bs.modal', function () {
+        // Reset selections and used cards
         selectedCards = [];
-        cardImages.forEach(card => card.classList.remove('selected'));
+        usedCards.clear();
+
+        // Get cards from other fields
+        const opponentHand = document.getElementById('opponent_hand').value;
+        const board = document.getElementById('board').value;
+        const allUsedCardsStr = opponentHand + board;
+        for (let i = 0; i < allUsedCardsStr.length; i += 2) {
+            usedCards.add(allUsedCardsStr.substring(i, i + 2));
+        }
+
+        // Update visual state of all cards
+        cardImages.forEach(card => {
+            card.classList.remove('selected', 'disabled');
+            if (usedCards.has(card.id)) {
+                card.classList.add('disabled');
+            }
+        });
     });
 });
 </script>
@@ -246,6 +263,10 @@ document.addEventListener('DOMContentLoaded', function() {
     .card-item img.selected {
       border-color: #0d6efd; /* Bootstrap primary blue */
       box-shadow: 0 0 8px #0d6efd;
+    }
+    .card-item img.disabled {
+      filter: grayscale(100%);
+      cursor: not-allowed;
     }
 </style>
 {% endblock %}
