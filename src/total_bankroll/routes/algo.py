@@ -86,7 +86,8 @@ def calculate_detailed_outs(hole_card_strs, board_card_strs):
 
     outs_breakdown = {
         'pair': 0, 'two_pair': 0, 'trips': 0, 'straight': 0,
-        'flush': 0, 'full_house': 0, 'quads': 0, 'straight_flush': 0, 'total': 0
+        'flush': 0, 'full_house': 0, 'quads': 0, 'straight_flush': 0, 'total': 0,
+        'cards': []
     }
 
     deck = Deck()
@@ -104,6 +105,7 @@ def calculate_detailed_outs(hole_card_strs, board_card_strs):
         if simulated_best_rank < current_best_rank:
             print(f"Out card: {potential_out_str}")
             outs_breakdown['total'] += 1
+            outs_breakdown['cards'].append(potential_out_str)
             simulated_best_class = evaluator.get_rank_class(simulated_best_rank)
 
             # Prioritize higher-ranking hands to avoid double-counting
