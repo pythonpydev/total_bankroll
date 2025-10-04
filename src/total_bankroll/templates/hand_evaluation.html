@@ -90,6 +90,27 @@
           </div>
         </div>
 
+        <!-- Pot Odds & Equity Card -->
+        {% if form_data.bet_size > 0 %}
+        <div class="col-12 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-dark text-white">Pot Odds vs. Equity</div>
+            <div class="card-body text-center">
+              <p>
+                To call a bet of <strong>${{ form_data.bet_size|int }}</strong>, you need at least
+                <strong class="text-info">{{ "%.2f"|format(form_data.required_equity) }}%</strong> equity.
+              </p>
+              <p>
+                Your hand has approximately
+                <strong class="text-primary">
+                  {% set board_len = form_data.board|length %}{% if board_len == 3 %}{{ (form_data.hero_outs_breakdown.total * 4)|round }}{% elif board_len == 4 %}{{ (form_data.hero_outs_breakdown.total * 2)|round }}{% else %}N/A{% endif %}%
+                </strong> equity to improve.
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Hero's Outs Card -->
         <div class="col-md-6 mb-4">
           <div class="card h-100 shadow-sm border-primary">

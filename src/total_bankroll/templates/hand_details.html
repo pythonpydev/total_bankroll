@@ -65,6 +65,24 @@
 
       <!-- Hand Strength & SPR Quiz -->
       <div class="row g-4 mt-1 justify-content-center">
+        {% if form_data.bet_size > 0 %}
+        <div class="col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-header">Pot Odds</div>
+            <div class="card-body text-center fs-5">
+              You need to call <strong>${{ form_data.bet_size|int }}</strong> to win a total pot of <strong>${{ (form_data.pot_size + form_data.bet_size)|int }}</strong>.
+              <hr>
+              <div>
+                Required Equity to Call: 
+                <strong class="text-info" data-bs-toggle="tooltip" title="The minimum equity your hand needs to profitably call the bet.">
+                  {{ "%.2f"|format(form_data.required_equity) }}%
+                </strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <div class="col-lg-8">
           <div class="card shadow-sm
             {% if form_data.hero_eval < form_data.opp_eval %} border-success
@@ -120,6 +138,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Bootstrap tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+
       // Data from Flask template
       const actualSpr = {{ form_data.actual_spr|tojson }};
       const actualPotBets = {{ form_data.actual_pot_bets|tojson }};

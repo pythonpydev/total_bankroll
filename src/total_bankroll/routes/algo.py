@@ -226,4 +226,14 @@ def process_hand_data(form_data, button_position):
     processed_data['actual_pot_bets'] = actual_pot_bets
     processed_data['actual_spr_calculation_str'] = f"[{smallest_stack} / ({processed_data['pot_size']}+{processed_data['bet_size']})]"
 
+    # Calculate required equity based on pot odds
+    pot_size = processed_data['pot_size']
+    bet_size = processed_data['bet_size']
+    required_equity = 0
+    if bet_size > 0:
+        # Required Equity = Amount to Call / (Total Pot After Calling)
+        total_pot_after_call = pot_size + bet_size + bet_size
+        required_equity = (bet_size / total_pot_after_call) * 100 if total_pot_after_call > 0 else 0
+    processed_data['required_equity'] = required_equity
+
     return processed_data
