@@ -129,14 +129,21 @@
             </div>
             <div class="col-md-4">
               {{ hand_form.pot_size.label(class="form-label") }}
-              {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else ""), placeholder="e.g., 6") }}
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else ""), placeholder="e.g., 6") }}
+              </div>
               {% for error in hand_form.pot_size.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="col-md-4">
-              {{ hand_form.bet_size.label(class="form-label") }}
-              {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else ""), placeholder="e.g., 6") }}
+              <label for="bet_size" class="form-label">Bet Size to Call <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="The amount you must call to continue."></i></label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else ""), placeholder="e.g., 6") }}
+                <span class="input-group-text" id="pot-odds-display" data-bs-toggle="tooltip" title="Pot Odds (Ratio of pot to call amount)">-- : 1</span>
+              </div>
               {% for error in hand_form.bet_size.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
               {% endfor %}
@@ -277,6 +284,51 @@
 
         // Initialize the module on page load
         CardSelector.init();
+
+        /**
+         * PotOddsCalculator Module
+         * Handles real-time calculation of pot odds.
+         */
+        const PotOddsCalculator = {
+            potSizeInput: null,
+            betSizeInput: null,
+            display: null,
+
+            init: function() {
+                this.potSizeInput = document.getElementById('pot_size');
+                this.betSizeInput = document.getElementById('bet_size');
+                this.display = document.getElementById('pot-odds-display');
+
+                if (!this.potSizeInput || !this.betSizeInput || !this.display) return;
+
+                this.potSizeInput.addEventListener('input', this.calculate.bind(this));
+                this.betSizeInput.addEventListener('input', this.calculate.bind(this));
+                this.calculate(); // Initial calculation on page load
+            },
+
+            calculate: function() {
+                const potSize = parseFloat(this.potSizeInput.value);
+                const betSize = parseFloat(this.betSizeInput.value);
+
+                if (isNaN(potSize) || isNaN(betSize) || betSize <= 0) {
+                    this.display.textContent = '-- : 1';
+                    return;
+                }
+
+                const totalPot = potSize + betSize;
+                const odds = totalPot / betSize;
+
+                this.display.textContent = `${odds.toFixed(2)} : 1`;
+            }
+        };
+
+        PotOddsCalculator.init();
+
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     });
 </script>
 {% endblock %}
