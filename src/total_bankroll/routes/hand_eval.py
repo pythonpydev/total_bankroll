@@ -121,6 +121,11 @@ def spr_strategy():
     """SPR Strategy page route"""
     return render_template('spr_strategy.html', title='SPR Strategy')
 
+@hand_eval_bp.route('/pot-odds-equity')
+def pot_odds_equity():
+    """Pot Odds vs Equity explanation page route"""
+    return render_template('pot_odds_equity.html', title='Pot Odds vs Equity')
+
 @hand_eval_bp.route('/card_selector')
 def card_selector():
     """Card selector page route"""

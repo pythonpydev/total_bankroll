@@ -96,16 +96,43 @@
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Pot Odds vs. Equity</div>
             <div class="card-body text-center">
-              <p>
-                To call a bet of <strong>${{ form_data.bet_size|int }}</strong>, you need at least
-                <strong class="text-info">{{ "%.2f"|format(form_data.required_equity) }}%</strong> equity.
-              </p>
-              <p>
-                Your hand has approximately
-                <strong class="text-primary">
-                  {% set board_len = form_data.board|length %}{% if board_len == 3 %}{{ (form_data.hero_outs_breakdown.total * 4)|round }}{% elif board_len == 4 %}{{ (form_data.hero_outs_breakdown.total * 2)|round }}{% else %}N/A{% endif %}%
-                </strong> equity to improve.
-              </p>
+              {% set board_len = form_data.board|length %}
+              {% set estimated_equity = 0 %}
+              {% if board_len == 3 %}
+                  {% set estimated_equity = form_data.hero_outs_breakdown.total * 4 %}
+              {% elif board_len == 4 %}
+                  {% set estimated_equity = form_data.hero_outs_breakdown.total * 2 %}
+              {% endif %}
+
+              <div class="row">
+                <div class="col-md-6 border-end">
+                  <p class="mb-1"><strong>Required Equity</strong></p>
+                  <p class="fs-4 text-info" data-bs-toggle="tooltip" title="The minimum equity needed to profitably call. (Bet / Total Pot)">
+                    {{ "%.2f"|format(form_data.required_equity) }}%
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Estimated Hand Equity</strong></p>
+                  <p class="fs-4 text-primary" data-bs-toggle="tooltip" title="Your approximate chance to win by improving. (Outs x4 on flop, x2 on turn)">
+                    {{ estimated_equity|round }}%
+                  </p>
+                </div>
+              </div>
+              <hr>
+              <div class="verdict-section">
+                <h5 class="card-title">The Verdict</h5>
+                {% if estimated_equity > form_data.required_equity %}
+                  <div class="alert alert-success" role="alert">
+                    <h4 class="alert-heading">Profitable Call</h4>
+                    <p class="mb-0">Your hand's equity ({{ estimated_equity|round }}%) is greater than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). Calling is the correct long-term play.</p>
+                  </div>
+                {% else %}
+                  <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Unprofitable Call</h4>
+                    <p class="mb-0">Your hand's equity ({{ estimated_equity|round }}%) is less than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). You do not have the correct odds to call.</p>
+                  </div>
+                {% endif %}
+              </div>
             </div>
           </div>
         </div>
@@ -185,6 +212,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Bootstrap tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+
       const cardImagePath = `{{ url_for('static', filename='images/cards/') }}`;
 
       // Get and sort all necessary card data
