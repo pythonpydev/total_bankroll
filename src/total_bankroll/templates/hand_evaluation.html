@@ -96,14 +96,6 @@
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-dark text-white">Pot Odds vs. Equity</div>
             <div class="card-body text-center">
-              {% set board_len = form_data.board|length %}
-              {% set estimated_equity = 0 %}
-              {% if board_len == 3 %}
-                  {% set estimated_equity = form_data.hero_outs_breakdown.total * 4 %}
-              {% elif board_len == 4 %}
-                  {% set estimated_equity = form_data.hero_outs_breakdown.total * 2 %}
-              {% endif %}
-
               <div class="row">
                 <div class="col-md-6 border-end">
                   <p class="mb-1"><strong>Required Equity</strong></p>
@@ -112,24 +104,24 @@
                   </p>
                 </div>
                 <div class="col-md-6">
-                  <p class="mb-1"><strong>Estimated Hand Equity</strong></p>
-                  <p class="fs-4 text-primary" data-bs-toggle="tooltip" title="Your approximate chance to win by improving. (Outs x4 on flop, x2 on turn)">
-                    {{ estimated_equity|round }}%
+                  <p class="mb-1"><strong>Hand Equity (Simulated)</strong></p>
+                  <p class="fs-4 text-primary" data-bs-toggle="tooltip" title="Your chance to win the hand after a Monte Carlo simulation of the remaining cards.">
+                    {{ "%.2f"|format(form_data.hero_equity) }}%
                   </p>
                 </div>
               </div>
               <hr>
               <div class="verdict-section">
                 <h5 class="card-title">The Verdict</h5>
-                {% if estimated_equity > form_data.required_equity %}
+                {% if form_data.hero_equity > form_data.required_equity %}
                   <div class="alert alert-success" role="alert">
                     <h4 class="alert-heading">Profitable Call</h4>
-                    <p class="mb-0">Your hand's equity ({{ estimated_equity|round }}%) is greater than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). Calling is the correct long-term play.</p>
+                    <p class="mb-0">Your hand's equity ({{ "%.2f"|format(form_data.hero_equity) }}%) is greater than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). Calling is the correct long-term play.</p>
                   </div>
                 {% else %}
                   <div class="alert alert-danger" role="alert">
                     <h4 class="alert-heading">Unprofitable Call</h4>
-                    <p class="mb-0">Your hand's equity ({{ estimated_equity|round }}%) is less than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). You do not have the correct odds to call.</p>
+                    <p class="mb-0">Your hand's equity ({{ "%.2f"|format(form_data.hero_equity) }}%) is less than the required equity ({{ "%.2f"|format(form_data.required_equity) }}%). You do not have the correct odds to call.</p>
                   </div>
                 {% endif %}
               </div>
@@ -166,6 +158,14 @@
                 <p><strong>Out Cards:</strong></p>
                 <div id="heroOuts" class="outs-card-container"></div>
               {% endif %}
+              {% if form_data.hero_winning_outs.cards %}
+                <hr>
+                <p class="text-success"><strong>Winning Outs: {{ form_data.hero_winning_outs.total }}</strong>
+                  <span class="text-muted"> ({{ (form_data.hero_winning_outs.total * (5 if board_len == 3 else 2))|round(1) }}% to win)</span>
+                </p>
+                <p class="small text-muted">Cards that make your hand stronger than the opponent's current hand.</p>
+                <div id="heroWinningOuts" class="outs-card-container"></div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -198,6 +198,14 @@
                 <p><strong>Out Cards:</strong></p>
                 <div id="opponentOuts" class="outs-card-container"></div>
               {% endif %}
+              {% if form_data.opp_winning_outs.cards %}
+                <hr>
+                <p class="text-success"><strong>Winning Outs: {{ form_data.opp_winning_outs.total }}</strong>
+                  <span class="text-muted"> ({{ (form_data.opp_winning_outs.total * (5 if board_len == 3 else 2))|round(1) }}% to win)</span>
+                </p>
+                <p class="small text-muted">Cards that make opponent's hand stronger than your current hand.</p>
+                <div id="opponentWinningOuts" class="outs-card-container"></div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -228,6 +236,8 @@
       const oppBestHand = {{ form_data.opp_best_hand|tojson }};
       const heroOuts = {{ form_data.hero_outs_breakdown.cards|tojson }};
       const oppOuts = {{ form_data.opp_outs_breakdown.cards|tojson }};
+      const heroWinningOuts = {{ form_data.hero_winning_outs.cards|tojson }};
+      const oppWinningOuts = {{ form_data.opp_winning_outs.cards|tojson }};
 
       // Display cards in their respective new spans
       displayCards(heroHand, document.getElementById('heroHand'), cardImagePath);
@@ -237,6 +247,8 @@
       displayCards(oppBestHand, document.getElementById('opponentBestHand'), cardImagePath);
       displayCards(heroOuts, document.getElementById('heroOuts'), cardImagePath);
       displayCards(oppOuts, document.getElementById('opponentOuts'), cardImagePath);
+      displayCards(heroWinningOuts, document.getElementById('heroWinningOuts'), cardImagePath);
+      displayCards(oppWinningOuts, document.getElementById('opponentWinningOuts'), cardImagePath);
     });
   </script>
 

@@ -113,7 +113,14 @@ window.addEventListener('DOMContentLoaded', event => {
             document.getElementById('hero_stack').value = heroStack.toFixed(0);
             document.getElementById('opponent_stack').value = opponentStack.toFixed(0);
             document.getElementById('pot_size').value = potOnFlop;
-            document.getElementById('bet_size').value = 0; // No bet on the flop yet
+
+            // Randomize bet size, from 0 up to the pot size.
+            // Make a bet ~66% of the time to simulate checking.
+            let randomBetSize = 0;
+            if (Math.random() < 0.66) {
+                randomBetSize = Math.floor(Math.random() * (potOnFlop + 1));
+            }
+            document.getElementById('bet_size').value = randomBetSize;
  
             // Randomize positions, ensuring they are not the same
             const positionOptions = Array.from(document.getElementById('hero_position').options);

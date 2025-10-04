@@ -1,5 +1,6 @@
 # /home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/spr/src/spr/algo.py
 
+import random
 import itertools
 from treys import Card, Evaluator, Deck
 
@@ -138,6 +139,74 @@ def calculate_detailed_outs(hole_card_strs, board_card_strs):
 
     return outs_breakdown
 
+def calculate_winning_outs(weaker_hand_cards, board_cards, stronger_hand_rank, all_known_cards):
+    """
+    Calculates the number of outs that will make the weaker hand win against the stronger hand's current rank.
+    """
+    winning_outs = {
+        'total': 0,
+        'cards': []
+    }
+
+    deck = Deck()
+    known_cards_treys = [Card.new(s) for s in all_known_cards]
+    
+    # Get available cards for simulation
+    available_cards_treys = [c for c in deck.cards if c not in known_cards_treys]
+
+    for potential_out_treys in available_cards_treys:
+        potential_out_str = Card.int_to_str(potential_out_treys)
+        simulated_board_strs = board_cards + [potential_out_str]
+        
+        # Evaluate the weaker hand with the new board
+        simulated_rank = _get_best_plo_rank(weaker_hand_cards, simulated_board_strs)
+        
+        # Check if the new rank is better than the stronger hand's current rank
+        if simulated_rank < stronger_hand_rank:
+            winning_outs['total'] += 1
+            winning_outs['cards'].append(potential_out_str)
+            
+    return winning_outs
+
+def run_monte_carlo_simulation(hero_hand, opponent_hand, board_cards, iterations=2000):
+    """
+    Runs a Monte Carlo simulation to calculate hero's equity against a specific opponent hand.
+    """
+    hero_treys = [Card.new(c) for c in hero_hand]
+    opponent_treys = [Card.new(c) for c in opponent_hand]
+    board_treys = [Card.new(c) for c in board_cards]
+
+    all_known_cards = hero_treys + opponent_treys + board_treys
+    
+    # Create a deck of unknown cards
+    deck = Deck()
+    unknown_cards = [c for c in deck.cards if c not in all_known_cards]
+
+    cards_to_deal = 5 - len(board_cards)
+    
+    wins = 0
+    ties = 0
+
+    if cards_to_deal <= 0: # Board is complete, no simulation needed
+        hero_rank = _get_best_plo_rank(hero_hand, board_cards)
+        opp_rank = _get_best_plo_rank(opponent_hand, board_cards)
+        if hero_rank < opp_rank: return 100.0
+        if hero_rank == opp_rank: return 50.0
+        return 0.0
+
+    for _ in range(iterations):
+        random.shuffle(unknown_cards)
+        sim_board_extension = unknown_cards[:cards_to_deal]
+        sim_board = board_cards + [Card.int_to_str(c) for c in sim_board_extension]
+
+        hero_rank = _get_best_plo_rank(hero_hand, sim_board)
+        opp_rank = _get_best_plo_rank(opponent_hand, sim_board)
+
+        if hero_rank < opp_rank: wins += 1
+        elif hero_rank == opp_rank: ties += 1
+
+    return ((wins + (ties / 2)) / iterations) * 100
+
 def find_best_five_card_hand(hole_cards, board_cards):
     """Finds the best 5-card hand in PLO, requiring 2 cards from the hole and 3 from the board."""
     best_rank = float('inf')
@@ -215,6 +284,23 @@ def process_hand_data(form_data, button_position):
 
     opp_outs_breakdown = calculate_detailed_outs(opp_hand_list, board_cards_list)
     processed_data['opp_outs_breakdown'] = opp_outs_breakdown
+
+    # Calculate winning outs for the player who is behind
+    all_known_cards = hero_hand_list + opp_hand_list + board_cards_list
+    processed_data['hero_winning_outs'] = {'total': 0, 'cards': []}
+    processed_data['opp_winning_outs'] = {'total': 0, 'cards': []}
+
+    if hero_eval_rank > opp_eval_rank: # Hero is behind
+        winning_outs = calculate_winning_outs(hero_hand_list, board_cards_list, opp_eval_rank, all_known_cards)
+        processed_data['hero_winning_outs'] = winning_outs
+    elif opp_eval_rank > hero_eval_rank: # Opponent is behind
+        winning_outs = calculate_winning_outs(opp_hand_list, board_cards_list, hero_eval_rank, all_known_cards)
+        processed_data['opp_winning_outs'] = winning_outs
+
+    # Run Monte Carlo simulation for hero's equity
+    hero_equity = run_monte_carlo_simulation(hero_hand_list, opp_hand_list, board_cards_list)
+    processed_data['hero_equity'] = hero_equity
+
 
     smallest_stack = min(processed_data['hero_stack'], processed_data['opponent_stack'])
     current_pot_after_bet = processed_data['pot_size'] + processed_data['bet_size']
