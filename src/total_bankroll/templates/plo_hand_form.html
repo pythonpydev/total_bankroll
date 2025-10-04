@@ -155,106 +155,128 @@
 {% block scripts %}
 {{ super() }}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cardSelectorModal = document.getElementById('cardSelectorModal');
-    const cardImages = document.querySelectorAll('#cardSelectorModal .card-item img');
-    const confirmButton = document.getElementById('confirm-selection');
-    const modalTitle = document.getElementById('cardSelectorModalLabel');
+    document.addEventListener('DOMContentLoaded', function() {
+        /**
+         * CardSelector Module
+         * Encapsulates all logic for the card selector modal to keep the code clean and maintainable.
+         */
+        const CardSelector = {
+            // DOM elements
+            modal: null,
+            cardImages: null,
+            confirmButton: null,
+            modalTitle: null,
 
-    // State variables for the modal
-    let selectedCards = [];
-    let usedCards = new Set();
-    let currentTargetInput = null;
-    let minLimit = 0;
-    let maxLimit = 0;
+            // State
+            selectedCards: [],
+            usedCards: new Set(),
+            currentTargetInput: null,
+            minLimit: 0,
+            maxLimit: 0,
 
-    cardImages.forEach(card => {
-        card.addEventListener('click', () => {
-            const cardId = card.id;
+            init: function() {
+                this.modal = document.getElementById('cardSelectorModal');
+                if (!this.modal) return; // Don't run if modal isn't on the page
 
-            // Prevent selecting cards that are already used in other fields
-            if (usedCards.has(cardId)) {
-                // Card is visually disabled, so this is a backup.
-                return;
-            }
+                this.cardImages = this.modal.querySelectorAll('.card-item img');
+                this.confirmButton = this.modal.querySelector('#confirm-selection');
+                this.modalTitle = this.modal.querySelector('#cardSelectorModalLabel');
 
-            if (selectedCards.includes(cardId)) {
-                // Deselect card
-                selectedCards = selectedCards.filter(c => c !== cardId);
-                card.classList.remove('selected');
-            } else {
-                // Select card
-                if (selectedCards.length < maxLimit) {
-                    selectedCards.push(cardId);
-                    card.classList.add('selected');
-                } else {
-                    alert(`You can only select up to ${maxLimit} cards.`);
+                this.addEventListeners();
+            },
+
+            addEventListeners: function() {
+                this.modal.addEventListener('show.bs.modal', this.handleModalShow.bind(this));
+                this.confirmButton.addEventListener('click', this.handleConfirmClick.bind(this));
+                this.cardImages.forEach(card => {
+                    card.addEventListener('click', this.handleCardClick.bind(this));
+                });
+            },
+
+            handleModalShow: function(event) {
+                const button = event.relatedTarget;
+                const targetInputId = button.getAttribute('data-target-input');
+
+                // 1. Set modal state from the button that triggered it
+                this.currentTargetInput = document.getElementById(targetInputId);
+                this.minLimit = parseInt(button.getAttribute('data-limit-min'), 10);
+                this.maxLimit = parseInt(button.getAttribute('data-limit-max'), 10);
+                this.modalTitle.textContent = button.getAttribute('data-title');
+
+                // 2. Reset internal state for a clean slate
+                this.selectedCards = [];
+                this.usedCards.clear();
+
+                // 3. Collect cards used in other fields to disable them
+                const fieldsToCheck = ['hero_hand', 'opponent_hand', 'board'].filter(id => id !== targetInputId);
+                fieldsToCheck.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input && input.value) {
+                        for (let i = 0; i + 1 < input.value.length; i += 2) {
+                            this.usedCards.add(input.value.substring(i, i + 2));
+                        }
+                    }
+                });
+
+                // 4. Pre-select cards if the target input already has a value
+                if (this.currentTargetInput && this.currentTargetInput.value) {
+                    for (let i = 0; i + 1 < this.currentTargetInput.value.length; i += 2) {
+                        this.selectedCards.push(this.currentTargetInput.value.substring(i, i + 2));
+                    }
                 }
+
+                // 5. Update the visual state of all cards in the modal
+                this.updateCardVisuals();
+            },
+
+            handleCardClick: function(event) {
+                const card = event.target;
+                const cardId = card.id;
+
+                if (this.usedCards.has(cardId)) return; // Card is disabled
+
+                const index = this.selectedCards.indexOf(cardId);
+                if (index > -1) {
+                    this.selectedCards.splice(index, 1); // Deselect
+                } else if (this.selectedCards.length < this.maxLimit) {
+                    this.selectedCards.push(cardId); // Select
+                } else {
+                    alert(`You can only select up to ${this.maxLimit} cards.`);
+                }
+                this.updateCardVisuals();
+            },
+
+            handleConfirmClick: function() {
+                if (this.selectedCards.length < this.minLimit || this.selectedCards.length > this.maxLimit) {
+                    const message = this.minLimit === this.maxLimit ?
+                        `Please select exactly ${this.minLimit} cards.` :
+                        `Please select between ${this.minLimit} and ${this.maxLimit} cards.`;
+                    alert(message);
+                    return;
+                }
+
+                if (this.currentTargetInput) {
+                    this.currentTargetInput.value = this.selectedCards.join('');
+                }
+
+                bootstrap.Modal.getInstance(this.modal).hide();
+            },
+
+            updateCardVisuals: function() {
+                this.cardImages.forEach(card => {
+                    card.classList.remove('selected', 'disabled');
+                    if (this.usedCards.has(card.id)) {
+                        card.classList.add('disabled');
+                    }
+                    if (this.selectedCards.includes(card.id)) {
+                        card.classList.add('selected');
+                    }
+                });
             }
-        });
+        };
+
+        // Initialize the module on page load
+        CardSelector.init();
     });
-
-    confirmButton.addEventListener('click', () => {
-        if (selectedCards.length < minLimit || selectedCards.length > maxLimit) {
-            if (minLimit === maxLimit) {
-                alert(`Please select exactly ${minLimit} cards.`);
-            } else {
-                alert(`Please select between ${minLimit} and ${maxLimit} cards.`);
-            }
-            return;
-        }
-        if (currentTargetInput) {
-            currentTargetInput.value = selectedCards.join('');
-        }
-        
-        // Hide the modal
-        var modal = bootstrap.Modal.getInstance(cardSelectorModal);
-        modal.hide();
-    });
-
-    // When the modal is about to be shown, update which cards are disabled
-    cardSelectorModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget; // Button that triggered the modal
-        const targetInputId = button.getAttribute('data-target-input');
-        
-        // Set modal state from button's data attributes
-        currentTargetInput = document.getElementById(targetInputId);
-        minLimit = parseInt(button.getAttribute('data-limit-min'), 10);
-        maxLimit = parseInt(button.getAttribute('data-limit-max'), 10);
-        modalTitle.textContent = button.getAttribute('data-title');
-
-        // Reset selections and used cards
-        selectedCards = [];
-        usedCards.clear();
-
-        // Determine which fields to check for used cards
-        const fieldsToCheck = ['hero_hand', 'opponent_hand', 'board'].filter(id => id !== targetInputId);
-        let allUsedCardsStr = '';
-        fieldsToCheck.forEach(fieldId => {
-            const input = document.getElementById(fieldId);
-            if (input) {
-                allUsedCardsStr += input.value;
-            }
-        });
-
-        // Populate the usedCards set
-        for (let i = 0; i + 1 < allUsedCardsStr.length; i += 2) {
-            usedCards.add(allUsedCardsStr.substring(i, i + 2));
-        }
-
-        // Pre-select cards if the target input already has a value
-        const currentCards = currentTargetInput.value;
-        for (let i = 0; i + 1 < currentCards.length; i += 2) {
-            selectedCards.push(currentCards.substring(i, i + 2));
-        }
-
-        // Update visual state of all cards
-        cardImages.forEach(card => {
-            card.classList.remove('selected', 'disabled');
-            if (usedCards.has(card.id)) card.classList.add('disabled');
-            if (selectedCards.includes(card.id)) card.classList.add('selected');
-        });
-    });
-});
 </script>
 {% endblock %}

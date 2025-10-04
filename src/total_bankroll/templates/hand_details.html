@@ -1,82 +1,126 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block head %}
   {{ super() }}
+  <style>
+    .card-display-row {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        min-height: 65px; /* Ensure consistent height */
+    }
+    .card-image {
+        width: 60px;
+        height: auto;
+    }
+    .card.border-success, .card.border-danger, .card.border-warning {
+        border-width: 2px !important;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-  <div class="center-content">
-    <h2>Submitted Poker Hand Details</h2>
-    <div class="data-display-container">
-      <div class="row mb-4">
-        <!-- Left Column for Hand Data -->
-        <div class="col-lg-6">
-          <div class="row">
-            <div class="col-sm-6"><strong>Small Blind:</strong> {{ form_data.small_blind|int }}</div>
-            <div class="col-sm-6"><strong>Big Blind:</strong> {{ form_data.big_blind|int }}</div>
-            <div class="col-sm-6"><strong>Pot Size:</strong> {{ form_data.pot_size|int }}</div>
-            <div class="col-sm-6"><strong>Bet Size:</strong> {{ form_data.bet_size|int }}</div>
-            <div class="col-sm-6"><strong>Hero's Stack:</strong> {{ form_data.hero_stack|int }}</div>
-            <div class="col-sm-6"><strong>Opponent's Stack:</strong> {{ form_data.opponent_stack|int }}</div>
-            <div class="col-sm-6"><strong>Hero's Position:</strong> {{ form_data.hero_position }}</div>
-            <div class="col-sm-6"><strong>Opponent's Position:</strong> {{ form_data.opponent_position }}</div>
-            <div class="col-sm-6"><strong>Button Position:</strong> {{ form_data.button_position }}</div>
-          </div>
-        </div>
-        <!-- Right Column for Card Images -->
-        <div class="col-lg-6">
-        <div class="card-display-row">
-          <p><strong>Hero's Hand:</strong></p>
-          <span id="heroHand"></span>
-        </div>
-        <div class="card-display-row">
-          <p><strong>Board Cards:</strong></p>
-          <span id="boardCards"></span>
-        </div>
-        <div class="card-display-row">
-          <p><strong>Opponent's Hand:</strong></p>
-          <span id="opponentHand"></span>
-        </div>
-        </div>
-      </div>
-    </div>
+  {{ page_header('Hand Details', 'Review the hand and test your Stack-to-Pot Ratio knowledge.') }}
 
-    <div class="data-display">
-      <div class="center-content">
-      <h2>Guess the SPR</h2>
+  <section class="page-section">
+    <div class="container px-4 px-lg-5">
+      <div class="row g-4 justify-content-center">
+
+        <!-- Hand Data Card -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header">Hand Data</div>
+            <div class="card-body">
+              <dl class="row mb-0">
+                <dt class="col-sm-6">Small Blind:</dt><dd class="col-sm-6">{{ form_data.small_blind|int }}</dd>
+                <dt class="col-sm-6">Big Blind:</dt><dd class="col-sm-6">{{ form_data.big_blind|int }}</dd>
+                <dt class="col-sm-6">Pot Size:</dt><dd class="col-sm-6">{{ form_data.pot_size|int }}</dd>
+                <dt class="col-sm-6">Bet Size:</dt><dd class="col-sm-6">{{ form_data.bet_size|int }}</dd>
+                <dt class="col-sm-6">Hero's Stack:</dt><dd class="col-sm-6">{{ form_data.hero_stack|int }}</dd>
+                <dt class="col-sm-6">Opponent's Stack:</dt><dd class="col-sm-6">{{ form_data.opponent_stack|int }}</dd>
+                <dt class="col-sm-6">Hero's Position:</dt><dd class="col-sm-6">{{ form_data.hero_position }}</dd>
+                <dt class="col-sm-6">Opponent's Position:</dt><dd class="col-sm-6">{{ form_data.opponent_position }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards Display Card -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header">Cards</div>
+            <div class="card-body text-center">
+              <p class="mb-1"><strong>Hero's Hand:</strong></p>
+              <div id="heroHand" class="card-display-row mb-2"></div>
+              <p class="mb-1"><strong>Board:</strong></p>
+              <div id="boardCards" class="card-display-row mb-2"></div>
+              <p class="mb-1"><strong>Opponent's Hand:</strong></p>
+              <div id="opponentHand" class="card-display-row"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <form id="sprGuessForm" class="spr-guess-form">
-        <div class="form-group d-flex align-items-center mb-3">
-          <div class="flex-grow-1 me-3">
-            <label for="sprGuess">Guess the SPR:</label>
-            <input type="number" id="sprGuess" name="sprGuess" step="0.01" required class="form-control">
+
+      <!-- Hand Strength & SPR Quiz -->
+      <div class="row g-4 mt-1 justify-content-center">
+        <div class="col-lg-8">
+          <div class="card shadow-sm
+            {% if form_data.hero_eval < form_data.opp_eval %} border-success
+            {% elif form_data.hero_eval > form_data.opp_eval %} border-danger
+            {% else %} border-warning {% endif %}">
+            <div class="card-header">Hand Strength</div>
+            <div class="card-body text-center fs-5">
+              {% if form_data.hero_eval < form_data.opp_eval %}
+                <span class="text-success">Hero is Stronger &#10004;</span>
+              {% elif form_data.hero_eval > form_data.opp_eval %}
+                <span class="text-danger">Opponent is Stronger &#10060;</span>
+              {% else %}
+                <span class="text-warning">Hands are Tied &#9876;</span>
+              {% endif %}
+            </div>
           </div>
-          <div id="actualSpr" class="spr-result" role="status" aria-live="polite"></div>
         </div>
-        <div class="form-group d-flex align-items-center mb-3">
-          <div class="flex-grow-1 me-3">
-            <label for="potBetsGuess">Guess number of pot sized bets:</label>
-            <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required class="form-control">
+
+        <div class="col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-header">SPR Quiz</div>
+            <div class="card-body">
+              <form id="sprGuessForm">
+                <div class="mb-3">
+                  <label for="sprGuess" class="form-label">Guess the SPR:</label>
+                  <div class="input-group">
+                    <input type="number" id="sprGuess" name="sprGuess" step="0.01" required class="form-control">
+                    <span id="actualSpr" class="input-group-text spr-result" role="status" aria-live="polite"></span>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="potBetsGuess" class="form-label">Guess number of pot sized bets:</label>
+                  <div class="input-group">
+                    <input type="number" id="potBetsGuess" name="potBetsGuess" step="0.01" required class="form-control">
+                    <span id="actualPotBets" class="input-group-text spr-result" role="status" aria-live="polite"></span>
+                  </div>
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-light">Submit Answers</button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div id="actualPotBets" class="spr-result" role="status" aria-live="polite"></div>
         </div>
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-light">Submit Answers</button>
-        </div>
-      </form>
+      </div>
+
       <div class="d-grid gap-2 mt-3">
         <a href="/hand_evaluation" class="btn btn-info">View Hand Evaluation</a>
         <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-secondary">Setup New Hand</a>
       </div>
     </div>
-  </div>
+  </section>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Data from Flask template
-      const heroHand = sortCards({{ form_data.hero_hand|tojson }});
-      const boardCards = sortCards({{ form_data.board|tojson }});
-      const opponentHand = sortCards({{ form_data.opponent_hand|tojson }});
       const actualSpr = {{ form_data.actual_spr|tojson }};
       const actualPotBets = {{ form_data.actual_pot_bets|tojson }};
 
@@ -86,10 +130,10 @@
       const opponentHandContainer = document.getElementById('opponentHand');
       const cardImagePath = `{{ url_for('static', filename='images/cards/') }}`;
 
-      // Display the sorted cards
-      displayCards(heroHand, heroHandContainer, cardImagePath);
-      displayCards(boardCards, boardCardsContainer, cardImagePath);
-      displayCards(opponentHand, opponentHandContainer, cardImagePath);
+      // Display cards using the global utility
+      displayCards({{ form_data.hero_hand|tojson }}, heroHandContainer, cardImagePath);
+      displayCards({{ form_data.board|tojson }}, boardCardsContainer, cardImagePath);
+      displayCards({{ form_data.opponent_hand|tojson }}, opponentHandContainer, cardImagePath);
 
       // Cache DOM elements
       const sprGuessInput = document.getElementById('sprGuess');
@@ -106,19 +150,19 @@
         const potBetsGuess = parseFloat(potBetsGuessInput.value);
 
         if (actualSpr !== null) {
-          const sprText = `Actual SPR: ${actualSpr.toFixed(2)}`;
+          const sprText = `SPR: ${actualSpr.toFixed(2)}`;
           const sprCalcStr = `{{ form_data.actual_spr_calculation_str|safe }}`; // Get the calculation string
           const tolerance = actualSpr * SPR_TOLERANCE;
           if (Math.abs(sprGuess - actualSpr) <= tolerance) {
-            actualSprDiv.innerHTML = `<span class="text-success">${sprText} &#10004; ${sprCalcStr}</span>`;
+            actualSprDiv.innerHTML = `<span class="text-success">${sprText} &#10004;</span>`;
           } else {
-            actualSprDiv.innerHTML = `<span class="text-danger">${sprText} &#10060; ${sprCalcStr}</span>`;
+            actualSprDiv.innerHTML = `<span class="text-danger">${sprText} &#10060;</span>`;
           }
         } else {
-          actualSprDiv.textContent = 'Actual SPR: N/A';
+          actualSprDiv.textContent = 'SPR: N/A';
         }
 
-        const potBetsText = `Actual Pot Sized Bets: ${actualPotBets}`;
+        const potBetsText = `Bets: ${actualPotBets}`;
         if (potBetsGuess === actualPotBets) {
           actualPotBetsDiv.innerHTML = `<span class="text-success">${potBetsText} &#10004;</span>`;
         } else {
