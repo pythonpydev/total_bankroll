@@ -121,7 +121,7 @@
               {{ hand_form.board.label(class="form-label") }}
               <div class="input-group">
                 {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else ""), placeholder="e.g., AcKcTc", onfocus="this.blur();", style="cursor: pointer;") }}
-                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="board" data-limit-min="3" data-limit-max="5" data-title="Select 3 to 5 Board Cards">Select</button>
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="board" data-limit-min="3" data-limit-max="3" data-title="Select 3 Board Cards">Select</button>
               </div>
               {% for error in hand_form.board.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
@@ -149,35 +149,7 @@
         </form>
       </div>
   </section>
-  <!-- Card Selector Modal -->
-  <div class="modal fade" id="cardSelectorModal" tabindex="-1" aria-labelledby="cardSelectorModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="cardSelectorModalLabel">Select Cards</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="card-grid">
-          {% set ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] %}
-          {% set suits = ['s', 'h', 'd', 'c'] %}
-          {% for suit in suits %}
-            {% for rank in ranks %}
-              {% set card = rank + suit %}
-              <div class="card-item">
-                <img src="{{ url_for('static', filename='images/cards/' + card + '.png') }}" alt="{{ card }}" id="{{ card }}" class="img-fluid">
-              </div>
-            {% endfor %}
-          {% endfor %}
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" id="confirm-selection" class="btn btn-primary">Confirm Selection</button>
-      </div>
-    </div>
-  </div>
-  </div>
+  {% include '_card_selector_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -285,25 +257,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-<style>
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 5px;
-    }
-    .card-item img {
-      width: 100%;
-      cursor: pointer;
-      border: 3px solid transparent;
-      border-radius: 5px;
-    }
-    .card-item img.selected {
-      border-color: #0d6efd; /* Bootstrap primary blue */
-      box-shadow: 0 0 8px #0d6efd;
-    }
-    .card-item img.disabled {
-      filter: grayscale(100%);
-      cursor: not-allowed;
-    }
-</style>
 {% endblock %}
