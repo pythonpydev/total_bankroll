@@ -168,6 +168,57 @@ def calculate_winning_outs(weaker_hand_cards, board_cards, stronger_hand_rank, a
             
     return winning_outs
 
+def run_improvement_simulation(hole_card_strs, board_card_strs, iterations=2000):
+    """
+    Runs a Monte Carlo simulation to calculate the probability of improving a hand
+    and the probability of improving to specific hand types.
+    """
+    current_best_rank = _get_best_plo_rank(hole_card_strs, board_card_strs)
+
+    all_known_cards = [Card.new(c) for c in hole_card_strs + board_card_strs]
+    deck = Deck()
+    unknown_cards = [c for c in deck.cards if c not in all_known_cards]
+    cards_to_deal = 5 - len(board_card_strs)
+
+    improvement_counts = {
+        'total': 0, 'pair': 0, 'two_pair': 0, 'trips': 0, 'straight': 0,
+        'flush': 0, 'full_house': 0, 'quads': 0, 'straight_flush': 0
+    }
+
+    if cards_to_deal <= 0:
+        return {key: 0.0 for key in improvement_counts}
+
+    for _ in range(iterations):
+        random.shuffle(unknown_cards)
+        sim_board_extension = unknown_cards[:cards_to_deal]
+        sim_board = board_card_strs + [Card.int_to_str(c) for c in sim_board_extension]
+
+        simulated_rank = _get_best_plo_rank(hole_card_strs, sim_board)
+
+        if simulated_rank < current_best_rank:
+            improvement_counts['total'] += 1
+            simulated_class = evaluator.get_rank_class(simulated_rank)
+            
+            # Map rank class to our dictionary keys
+            if simulated_class == 1: improvement_counts['straight_flush'] += 1
+            elif simulated_class == 2: improvement_counts['quads'] += 1
+            elif simulated_class == 3: improvement_counts['full_house'] += 1
+            elif simulated_class == 4: improvement_counts['flush'] += 1
+            elif simulated_class == 5: improvement_counts['straight'] += 1
+            elif simulated_class == 6: improvement_counts['trips'] += 1
+            elif simulated_class == 7: improvement_counts['two_pair'] += 1
+            elif simulated_class == 8: improvement_counts['pair'] += 1
+
+    # Convert counts to percentages
+    improvement_equity = {
+        key: (count / iterations) * 100 for key, count in improvement_counts.items()
+    }
+    # Rename 'total' to 'total_improvement_equity' for clarity
+    improvement_equity['total_improvement_equity'] = improvement_equity.pop('total')
+
+    return improvement_equity
+
+
 def run_monte_carlo_simulation(hero_hand, opponent_hand, board_cards, iterations=2000):
     """
     Runs a Monte Carlo simulation to calculate hero's equity against a specific opponent hand.
@@ -300,6 +351,10 @@ def process_hand_data(form_data, button_position):
     # Run Monte Carlo simulation for hero's equity
     hero_equity = run_monte_carlo_simulation(hero_hand_list, opp_hand_list, board_cards_list)
     processed_data['hero_equity'] = hero_equity
+
+    # Run Monte Carlo simulation for hero's improvement equity
+    hero_improvement_equity = run_improvement_simulation(hero_hand_list, board_cards_list)
+    processed_data['hero_improvement_equity'] = hero_improvement_equity
 
 
     smallest_stack = min(processed_data['hero_stack'], processed_data['opponent_stack'])

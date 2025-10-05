@@ -135,23 +135,19 @@
           <div class="card h-100 shadow-sm border-primary">
             <div class="card-header bg-dark text-white">Hero's Outs</div>
             <div class="card-body">
-              <p><strong>Total Outs:</strong> {{ form_data.hero_outs_breakdown.total }}
-                {% set board_len = form_data.board|length %}
-                {% if board_len == 3 %}
-                  <span class="text-muted"> ({{ (form_data.hero_outs_breakdown.total * 4)|round }}% to hit)</span>
-                {% elif board_len == 4 %}
-                  <span class="text-muted"> ({{ (form_data.hero_outs_breakdown.total * 2)|round }}% to hit)</span>
-                {% endif %}
+              <p><strong>Total Outs to Improve:</strong> {{ form_data.hero_outs_breakdown.total }}
+                  <span class="text-muted"> ({{ "%.2f"|format(form_data.hero_improvement_equity.total_improvement_equity) }}% to improve)</span>
               </p>
               <ul class="list-unstyled">
-                {% if form_data.hero_outs_breakdown.pair > 0 and 8 < form_data.hero_current_rank_class %}<li>Pair: <span class="text-info">{{ form_data.hero_outs_breakdown.pair }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.two_pair > 0 and 7 < form_data.hero_current_rank_class %}<li>Two Pair: <span class="text-info">{{ form_data.hero_outs_breakdown.two_pair }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.trips > 0 and 6 < form_data.hero_current_rank_class %}<li>Three of a Kind: <span class="text-info">{{ form_data.hero_outs_breakdown.trips }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.straight > 0 and 5 < form_data.hero_current_rank_class %}<li>Straight: <span class="text-info">{{ form_data.hero_outs_breakdown.straight }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.flush > 0 and 4 < form_data.hero_current_rank_class %}<li>Flush: <span class="text-info">{{ form_data.hero_outs_breakdown.flush }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.full_house > 0 and 3 < form_data.hero_current_rank_class %}<li>Full House: <span class="text-info">{{ form_data.hero_outs_breakdown.full_house }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.quads > 0 and 2 < form_data.hero_current_rank_class %}<li>Four of a Kind: <span class="text-info">{{ form_data.hero_outs_breakdown.quads }}</span></li>{% endif %}
-                {% if form_data.hero_outs_breakdown.straight_flush > 0 and 1 < form_data.hero_current_rank_class %}<li>Straight Flush: <span class="text-info">{{ form_data.hero_outs_breakdown.straight_flush }}</span></li>{% endif %}
+                {% set equities = form_data.hero_improvement_equity %}
+                {% if form_data.hero_outs_breakdown.pair > 0 and 8 < form_data.hero_current_rank_class %}<li>Pair: <span class="text-info">{{ form_data.hero_outs_breakdown.pair }} outs</span> ({{ "%.2f"|format(equities.pair) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.two_pair > 0 and 7 < form_data.hero_current_rank_class %}<li>Two Pair: <span class="text-info">{{ form_data.hero_outs_breakdown.two_pair }} outs</span> ({{ "%.2f"|format(equities.two_pair) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.trips > 0 and 6 < form_data.hero_current_rank_class %}<li>Three of a Kind: <span class="text-info">{{ form_data.hero_outs_breakdown.trips }} outs</span> ({{ "%.2f"|format(equities.trips) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.straight > 0 and 5 < form_data.hero_current_rank_class %}<li>Straight: <span class="text-info">{{ form_data.hero_outs_breakdown.straight }} outs</span> ({{ "%.2f"|format(equities.straight) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.flush > 0 and 4 < form_data.hero_current_rank_class %}<li>Flush: <span class="text-info">{{ form_data.hero_outs_breakdown.flush }} outs</span> ({{ "%.2f"|format(equities.flush) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.full_house > 0 and 3 < form_data.hero_current_rank_class %}<li>Full House: <span class="text-info">{{ form_data.hero_outs_breakdown.full_house }} outs</span> ({{ "%.2f"|format(equities.full_house) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.quads > 0 and 2 < form_data.hero_current_rank_class %}<li>Four of a Kind: <span class="text-info">{{ form_data.hero_outs_breakdown.quads }} outs</span> ({{ "%.2f"|format(equities.quads) }}%)</li>{% endif %}
+                {% if form_data.hero_outs_breakdown.straight_flush > 0 and 1 < form_data.hero_current_rank_class %}<li>Straight Flush: <span class="text-info">{{ form_data.hero_outs_breakdown.straight_flush }} outs</span> ({{ "%.2f"|format(equities.straight_flush) }}%)</li>{% endif %}
               </ul>
               {% if form_data.hero_outs_breakdown.cards %}
                 <hr>
@@ -161,7 +157,7 @@
               {% if form_data.hero_winning_outs.cards %}
                 <hr>
                 <p class="text-success"><strong>Winning Outs: {{ form_data.hero_winning_outs.total }}</strong>
-                  <span class="text-muted"> ({{ (form_data.hero_winning_outs.total * (5 if board_len == 3 else 2))|round(1) }}% to win)</span>
+                  <span class="text-muted"> ({{ "%.2f"|format(form_data.hero_equity) }}% to win)</span>
                 </p>
                 <p class="small text-muted">Cards that make your hand stronger than the opponent's current hand.</p>
                 <div id="heroWinningOuts" class="outs-card-container"></div>
