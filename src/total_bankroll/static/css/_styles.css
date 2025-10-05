@@ -6975,3 +6975,70 @@
     background-color: var(--dark-accent);
     border-color: var(--dark-accent)
     }
+
+/* ==========================================================================
+   Player Color Scheme Page Styles
+   ========================================================================== */
+
+/* Define color variables for light mode */
+:root {
+    --player-red: #dc3545;
+    --player-orange: #fd7e14;
+    --player-light-green: #198754;
+    --player-purple: #6f42c1;
+    --player-light-blue: #0dcaf0;
+    --player-teal: #20c997;
+    --player-pink: #d63384;
+    --player-yellow: #b8860b; /* DarkGoldenRod for better readability on white */
+    --player-gold: #b8860b;
+    --player-white: #6c757d;  /* Gray for better readability on white */
+}
+
+/* Override variables for dark mode */
+.dark-mode {
+    --player-yellow: #ffc107; /* Standard yellow is fine on dark backgrounds */
+    --player-gold: #ffc107;
+    --player-white: #f8f9fa;  /* Standard white is fine on dark backgrounds */
+}
+
+/* Apply colors to table cells and override hover effects */
+.table-player-types .player-red td,
+.table-player-types tr.player-red:hover > * {
+    color: var(--player-red) !important;
+}
+.table-player-types .player-orange td,
+.table-player-types tr.player-orange:hover > * {
+    color: var(--player-orange) !important;
+}
+.table-player-types .player-light-green td,
+.table-player-types tr.player-light-green:hover > * {
+    color: var(--player-light-green) !important;
+}
+.table-player-types .player-purple td,
+.table-player-types tr.player-purple:hover > * {
+    color: var(--player-purple) !important;
+}
+.table-player-types .player-light-blue td,
+.table-player-types tr.player-light-blue:hover > * {
+    color: var(--player-light-blue) !important;
+}
+.table-player-types .player-teal td,
+.table-player-types tr.player-teal:hover > * {
+    color: var(--player-teal) !important;
+}
+.table-player-types .player-pink td,
+.table-player-types tr.player-pink:hover > * {
+    color: var(--player-pink) !important;
+}
+.table-player-types .player-yellow td,
+.table-player-types tr.player-yellow:hover > * {
+    color: var(--player-yellow) !important;
+}
+.table-player-types .player-gold td,
+.table-player-types tr.player-gold:hover > * {
+    color: var(--player-gold) !important;
+}
+.table-player-types .player-white td,
+.table-player-types tr.player-white:hover > * {
+    color: var(--player-white) !important;
+}
