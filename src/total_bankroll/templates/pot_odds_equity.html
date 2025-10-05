@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Pot Odds vs. Equity', 'The Foundation of Profitable Calls') }}
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <p class="lead text-center mb-5">Making a profitable call in poker isn't about luck; it's about math. The entire decision boils down to one question: Is the potential reward from the pot greater than the risk of your call? This is answered by comparing Pot Odds and Equity.</p>
+
+      <h2 class="mb-3">Step 1: What are Pot Odds?</h2>
+      <p>Pot odds represent the ratio between the size of the total pot and the size of the bet you are facing. It tells you the reward you're getting for taking the risk of calling.</p>
+      <div class="card bg-light mb-4">
+        <div class="card-body">
+          <p class="card-text"><strong>Formula:</strong> <code>(Current Pot + Bet Size) : Bet Size</code></p>
+          <hr>
+          <p class="card-text"><strong>Example:</strong> The pot is $80. An opponent bets $20.</p>
+          <ul class="list-unstyled">
+            <li>The total pot you could win is now $80 (initial pot) + $20 (opponent's bet) = $100.</li>
+            <li>The amount you must risk (call) is $20.</li>
+            <li>Your pot odds are <strong>$100 to $20</strong>, which simplifies to <strong>5 to 1</strong>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="mb-3">Step 2: Find Your Required Equity</h2>
+      <p>While a ratio like "5 to 1" is useful, it's easier to work with percentages. We can convert pot odds into the minimum percentage of time you need to win the hand to break even. This is your <strong>Required Equity</strong>.</p>
+      <div class="card bg-light mb-4">
+        <div class="card-body">
+          <p class="card-text"><strong>Formula:</strong> <code>Required Equity % = (Amount to Call) / (Total Pot After You Call)</code></p>
+          <hr>
+          <p class="card-text"><strong>Example (continued):</strong></p>
+          <ul class="list-unstyled">
+            <li>Amount to Call = $20.</li>
+            <li>Total Pot After You Call = $80 (initial pot) + $20 (opponent's bet) + $20 (your call) = $120.</li>
+            <li>Required Equity = $20 / $120 = 0.1667 or <strong>16.67%</strong>.</li>
+          </ul>
+          <p class="card-text mt-3">This means if your hand has more than a 16.67% chance of winning at showdown, calling is a profitable play in the long run.</p>
+        </div>
+      </div>
+
+      <h2 class="mb-3">Step 3: Estimate Your Hand's Equity</h2>
+      <p>Equity is your actual percentage chance of winning the pot. While an exact calculation is complex, you can get a very good estimate using your "outs" (the cards left in the deck that will improve your hand).</p>
+      <h4 class="mb-3">The "Rule of 4 and 2"</h4>
+      <p>This is a simple and effective shortcut for estimating equity:</p>
+      <ul>
+        <li><strong>On the Flop (with Turn and River to come):</strong> Your equity is approximately <code>Number of Outs × 4</code>.</li>
+        <li><strong>On the Turn (with only the River to come):</strong> Your equity is approximately <code>Number of Outs × 2</code>.</li>
+      </ul>
+      <div class="card bg-light mb-4">
+        <div class="card-body">
+          <p class="card-text"><strong>Example:</strong> You are on the flop with a flush draw. There are 9 cards of your suit left in the deck (9 outs).</p>
+          <p class="card-text">Your estimated equity is 9 outs × 4 = <strong>36%</strong>.</p>
+        </div>
+      </div>
+
+      <h2 class="mb-3 text-success">Step 4: Make the Decision</h2>
+      <p>This is where it all comes together. You simply compare the equity you need with the equity you have.</p>
+      <div class="card border-success shadow-sm">
+        <div class="card-header">The Core Decision</div>
+        <div class="card-body text-center fs-4">
+          <p>Hand Equity (36%) <span class="text-success">&gt;</span> Required Equity (16.67%)</p>
+          <p class="fw-bold text-success">This is a profitable call!</p>
+        </div>
+      </div>
+      <p class="mt-4">Because your chance of winning the pot (36%) is much higher than the minimum chance you need to break even (16.67%), this call will make you money over the long term, regardless of whether you win or lose this specific hand.</p>
+
+      <div class="text-center mt-5">
+        <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary">Back to Tools</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
