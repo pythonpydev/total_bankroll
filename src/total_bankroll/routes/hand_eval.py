@@ -126,6 +126,21 @@ def pot_odds_equity():
     """Pot Odds vs Equity explanation page route"""
     return render_template('pot_odds_equity.html', title='Pot Odds vs Equity')
 
+@hand_eval_bp.route('/hud-player-types')
+def hud_player_types():
+    """HUD Player Types reference page route"""
+    return render_template('hud_player_type.html', title='HUD Player Types')
+
+@hand_eval_bp.route('/player-types-article')
+def player_types_article():
+    """Player Types article page route"""
+    return render_template('player_types_article.html', title='Player Types Article')
+
+@hand_eval_bp.route('/player-color-scheme')
+def player_color_scheme():
+    """Player color scheme article page route"""
+    return render_template('player_color_scheme.html', title='Player Color Scheme')
+
 @hand_eval_bp.route('/card_selector')
 def card_selector():
     """Card selector page route"""
