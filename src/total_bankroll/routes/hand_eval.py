@@ -126,6 +126,11 @@ def pot_odds_equity():
     """Pot Odds vs Equity explanation page route"""
     return render_template('pot_odds_equity.html', title='Pot Odds vs Equity')
 
+@hand_eval_bp.route('/hud-player-types')
+def hud_player_types():
+    """HUD Player Types reference page route"""
+    return render_template('hud_player_type.html', title='HUD Player Types')
+
 @hand_eval_bp.route('/card_selector')
 def card_selector():
     """Card selector page route"""
