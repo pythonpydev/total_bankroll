@@ -2345,12 +2345,6 @@
     --bs-list-group-active-border-color: #f4623a;
     display: flex;
     flex-direction: column;
-    padding-left: 0;
-    margin-bottom: 0;
-    border-radius: var(--bs-list-group-border-radius)
-    }.list-group-numbered > .list-group-item::before {
-    content: counters(section, ".") ". ";
-    counter-increment: section
     }.list-group-item {
     position: relative;
     display: block;
