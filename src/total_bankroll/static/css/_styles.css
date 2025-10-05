@@ -6938,6 +6938,9 @@
     color: var(--dark-text-0)
     }.dark-mode th[scope="row"] {
     color: var(--dark-text-0) !important
+    }/* Fix for all table text text color in dark mode */
+    .dark-mode .table {
+    --bs-table-color: var(--dark-text-0);
     }body.dark-mode .alert-bankroll-safe {
     background-color: #155724;
     color: #fff;
@@ -7001,7 +7004,19 @@
     --player-white: #f8f9fa;  /* Standard white is fine on dark backgrounds */
 }
 
-/* Apply colors to any element with the player-type class */
+/* Apply colors to table cells and override hover effects */
+.table-player-types .player-red td, .table-player-types tr.player-red:hover td { color: var(--player-red) !important; }
+.table-player-types .player-orange td, .table-player-types tr.player-orange:hover td { color: var(--player-orange) !important; }
+.table-player-types .player-light-green td, .table-player-types tr.player-light-green:hover td { color: var(--player-light-green) !important; }
+.table-player-types .player-purple td, .table-player-types tr.player-purple:hover td { color: var(--player-purple) !important; }
+.table-player-types .player-light-blue td, .table-player-types tr.player-light-blue:hover td { color: var(--player-light-blue) !important; }
+.table-player-types .player-teal td, .table-player-types tr.player-teal:hover td { color: var(--player-teal) !important; }
+.table-player-types .player-pink td, .table-player-types tr.player-pink:hover td { color: var(--player-pink) !important; }
+.table-player-types .player-yellow td, .table-player-types tr.player-yellow:hover td { color: var(--player-yellow) !important; }
+.table-player-types .player-gold td, .table-player-types tr.player-gold:hover td { color: var(--player-gold) !important; }
+.table-player-types .player-white td, .table-player-types tr.player-white:hover td { color: var(--player-white) !important; }
+
+/* Apply colors to non-table elements */
 .player-red { color: var(--player-red) !important; }
 .player-orange { color: var(--player-orange) !important; }
 .player-light-green { color: var(--player-light-green) !important; }
@@ -7012,17 +7027,3 @@
 .player-yellow { color: var(--player-yellow) !important; }
 .player-gold { color: var(--player-gold) !important; }
 .player-white { color: var(--player-white) !important; }
-
-/* Override Bootstrap's hover effect for tables to maintain font color */
-.table-player-types tr:hover .player-red,
-.table-player-types tr:hover .player-orange,
-.table-player-types tr:hover .player-light-green,
-.table-player-types tr:hover .player-purple,
-.table-player-types tr:hover .player-light-blue,
-.table-player-types tr:hover .player-teal,
-.table-player-types tr:hover .player-pink,
-.table-player-types tr:hover .player-yellow,
-.table-player-types tr:hover .player-gold,
-.table-player-types tr:hover .player-white {
-    color: var(--player-red) !important;
-}
