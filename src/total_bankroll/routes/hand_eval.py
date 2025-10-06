@@ -301,15 +301,30 @@ def quiz_results():
     total_questions = len(questions)
     percentage = (score / total_questions) * 100 if total_questions > 0 else 0
 
-    if percentage >= 90:
-        rating = "Pro"
-    elif percentage >= 70:
-        rating = "Regular"
-    elif percentage >= 50:
-        rating = "Mid-stakes Player"
-    elif percentage >= 30:
-        rating = "Recreational Player"
-    else:
-        rating = "Fishy!"
+    ratings = [
+        {'name': 'Crusher', 'icon': 'bi-star-fill', 'min_score': 90},
+        {'name': 'High Roller', 'icon': 'bi-gem', 'min_score': 80},
+        {'name': 'Shark', 'icon': 'bi-trophy', 'min_score': 70},
+        {'name': 'Winning Player', 'icon': 'bi-graph-up', 'min_score': 60},
+        {'name': 'Grinder', 'icon': 'bi-hammer', 'min_score': 50},
+        {'name': 'TAGfish', 'icon': 'bi-cone-striped', 'min_score': 40},
+        {'name': 'Calling Station', 'icon': 'bi-telephone', 'min_score': 30},
+        {'name': 'Gambler', 'icon': 'bi-dice-5', 'min_score': 20},
+        {'name': 'Fish', 'icon': 'bi-water', 'min_score': 10},
+        {'name': 'Donk', 'icon': 'bi-question-circle', 'min_score': 0}
+    ]
 
-    return render_template('quiz_results.html', title='Quiz Results', score=score, total_questions=total_questions, percentage=percentage, rating=rating)
+    user_rating = ratings[-1]  # Default to the lowest rating
+    for r in ratings:
+        if percentage >= r['min_score']:
+            user_rating = r
+            break
+
+    return render_template(
+        'quiz_results.html',
+        title='Quiz Results',
+        score=score,
+        total_questions=total_questions,
+        percentage=percentage,
+        rating=user_rating
+    )

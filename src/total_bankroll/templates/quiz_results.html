@@ -10,7 +10,7 @@
             <div class="col-lg-8 text-center">
                 <h2 class="mb-4">Your Score: {{ score }} / {{ total_questions }}</h2>
                 <h3 class="mb-4">Percentage: {{ "%.2f"|format(percentage) }}%</h3>
-                <h4 class="mb-4">Rating: {{ rating }}</h4>
+                                <h4 class="mb-4">Rating: <i class="bi {{ rating.icon }}"></i> {{ rating.name }}</h4>
                 <a href="{{ url_for('hand_eval.hud_stats_quiz') }}" class="btn btn-primary btn-xl">Play Again</a>
             </div>
         </div>
