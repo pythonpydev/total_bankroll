@@ -28,43 +28,113 @@
     "stats": [
         {
             "name": "VPIP",
-            "values": ["45 – 70 %", "40 – 60 %", "30 – 45 %", "18 – 28 %", "8 – 18 %", "40 – 65 %"]
+            "values": {
+                "Loose-Passive": "45 – 70 %",
+                "Limp-Heavy Weak": "40 – 60 %",
+                "Loose-Aggressive": "30 – 45 %",
+                "TAG": "18 – 28 %",
+                "Tight-Passive": "8 – 18 %",
+                "Maniac": "40 – 65 %"
+            }
         },
         {
             "name": "PFR",
-            "values": ["5 – 15 %", "5 – 12 %", "18 – 30 %", "15 – 22 %", "4 – 10 %", "30 – 45 %"]
+            "values": {
+                "Loose-Passive": "5 – 15 %",
+                "Limp-Heavy Weak": "5 – 12 %",
+                "Loose-Aggressive": "18 – 30 %",
+                "TAG": "15 – 22 %",
+                "Tight-Passive": "4 – 10 %",
+                "Maniac": "30 – 45 %"
+            }
         },
         {
             "name": "Gap (VPIP–PFR)",
-            "values": ["25 – 50 %", "25 – 45 %", "5 – 15 %", "2 – 8 %", "4 – 10 %", "5 – 20 %"]
+            "values": {
+                "Loose-Passive": "25 – 50 %",
+                "Limp-Heavy Weak": "25 – 45 %",
+                "Loose-Aggressive": "5 – 15 %",
+                "TAG": "2 – 8 %",
+                "Tight-Passive": "4 – 10 %",
+                "Maniac": "5 – 20 %"
+            }
         },
         {
             "name": "3-Bet %",
-            "values": ["0 – 3 %", "0 – 2 %", "5 – 10 %", "4 – 8 %", "1 – 4 %", "8 – 15 %"]
+            "values": {
+                "Loose-Passive": "0 – 3 %",
+                "Limp-Heavy Weak": "0 – 2 %",
+                "Loose-Aggressive": "5 – 10 %",
+                "TAG": "4 – 8 %",
+                "Tight-Passive": "1 – 4 %",
+                "Maniac": "8 – 15 %"
+            }
         },
         {
             "name": "Fold to 3-Bet %",
-            "values": ["35 – 50 %", "25 – 45 %", "40 – 60 %", "45 – 60 %", "60 – 80 %", "30 – 50 %"]
+            "values": {
+                "Loose-Passive": "35 – 50 %",
+                "Limp-Heavy Weak": "25 – 45 %",
+                "Loose-Aggressive": "40 – 60 %",
+                "TAG": "45 – 60 %",
+                "Tight-Passive": "60 – 80 %",
+                "Maniac": "30 – 50 %"
+            }
         },
         {
             "name": "Call 3-Bet %",
-            "values": ["40 – 60 %", "45 – 65 %", "30 – 50 %", "25 – 40 %", "10 – 25 %", "25 – 45 %"]
+            "values": {
+                "Loose-Passive": "40 – 60 %",
+                "Limp-Heavy Weak": "45 – 65 %",
+                "Loose-Aggressive": "30 – 50 %",
+                "TAG": "25 – 40 %",
+                "Tight-Passive": "10 – 25 %",
+                "Maniac": "25 – 45 %"
+            }
         },
         {
             "name": "Open Limp %",
-            "values": ["20 – 40 %", "30 – 50 %", "5 – 15 %", "0 – 5 %", "5 – 10 %", "0 – 5 %"]
+            "values": {
+                "Loose-Passive": "20 – 40 %",
+                "Limp-Heavy Weak": "30 – 50 %",
+                "Loose-Aggressive": "5 – 15 %",
+                "TAG": "0 – 5 %",
+                "Tight-Passive": "5 – 10 %",
+                "Maniac": "0 – 5 %"
+            }
         },
         {
             "name": "C-Bet Flop %",
-            "values": ["20 – 40 %", "20 – 35 %", "55 – 80 %", "55 – 70 %", "25 – 45 %", "70 – 90 %"]
+            "values": {
+                "Loose-Passive": "20 – 40 %",
+                "Limp-Heavy Weak": "20 – 35 %",
+                "Loose-Aggressive": "55 – 80 %",
+                "TAG": "55 – 70 %",
+                "Tight-Passive": "25 – 45 %",
+                "Maniac": "70 – 90 %"
+            }
         },
         {
             "name": "WTSD %",
-            "values": ["35 – 50 %", "35 – 45 %", "30 – 45 %", "25 – 35 %", "20 – 30 %", "30 – 40 %"]
+            "values": {
+                "Loose-Passive": "35 – 50 %",
+                "Limp-Heavy Weak": "35 – 45 %",
+                "Loose-Aggressive": "30 – 45 %",
+                "TAG": "25 – 35 %",
+                "Tight-Passive": "20 – 30 %",
+                "Maniac": "30 – 40 %"
+            }
         },
         {
             "name": "Aggression Factor (AF)",
-            "values": ["1.0 – 2.0", "0.8 – 1.5", "2.5 – 4.0", "2.0 – 3.0", "0.8 – 1.5", "3.5 – 6.0+"]
+            "values": {
+                "Loose-Passive": "1.0 – 2.0",
+                "Limp-Heavy Weak": "0.8 – 1.5",
+                "Loose-Aggressive": "2.5 – 4.0",
+                "TAG": "2.0 – 3.0",
+                "Tight-Passive": "0.8 – 1.5",
+                "Maniac": "3.5 – 6.0+"
+            }
         }
     ]
 }

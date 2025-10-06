@@ -1,7 +1,9 @@
 """PLO hand evaluation and spr quiz."""
 
 import logging
-from flask import Blueprint, render_template, request, session, redirect, url_for, flash
+import json
+import os
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash, current_app
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Optional, ValidationError
@@ -129,7 +131,14 @@ def pot_odds_equity():
 @hand_eval_bp.route('/hud-player-types')
 def hud_player_types():
     """HUD Player Types reference page route"""
-    return render_template('hud_player_type.html', title='HUD Player Types')
+    try:
+        # Use open_resource for a more robust path to the data file
+        with current_app.open_resource('data/hud_player_types.json', 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        flash(f"Could not load HUD player type data: {e}", "error")
+        data = {'player_types': [], 'stats': []} # Provide empty data on error
+    return render_template('hud_player_type.html', title='HUD Player Types', data=data)
 
 @hand_eval_bp.route('/player-types-article')
 def player_types_article():
