@@ -214,6 +214,7 @@ def hud_stats_quiz():
         session['quiz_questions'] = questions
         session['current_question'] = 0
         session['score'] = 0
+        session['incorrect_answers'] = []
 
         return redirect(url_for('hand_eval.quiz'))
     
@@ -275,6 +276,13 @@ def quiz():
         user_answer = form.answer.data
         if question['correct_answer'] == user_answer:
             session['score'] = session.get('score', 0) + 1
+        else:
+            incorrect = {
+                'question': question['question'],
+                'your_answer': user_answer,
+                'correct_answer': question['correct_answer']
+            }
+            session['incorrect_answers'].append(incorrect)
         session['current_question'] = current_question_index + 1
         return redirect(url_for('hand_eval.quiz'))
 
@@ -320,11 +328,13 @@ def quiz_results():
             user_rating = r
             break
 
+    incorrect_answers = session.get('incorrect_answers', [])
     return render_template(
         'quiz_results.html',
         title='Quiz Results',
         score=score,
         total_questions=total_questions,
         percentage=percentage,
-        rating=user_rating
+        rating=user_rating,
+        incorrect_answers=incorrect_answers
     )
