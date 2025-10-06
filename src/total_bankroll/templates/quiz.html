@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('HUD Stats Quiz', 'Question ' ~ question_number ~ ' of ' ~ total_questions) }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h4 class="text-center mb-4">{{ question.question }}</h4>
+                                <form method="POST" action="{{ url_for('hand_eval.quiz') }}">
+                    {{ form.csrf_token }}
+                    <fieldset class="form-group">
+                        <legend class="text-center mb-4">{{ question.question }}</legend>
+                        <div class="list-group">
+                            {% for subfield in form.answer %}
+                                <label class="list-group-item list-group-item-action text-center">
+                                    {{ subfield }} {{ subfield.label.text }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <div class="text-center mt-4">
+                        {{ form.submit(class="btn btn-primary btn-xl") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
