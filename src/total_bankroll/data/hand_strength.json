@@ -1,0 +1,37 @@
+[
+    {
+        "tier": "1 (Elite)",
+        "strength_description": "Highest equity (~65-70% vs. random); premium pairs with nut flush/straight redraws, double-suited for max potential. Dominate preflop, rarely dominated.",
+        "ranges": "AA[K-T][K-T]ds, AA[J-9][J-9]ds, KK[Q-T][Q-T]ds; focus on ds with 0g/1g connectivity.",
+        "concrete_examples": "A\u2660A\u2665K\u2660K\u2665 (AAKKds - best overall, set + nut flush + broadway), A\u2660A\u2665J\u2660T\u2665 (AAJTds - set + wheel/broadway straight + flushes), A\u2660A\u2665Q\u2660Q\u2665 (AAQQds - double pairs + flush).",
+        "play_narrative": "Always raise/3-bet/4-bet from any position; get stacks in preflop if possible vs. loose calls. Postflop: Value-bet aggressively with nuts/redraws; avoid overplaying without position. These win big pots multi-way due to equity edge."
+    },
+    {
+        "tier": "2 (Premium)",
+        "strength_description": "Strong equity (~60-65% vs. random); high pairs or connected broadways ds, good for nut draws/sets. Playable everywhere but tighten OOP.",
+        "ranges": "AA[8-6][8-6]ds, KK[J-9][J-9]ds, QQ[K-T][K-T]ds, 0g broadway ds (e.g., KQJTds).",
+        "concrete_examples": "K\u2660K\u2665Q\u2660Q\u2665 (KKQQds - double sets + flush), A\u2660A\u26659\u26609\u2665 (AA99ds - set over set potential + flush), K\u2660Q\u2665J\u2660T\u2665 (KQJTds - nut straight + flush draws).",
+        "play_narrative": "Raise first in from HJ+; 3-bet vs. early opens. OOP, call/3-bet selectively. Postflop: Push edges with wraps/flush draws; fold if missing nuts. Ideal for building pots in position."
+    },
+    {
+        "tier": "3 (Strong)",
+        "strength_description": "Solid equity (~55-60% vs. random); mid-high pairs ds/ss, 0g/1g rundowns ds, A-high ss with connectivity. Good multi-way but vulnerable to domination.",
+        "ranges": "QQ[J-9][J-9]ds, JJ[T-8][T-8]ds, 0g mid rundowns ds (e.g., JT98ds), A[K-T]xx ss with 1g.",
+        "concrete_examples": "Q\u2660Q\u2665J\u2660J\u2665 (QQJJds - sets + straight), J\u2660T\u26659\u26608\u2665 (JT98ds - wrap straight + flush), A\u2660K\u2665Q\u2660J\u2666 (AKQJss - broadway + nut flush draw).",
+        "play_narrative": "Raise from CO/BTN; call/3-bet vs. late opens. Fold UTG if table aggressive. Postflop: Bet draws aggressively in position; check-fold weak hits OOP. Balance with bluffs for protection."
+    },
+    {
+        "tier": "4 (Playable)",
+        "strength_description": "Marginal equity (~50-55% vs. random); low-mid pairs ss, 1g/2g rundowns ss, suited Aces with gaps. Speculative; rely on position and implied odds.",
+        "ranges": "TT[9-7][9-7]ss, 99-66 ds/ss, 1g mid rundowns ss (e.g., JT97ss), Other A ss with 2g.",
+        "concrete_examples": "T\u2660T\u26659\u26608\u2665 (TT98ss - set + straight draw), 9\u26608\u26657\u26606\u2666 (9876ss - rundown + flush), A\u2660T\u26657\u26606\u2666 (AT76ss - nut flush + weak wrap).",
+        "play_narrative": "Limp/call from blinds or BTN vs. passive; raise only late if folded to you. Fold early positions. Postflop: Chase nut draws cheaply; fold to aggression without hits. Use for multi-way pots with deep stacks."
+    },
+    {
+        "tier": "5 (Trash/Marginal)",
+        "strength_description": "Low equity (<50% vs. random); rainbow/low disconnected, weak pairs r, non-nut A-high r. Poor playability; avoid unless stealing blinds.",
+        "ranges": "55-22 r, 2g low rundowns r (e.g., 9864r), Other non-A r with gaps, weak ss like K543ss.",
+        "concrete_examples": "5\u26605\u26654\u26663\u2663 (5543r - low set potential, no draws), K\u2666Q\u2663J\u26659\u2660 (KQJ9r - broadway but no suits), A\u26602\u26653\u26664\u2663 (A234r - wheel but rainbow).",
+        "play_narrative": "Fold preflop from all positions unless in blinds vs. folds (steal attempt). Never 3-bet. Postflop: Only continue with monster flops (e.g., quads); high variance, minimal edges. Save chips for better spots."
+    }
+]
