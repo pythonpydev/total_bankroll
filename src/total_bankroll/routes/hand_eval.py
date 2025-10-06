@@ -3,9 +3,10 @@
 import logging
 import json
 import os
+import random
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash, current_app
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, StringField, SubmitField, SelectField
+from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioField
 from wtforms.validators import DataRequired, Optional, ValidationError
 from . import algo
 
@@ -154,3 +155,161 @@ def player_color_scheme():
 def card_selector():
     """Card selector page route"""
     return render_template('card_selector.html', title='Card Selector')
+
+class HudStatsQuizForm(FlaskForm):
+    """Form for starting the HUD stats quiz."""
+    num_questions = SelectField(
+        'Number of Questions',
+        choices=[('5', '5'), ('10', '10'), ('20', '20')],
+        validators=[DataRequired()]
+    )
+    submit = SubmitField('Start Quiz')
+
+
+class QuizAnswerForm(FlaskForm):
+    """Form for answering a quiz question."""
+    answer = RadioField('Answer', validators=[DataRequired()])
+    submit = SubmitField('Submit Answer')
+
+
+
+@hand_eval_bp.route('/hud-stats-quiz', methods=['GET', 'POST'])
+def hud_stats_quiz():
+    """HUD Stats Quiz page route, handles both displaying the form and starting the quiz."""
+    form = HudStatsQuizForm()
+    if form.validate_on_submit():
+        num_questions = int(form.num_questions.data)
+        try:
+            with current_app.open_resource('data/hud_player_types.json', 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            flash(f"Could not load HUD player type data: {e}", "error")
+            return redirect(url_for('hand_eval.hud_stats_quiz'))
+
+        questions = []
+        player_types = data['player_types']
+        stats = data['stats']
+
+        for _ in range(num_questions):
+            stat = random.choice(stats)
+            player_type = random.choice(player_types)
+            correct_answer = stat['values'][player_type['name']]
+
+            answers = [correct_answer]
+            while len(answers) < 4:
+                random_stat = random.choice(stats)
+                random_player_type = random.choice(player_types)
+                random_answer = random_stat['values'][random_player_type['name']]
+                if random_answer not in answers:
+                    answers.append(random_answer)
+            
+            random.shuffle(answers)
+
+            questions.append({
+                'question': f"What is the typical {stat['name']} of a {player_type['name']}?",
+                'answers': answers,
+                'correct_answer': correct_answer
+            })
+
+        session['quiz_questions'] = questions
+        session['current_question'] = 0
+        session['score'] = 0
+
+        return redirect(url_for('hand_eval.quiz'))
+    
+    # If it's a GET request or validation fails, render the form page
+    return render_template('hud_stats_quiz.html', title='HUD Stats Quiz', form=form)
+
+
+
+
+
+    questions = []
+    player_types = data['player_types']
+    stats = data['stats']
+
+    for _ in range(num_questions):
+        stat = random.choice(stats)
+        player_type = random.choice(player_types)
+        correct_answer = stat['values'][player_type['name']]
+
+        answers = [correct_answer]
+        while len(answers) < 4:
+            random_stat = random.choice(stats)
+            random_player_type = random.choice(player_types)
+            random_answer = random_stat['values'][random_player_type['name']]
+            if random_answer not in answers:
+                answers.append(random_answer)
+        
+        random.shuffle(answers)
+
+        questions.append({
+            'question': f"What is the typical {stat['name']} of a {player_type['name']}?",
+            'answers': answers,
+            'correct_answer': correct_answer
+        })
+
+    session['quiz_questions'] = questions
+    session['current_question'] = 0
+    session['score'] = 0
+
+    return redirect(url_for('hand_eval.quiz'))
+
+@hand_eval_bp.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    """Displays the current quiz question and handles answer submission."""
+    if 'quiz_questions' not in session:
+        return redirect(url_for('hand_eval.hud_stats_quiz'))
+
+    current_question_index = session.get('current_question', 0)
+    questions = session.get('quiz_questions', [])
+
+    if current_question_index >= len(questions):
+        return redirect(url_for('hand_eval.quiz_results'))
+
+    question = questions[current_question_index]
+    form = QuizAnswerForm()
+    form.answer.choices = [(ans, ans) for ans in question['answers']]
+
+    if form.validate_on_submit():
+        user_answer = form.answer.data
+        if question['correct_answer'] == user_answer:
+            session['score'] = session.get('score', 0) + 1
+        session['current_question'] = current_question_index + 1
+        return redirect(url_for('hand_eval.quiz'))
+
+    return render_template(
+        'quiz.html',
+        title='HUD Stats Quiz',
+        question=question,
+        form=form,
+        question_number=current_question_index + 1,
+        total_questions=len(questions)
+    )
+
+
+
+
+@hand_eval_bp.route('/quiz-results')
+def quiz_results():
+    """Displays the quiz results."""
+    if 'quiz_questions' not in session:
+        return redirect(url_for('hand_eval.hud_stats_quiz'))
+
+    score = session.get('score', 0)
+    questions = session.get('quiz_questions', [])
+    total_questions = len(questions)
+    percentage = (score / total_questions) * 100 if total_questions > 0 else 0
+
+    if percentage >= 90:
+        rating = "Pro"
+    elif percentage >= 70:
+        rating = "Regular"
+    elif percentage >= 50:
+        rating = "Mid-stakes Player"
+    elif percentage >= 30:
+        rating = "Recreational Player"
+    else:
+        rating = "Fishy!"
+
+    return render_template('quiz_results.html', title='Quiz Results', score=score, total_questions=total_questions, percentage=percentage, rating=rating)
