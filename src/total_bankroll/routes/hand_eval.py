@@ -1,5 +1,6 @@
 """PLO hand evaluation and spr quiz."""
 
+import re
 import logging
 import json
 import os
@@ -155,6 +156,109 @@ def player_color_scheme():
 def card_selector():
     """Card selector page route"""
     return render_template('card_selector.html', title='Card Selector')
+
+def _parse_plo_article(markdown_text):
+    """
+    Parses a subset of Markdown with special handling for PLO hand notations into HTML.
+    - Handles ### and #### for h3/h4 tags.
+    - Handles paragraphs.
+    - Handles Markdown tables.
+    - Converts card notations like A♠K♥ into images.
+    """
+    html = []
+    in_table = False
+    lines = markdown_text.strip().split('\n')
+
+    def render_hand(text):
+        """Converts card notations in a string to HTML images."""
+        suit_map = {'♠': 'S', '♥': 'H', '♦': 'D', '♣': 'C'}
+        
+        processed_text = ""
+        i = 0
+        while i < len(text):
+            char = text[i]
+            next_char = text[i+1] if i + 1 < len(text) else ''
+            
+            if next_char in suit_map:
+                rank = char
+                suit_symbol = next_char
+                suit_char = suit_map.get(suit_symbol, '')
+                
+                if rank == 'T':
+                    rank_char = '10'
+                else:
+                    rank_char = rank
+                
+                image_name = f"{rank_char.upper()}{suit_char.upper()}.png"
+                processed_text += f'<img src="/static/images/cards/{image_name}" alt="{rank}{suit_symbol}" class="card-image-small" style="height: 1.5em; margin: 0 1px;">'
+                i += 2
+            else:
+                processed_text += char
+                i += 1
+        return processed_text
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if line.startswith('#### '):
+            if in_table:
+                html.append('</tbody></table>')
+                in_table = False
+            html.append(f'<h4>{render_hand(line[5:])}</h4>')
+        elif line.startswith('### '):
+            if in_table:
+                html.append('</tbody></table>')
+                in_table = False
+            html.append(f'<h3>{render_hand(line[4:])}</h3>')
+        elif line.startswith('|'):
+            cells = [cell.strip() for cell in line.split('|')][1:-1]
+            if not in_table:
+                html.append('<table class="table table-bordered"><thead><tr>')
+                for cell in cells:
+                    html.append(f'<th>{render_hand(cell)}</th>')
+                html.append('</tr></thead><tbody>')
+                in_table = True
+            elif '---' in cells[0]:
+                continue
+            else:
+                html.append('<tr>')
+                for i, cell in enumerate(cells):
+                    if i == 0:
+                        html.append(f'<td><strong>{render_hand(cell)}</strong></td>')
+                    else:
+                        html.append(f'<td>{render_hand(cell)}</td>')
+                html.append('</tr>')
+        else:
+            if in_table:
+                html.append('</tbody></table>')
+                in_table = False
+            html.append(f'<p>{render_hand(line)}</p>')
+
+    if in_table:
+        html.append('</tbody></table>')
+
+    return '\n'.join(html)
+
+@hand_eval_bp.route('/plo-starting-hand-strength')
+def plo_starting_hand_strength():
+    """PLO Starting Hand Strength article page route"""
+    article_path = '' # Initialize path for error message
+    try:
+        # Construct an absolute path to the article
+        project_root = '/home/ed/MEGA/total_bankroll/'
+        article_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables.md')
+        with open(article_path, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+        html_content = _parse_plo_article(markdown_content)
+    except FileNotFoundError:
+        flash("Article not found. Please check the file path.", "error")
+        html_content = f"<p>Article content could not be loaded. Path does not exist: {article_path}</p>"
+    except Exception as e:
+        flash(f"An error occurred: {e}", "error")
+        html_content = "<p>An error occurred while processing the article.</p>"
+    return render_template('plo_starting_hand_strength.html', title='PLO Starting Hand Strength', content=html_content)
 
 class HudStatsQuizForm(FlaskForm):
     """Form for starting the HUD stats quiz."""

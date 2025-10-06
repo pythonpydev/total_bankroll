@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header(title, 'An article on absolute starting hand strength in Pot Limit Omaha.') }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                {{ content|safe }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
