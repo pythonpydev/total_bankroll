@@ -259,9 +259,10 @@ def plo_starting_hand_strength():
     }
     article_path = '' # Initialize path for error message
     try:
-        # Construct an absolute path to the article
-        project_root = '/home/ed/MEGA/total_bankroll/'
-        article_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables.md')
+        # Construct an absolute path from the app's root path to the resource file
+        # current_app.root_path is '.../src/total_bankroll'
+        # We go up two levels to the project root and then into the resources directory.
+        article_path = os.path.join(current_app.root_path, '..', '..', 'resources', 'articles', 'markdown', 'Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables.md')
         with open(article_path, 'r', encoding='utf-8') as f:
             markdown_content = f.read()
         html_content = _parse_plo_article(markdown_content)
