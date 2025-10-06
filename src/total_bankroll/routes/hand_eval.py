@@ -244,6 +244,19 @@ def _parse_plo_article(markdown_text):
 @hand_eval_bp.route('/plo-starting-hand-strength')
 def plo_starting_hand_strength():
     """PLO Starting Hand Strength article page route"""
+    terminology_key = {
+        "ds": "Double-suited: The hand contains two cards of one suit and two cards of another suit (e.g., A♠K♠ J♥T♥).",
+        "ss": "Single-suited: The hand contains exactly two cards of one suit, and the other two cards are of different suits (e.g., A♠K♠ J♥T♦).",
+        "r": "Rainbow: All four cards in the hand are of different suits (e.g., A♠K♥J♦T♣).",
+        "0g": "0-gap: The ranks in a rundown are consecutive (e.g., KQJT).",
+        "1g": "1-gap: There is one rank missing in a sequence of connected ranks (e.g., KQT9).",
+        "2g": "2-gap: There are two ranks missing in a sequence of connected ranks (e.g., KQJ8).",
+        "xx": "Any two cards: Refers to two unspecified cards in the hand.",
+        "[X-Y]": "Rank Range: A range of ranks from X to Y, inclusive (e.g., [K-T] includes King, Queen, Jack, Ten).",
+        "AA, KK, etc.": "Pair: A pair of the specified rank (e.g., AA means two Aces).",
+        "Broadway": "Ranks T, J, Q, K, A.",
+        "Rundown": "Four connected ranks, potentially with gaps (e.g., KQJT, JT98, 9864)."
+    }
     article_path = '' # Initialize path for error message
     try:
         # Construct an absolute path to the article
@@ -258,7 +271,7 @@ def plo_starting_hand_strength():
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
         html_content = "<p>An error occurred while processing the article.</p>"
-    return render_template('plo_starting_hand_strength.html', title='PLO Starting Hand Strength', content=html_content)
+    return render_template('plo_starting_hand_strength.html', title='PLO Starting Hand Strength', content=html_content, terminology_key=terminology_key)
 
 class HudStatsQuizForm(FlaskForm):
     """Form for starting the HUD stats quiz."""
