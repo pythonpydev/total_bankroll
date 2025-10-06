@@ -6991,24 +6991,71 @@
     --player-white: #6c757d;  /* Gray for better readability on white */
 }
 
-/* Override variables for dark mode */
-.dark-mode {
-    --player-yellow: #ffc107; /* Standard yellow is fine on dark backgrounds */
-    --player-gold: #ffc107;
-    --player-white: #f8f9fa;  /* Standard white is fine on dark backgrounds */
+/* Light mode table cell styling */
+.table-player-types th.player-red, .table-player-types td.player-red {
+    background-color: var(--player-red) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-orange, .table-player-types td.player-orange {
+    background-color: var(--player-orange) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-light-green, .table-player-types td.player-light-green {
+    background-color: var(--player-light-green) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-purple, .table-player-types td.player-purple {
+    background-color: var(--player-purple) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-light-blue, .table-player-types td.player-light-blue {
+    background-color: var(--player-light-blue) !important;
+    color: #000 !important;
+}
+.table-player-types th.player-teal, .table-player-types td.player-teal {
+    background-color: var(--player-teal) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-pink, .table-player-types td.player-pink {
+    background-color: var(--player-pink) !important;
+    color: #fff !important;
+}
+.table-player-types th.player-yellow, .table-player-types td.player-yellow {
+    background-color: var(--player-yellow) !important;
+    color: #000 !important;
+}
+.table-player-types th.player-gold, .table-player-types td.player-gold {
+    background-color: var(--player-gold) !important;
+    color: #000 !important;
+}
+.table-player-types th.player-white, .table-player-types td.player-white {
+    background-color: var(--player-white) !important;
+    color: #fff !important;
 }
 
-/* Apply colors to table cells and override hover effects */
-.table-player-types .player-red td, .table-player-types tr.player-red:hover td { color: var(--player-red) !important; }
-.table-player-types .player-orange td, .table-player-types tr.player-orange:hover td { color: var(--player-orange) !important; }
-.table-player-types .player-light-green td, .table-player-types tr.player-light-green:hover td { color: var(--player-light-green) !important; }
-.table-player-types .player-purple td, .table-player-types tr.player-purple:hover td { color: var(--player-purple) !important; }
-.table-player-types .player-light-blue td, .table-player-types tr.player-light-blue:hover td { color: var(--player-light-blue) !important; }
-.table-player-types .player-teal td, .table-player-types tr.player-teal:hover td { color: var(--player-teal) !important; }
-.table-player-types .player-pink td, .table-player-types tr.player-pink:hover td { color: var(--player-pink) !important; }
-.table-player-types .player-yellow td, .table-player-types tr.player-yellow:hover td { color: var(--player-yellow) !important; }
-.table-player-types .player-gold td, .table-player-types tr.player-gold:hover td { color: var(--player-gold) !important; }
-.table-player-types .player-white td, .table-player-types tr.player-white:hover td { color: var(--player-white) !important; }
+/* Dark mode overrides */
+.dark-mode {
+    --player-yellow: #ffc107;
+    --player-gold: #ffc107;
+    --player-white: #f8f9fa;
+}
+
+.dark-mode .table-player-types th,
+.dark-mode .table-player-types td {
+    background-color: var(--dark-bg-2) !important;
+}
+
+.dark-mode .table-player-types th.player-red, .dark-mode .table-player-types td.player-red { color: var(--player-red) !important; }
+.dark-mode .table-player-types th.player-orange, .dark-mode .table-player-types td.player-orange { color: var(--player-orange) !important; }
+.dark-mode .table-player-types th.player-light-green, .dark-mode .table-player-types td.player-light-green { color: var(--player-light-green) !important; }
+.dark-mode .table-player-types th.player-purple, .dark-mode .table-player-types td.player-purple { color: var(--player-purple) !important; }
+.dark-mode .table-player-types th.player-light-blue, .dark-mode .table-player-types td.player-light-blue { color: var(--player-light-blue) !important; }
+.dark-mode .table-player-types th.player-teal, .dark-mode .table-player-types td.player-teal { color: var(--player-teal) !important; }
+.dark-mode .table-player-types th.player-pink, .dark-mode .table-player-types td.player-pink { color: var(--player-pink) !important; }
+.dark-mode .table-player-types th.player-yellow, .dark-mode .table-player-types td.player-yellow { color: var(--player-yellow) !important; }
+.dark-mode .table-player-types th.player-gold, .dark-mode .table-player-types td.player-gold { color: var(--player-gold) !important; }
+.dark-mode .table-player-types th.player-white, .dark-mode .table-player-types td.player-white { color: var(--player-white) !important; }
+
 
 /* Apply colors to non-table elements */
 .player-red { color: var(--player-red) !important; }

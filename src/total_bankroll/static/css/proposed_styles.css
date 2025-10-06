@@ -1,0 +1,79 @@
+
+/* ==========================================================================
+   Player Color Scheme Page Styles
+   ========================================================================== */
+
+/* Define color variables for light mode */
+:root {
+    --player-red: #dc3545;
+    --player-orange: #fd7e14;
+    --player-light-green: #198754;
+    --player-purple: #6f42c1;
+    --player-light-blue: #0dcaf0;
+    --player-teal: #20c997;
+    --player-pink: #d63384;
+    --player-yellow: #b8860b; /* DarkGoldenRod for better readability on white */
+    --player-gold: #b8860b;
+    --player-white: #6c757d;  /* Gray for better readability on white */
+}
+
+/* Override variables for dark mode */
+.dark-mode {
+    --player-yellow: #ffc107; /* Standard yellow is fine on dark backgrounds */
+    --player-gold: #ffc107;
+    --player-white: #f8f9fa;  /* Standard white is fine on dark backgrounds */
+}
+
+/* Apply colors to table cells and override hover effects */
+.table-player-types td.player-red, .table-player-types tr:hover td.player-red {
+    background-color: var(--player-red) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-orange, .table-player-types tr:hover td.player-orange {
+    background-color: var(--player-orange) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-light-green, .table-player-types tr:hover td.player-light-green {
+    background-color: var(--player-light-green) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-purple, .table-player-types tr:hover td.player-purple {
+    background-color: var(--player-purple) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-light-blue, .table-player-types tr:hover td.player-light-blue {
+    background-color: var(--player-light-blue) !important;
+    color: #000 !important;
+}
+.table-player-types td.player-teal, .table-player-types tr:hover td.player-teal {
+    background-color: var(--player-teal) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-pink, .table-player-types tr:hover td.player-pink {
+    background-color: var(--player-pink) !important;
+    color: #fff !important;
+}
+.table-player-types td.player-yellow, .table-player-types tr:hover td.player-yellow {
+    background-color: var(--player-yellow) !important;
+    color: #000 !important;
+}
+.table-player-types td.player-gold, .table-player-types tr:hover td.player-gold {
+    background-color: var(--player-gold) !important;
+    color: #000 !important;
+}
+.table-player-types td.player-white, .table-player-types tr:hover td.player-white {
+    background-color: var(--player-white) !important;
+    color: #fff !important;
+}
+
+/* Apply colors to non-table elements */
+.player-red { color: var(--player-red) !important; }
+.player-orange { color: var(--player-orange) !important; }
+.player-light-green { color: var(--player-light-green) !important; }
+.player-purple { color: var(--player-purple) !important; }
+.player-light-blue { color: var(--player-light-blue) !important; }
+.player-teal { color: var(--player-teal) !important; }
+.player-pink { color: var(--player-pink) !important; }
+.player-yellow { color: var(--player-yellow) !important; }
+.player-gold { color: var(--player-gold) !important; }
+.player-white { color: var(--player-white) !important; }
