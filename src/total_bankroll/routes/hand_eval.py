@@ -360,15 +360,10 @@ def _render_hand_images(hand_string):
     for i in range(0, len(hand_string), 2):
         rank = hand_string[i]
         suit = hand_string[i+1].lower()
-        
-        if rank == 'T':
-            rank_char = '10'
-        else:
-            rank_char = rank.upper()
-            
+        rank_char = rank.upper()
         image_name = f"{rank_char}{suit}.png"
         image_url = url_for('static', filename=f'images/cards/{image_name}')
-        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.2em; vertical-align: middle;">')
+        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.6em; vertical-align: middle;">')
         
     return "".join(image_tags)
 
@@ -740,8 +735,15 @@ def quiz_results():
     for item in incorrect_answers:
         if 'is_hand_strength_quiz' in item and item['is_hand_strength_quiz']:
             item['question_display'] = _render_hand_images(item['question'])
-            item['your_answer_display'] = f"{item['your_answer']} ({tier_map.get(item['your_answer'], '')})"
-            item['correct_answer_display'] = f"{item['correct_answer']} ({tier_map.get(item['correct_answer'], '')})"
+            # Ensure the answer is an integer before looking it up in the map
+            try:
+                your_answer_tier = int(item['your_answer'])
+                correct_answer_tier = int(item['correct_answer'])
+                item['your_answer_display'] = f"{your_answer_tier} ({tier_map.get(your_answer_tier, '')})"
+                item['correct_answer_display'] = f"{correct_answer_tier} ({tier_map.get(correct_answer_tier, '')})"
+            except (ValueError, TypeError):
+                 item['your_answer_display'] = item['your_answer']
+                 item['correct_answer_display'] = item['correct_answer']
         else:
             item['question_display'] = item['question']
             item['your_answer_display'] = item['your_answer']

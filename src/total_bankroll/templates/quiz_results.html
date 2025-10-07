@@ -28,10 +28,12 @@
         border-bottom: none;
     }
     .question-col {
-        flex-basis: 50%;
+        flex: 1 1 50%; /* Allow shrinking and growing, base size 50% */
+        min-width: 150px; /* Prevent it from becoming too small */
     }
     .answer-col {
-        flex-basis: 25%;
+        flex: 1 1 25%; /* Allow shrinking and growing, base size 25% */
+        min-width: 120px; /* Prevent it from becoming too small */
         text-align: center;
     }
 </style>
