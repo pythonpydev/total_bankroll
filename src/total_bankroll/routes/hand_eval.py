@@ -368,7 +368,7 @@ def _render_hand_images(hand_string):
             rank_char = rank.upper()
             
         image_name = f"{rank_char}{suit_map.get(suit, '')}.png"
-        card_images.append(f"images/cards/{image_name}")
+        card_images.append(image_name)
         
     return card_images
 
