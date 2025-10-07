@@ -351,11 +351,11 @@ def card_selector():
     return render_template('card_selector.html', title='Card Selector')
 
 def _render_hand_images(hand_string):
-    """Converts a hand string like 'AcKcQcJc' into a list of image paths."""
+    """Converts a hand string like 'AcKcQcJc' into an HTML string of images."""
     if not isinstance(hand_string, str) or len(hand_string) % 2 != 0:
-        return []
+        return ""
 
-    card_images = []
+    image_tags = []
     
     for i in range(0, len(hand_string), 2):
         rank = hand_string[i]
@@ -367,9 +367,10 @@ def _render_hand_images(hand_string):
             rank_char = rank.upper()
             
         image_name = f"{rank_char}{suit}.png"
-        card_images.append(image_name)
+        image_url = url_for('static', filename=f'images/cards/{image_name}')
+        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.2em; vertical-align: middle;">')
         
-    return card_images
+    return "".join(image_tags)
 
 def _parse_plo_article(markdown_text):
     """
@@ -668,12 +669,12 @@ def quiz():
         if question['correct_answer'] == user_answer:
             session['score'] = session.get('score', 0) + 1
         else:
-            # For the hand strength quiz, we want to show the hand images in the results
-            question_display = _render_hand_images(question['question']) if question.get('is_hand_strength_quiz') else question['question']
+            is_hand_quiz = question.get('is_hand_strength_quiz', False)
             incorrect = {
                 'question': question['question'],
                 'your_answer': user_answer,
-                'correct_answer': question['correct_answer']
+                'correct_answer': question['correct_answer'],
+                'is_hand_strength_quiz': is_hand_quiz
             }
             session['incorrect_answers'].append(incorrect)
         session['current_question'] = current_question_index + 1
@@ -725,14 +726,26 @@ def quiz_results():
             user_rating = r
             break
 
+    tier_map = {
+        1: "Elite",
+        2: "Premium",
+        3: "Strong",
+        4: "Playable",
+        5: "Trash/Marginal"
+    }
+
     incorrect_answers = session.get('incorrect_answers', [])
     
     # Prepare incorrect answers for display with card images
     for item in incorrect_answers:
         if 'is_hand_strength_quiz' in item and item['is_hand_strength_quiz']:
             item['question_display'] = _render_hand_images(item['question'])
+            item['your_answer_display'] = f"{item['your_answer']} ({tier_map.get(item['your_answer'], '')})"
+            item['correct_answer_display'] = f"{item['correct_answer']} ({tier_map.get(item['correct_answer'], '')})"
         else:
             item['question_display'] = item['question']
+            item['your_answer_display'] = item['your_answer']
+            item['correct_answer_display'] = item['correct_answer']
 
     return render_template(
         'quiz_results.html',
