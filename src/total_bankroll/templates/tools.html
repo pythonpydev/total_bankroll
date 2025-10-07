@@ -41,13 +41,24 @@
             </div>
         </div>
 
-        <!-- PLO Hand Evaluator Card -->
+        <!-- PLO Scenario Analyzer Card -->
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">PLO Hand Evaluator</h5>
-                    <p class="card-text">Evaluate the strength of PLO hands, calculate outs, and compare equities.</p>
+                    <h5 class="card-title">PLO Scenario Analyzer</h5>
+                    <p class="card-text">Analyze a full PLO hand scenario, including stacks, board, and equities.</p>
                     <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Strength Evaluator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Strength Evaluator</h5>
+                    <p class="card-text">Get a pre-flop strength tier for any 4-card PLO hand based on its structure.</p>
+                    <a href="{{ url_for('hand_eval.evaluate_hand') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
         </div>
@@ -147,6 +158,17 @@
                     <h5 class="card-title">PLO Starting Hand Strength</h5>
                     <p class="card-text">An article on absolute starting hand strength in Pot Limit Omaha.</p>
                     <a href="{{ url_for('hand_eval.plo_starting_hand_strength') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Strength Quiz Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Strength Quiz</h5>
+                    <p class="card-text">Test your knowledge of Pot Limit Omaha starting hand strength tiers.</p>
+                    <a href="{{ url_for('hand_eval.plo_hand_strength_quiz') }}" class="btn btn-primary">Go to Quiz</a>
                 </div>
             </div>
         </div>
