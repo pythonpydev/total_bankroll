@@ -355,7 +355,6 @@ def _render_hand_images(hand_string):
     if not isinstance(hand_string, str) or len(hand_string) % 2 != 0:
         return []
 
-    suit_map = {'s': 'S', 'h': 'H', 'd': 'D', 'c': 'C'}
     card_images = []
     
     for i in range(0, len(hand_string), 2):
@@ -367,7 +366,7 @@ def _render_hand_images(hand_string):
         else:
             rank_char = rank.upper()
             
-        image_name = f"{rank_char}{suit_map.get(suit, '')}.png"
+        image_name = f"{rank_char}{suit}.png"
         card_images.append(image_name)
         
     return card_images
@@ -386,7 +385,7 @@ def _parse_plo_article(markdown_text):
 
     def render_hand(text):
         """Converts card notations in a string to HTML images."""
-        suit_map = {'♠': 'S', '♥': 'H', '♦': 'D', '♣': 'C'}
+        suit_map = {'♠': 's', '♥': 'h', '♦': 'd', '♣': 'c'}
         
         processed_text = ""
         i = 0
@@ -404,7 +403,7 @@ def _parse_plo_article(markdown_text):
                 else:
                     rank_char = rank
                 
-                image_name = f"{rank_char.upper()}{suit_char.upper()}.png"
+                image_name = f"{rank_char.upper()}{suit_char}.png"
                 processed_text += f'<img src="/static/images/cards/{image_name}" alt="{rank}{suit_symbol}" class="card-image-small" style="height: 1.5em; margin: 0 1px;">'
                 i += 2
             else:
