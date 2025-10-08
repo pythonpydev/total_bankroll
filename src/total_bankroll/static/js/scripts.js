@@ -134,4 +134,31 @@ window.addEventListener('DOMContentLoaded', event => {
              document.getElementById('opponent_position').selectedIndex = oppPosIndex;
          });
      }
+
+    // --- Hand Strength Evaluator Randomizer ---
+    const randomHandButton = document.getElementById('random-hand-button');
+    if (randomHandButton) {
+        randomHandButton.addEventListener('click', function() {
+            const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+            const suits = ['s', 'h', 'd', 'c'];
+            const deck = suits.flatMap(suit => ranks.map(rank => rank + suit));
+
+            // Fisher-Yates shuffle
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+
+            // Deal 4 cards for the hand
+            const randomHand = deck.splice(0, 4).join('');
+            document.getElementById('hand').value = randomHand;
+
+            // Select a random position
+            const positionSelect = document.getElementById('position');
+            if (positionSelect && positionSelect.options.length > 0) {
+                const randomIndex = Math.floor(Math.random() * positionSelect.options.length);
+                positionSelect.selectedIndex = randomIndex;
+            }
+        });
+    }
  });

@@ -1,0 +1,14 @@
+{# Macro for rendering a single form field with Bootstrap styling #}
+{% macro render_field(field) %}
+    <div class="form-group mb-2">
+        {{ field.label(class="form-label") }}
+        {{ field(class="form-control " + kwargs.pop('class', ''), **kwargs) }}
+        {% if field.errors %}
+            <div class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}

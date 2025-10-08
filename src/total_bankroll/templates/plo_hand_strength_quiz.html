@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">PLO Starting Hand Strength Quiz</h3>
+                </div>
+                <div class="card-body">
+                    <p>Test your knowledge of Pot Limit Omaha starting hand strength tiers.</p>
+                    <form method="POST" action="{{ url_for('hand_eval.plo_hand_strength_quiz') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group mb-3">{{ form.num_questions.label(class="form-label") }} {{ form.num_questions(class="form-select") }}</div>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

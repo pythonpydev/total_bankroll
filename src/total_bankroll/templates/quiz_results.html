@@ -1,35 +1,115 @@
 {% extends "base.html" %}
 {% from "_macros.html" import page_header %}
 
-{% block content %}
-{{ page_header('Quiz Results', 'Here is how you did.') }}
+{% block head %}
+{{ super() }}
+<style>
+    .progress {
+        height: 2rem;
+        font-size: 1rem;
+    }
+    .rating-icon {
+        font-size: 4rem;
+        color: var(--bs-primary);
+    }
+    .incorrect-answer-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .incorrect-answer-item:last-child {
+        border-bottom: none;
+    }
+    .question-col {
+        flex: 0 0 50%;  /* Fixed basis: 50% for question (cards), no shrink/grow */
+        min-width: 0;   /* Allows flex child to shrink if needed */
+        white-space: nowrap;  /* Keeps cards in a single row, no wrapping */
+        overflow: hidden;     /* Hides overflow if cards are ultra-wide (rare) */
+        text-overflow: ellipsis;  /* Optional: Ellipsis for long questions */
+    }
+    .answer-col {
+        flex: 1 1 auto;  /* Equal flex for answers: grow/shrink equally */
+        text-align: center;
+        min-width: 120px;    /* Minimum for badge text to prevent squishing */
+    }
+    .list-group-item.d-flex {
+        align-items: center;  /* Vertically centers cards + badges */
+        gap: 1rem;            /* Adds consistent spacing between columns (Bootstrap 5+) */
+    }
+    .incorrect-answer-item .badge {
+        font-size: 0.8em;  /* Slightly smaller badges to reduce width */
+        white-space: nowrap;  /* Prevents badge text from wrapping */
+    }
 
-<section class="page-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="mb-4">Your Score: {{ score }} / {{ total_questions }}</h2>
-                <h3 class="mb-4">Percentage: {{ "%.2f"|format(percentage) }}%</h3>
-                                <h4 class="mb-4">Rating: <i class="bi {{ rating.icon }}"></i> {{ rating.name }}</h4>
-                <a href="{{ url_for('hand_eval.hud_stats_quiz') }}" class="btn btn-primary btn-xl">Play Again</a>
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .list-group-item.d-flex {
+            flex-wrap: wrap;
+        }
+        .question-col {
+            flex: 1 1 100%;  /* Stack question full-width on tiny screens */
+        }
+        .answer-col {
+            flex: 1 1 50%;    /* Answers side-by-side below */
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ page_header('Quiz Results', 'Here is how you did!') }}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Score Summary Card -->
+            <div class="card text-center shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title">Your Score: {{ score }} / {{ total_questions }}</h2>
+                    <div class="progress my-4">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percentage }}%;" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">{{ "%.0f"|format(percentage) }}%</div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="{{ rating.icon }} rating-icon me-3"></i>
+                        <div>
+                            <p class="lead mb-0">Your Rating:</p>
+                            <p class="display-6 mb-0"><strong>{{ rating.name }}</strong></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        {% if incorrect_answers %}
-        <div class="row justify-content-center mt-5">
-            <div class="col-lg-8">
-                <h3 class="text-center mb-4">Review Your Mistakes</h3>
-                <div class="list-group">
+
+            <!-- Incorrect Answers Card -->
+            {% if incorrect_answers %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Review Your Mistakes</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between fw-bold bg-light align-items-center">
+                        <div class="question-col">Question</div>
+                        <div class="answer-col">Your Answer</div>
+                        <div class="answer-col">Correct Answer</div>
+                    </div>
                     {% for item in incorrect_answers %}
-                    <div class="list-group-item">
-                        <p class="mb-1"><strong>Question:</strong> {{ item.question }}</p>
-                        <p class="mb-1 text-danger"><strong>Your Answer:</strong> {{ item.your_answer }}</p>
-                        <p class="mb-0 text-success"><strong>Correct Answer:</strong> {{ item.correct_answer }}</p>
+                    <div class="list-group-item incorrect-answer-item d-flex justify-content-between">
+                        <div class="question-col">{% if item.question_display %}{{ item.question_display|safe }}{% else %}{{ item.question }}{% endif %}</div>
+                        <div class="answer-col"><span class="badge bg-danger">{{ item.your_answer_display }}</span></div>
+                        <div class="answer-col"><span class="badge bg-success">{{ item.correct_answer_display }}</span></div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="text-center">
+                <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary btn-lg">Back to Tools</a>
+            </div>
         </div>
-        {% endif %}
     </div>
-</section>
+</div>
 {% endblock %}
