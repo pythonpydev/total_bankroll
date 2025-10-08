@@ -2,61 +2,7 @@
 {% from "_macros.html" import page_header %}
 
 {% block head %}
-{{ super() }}
-<style>
-    .progress {
-        height: 2rem;
-        font-size: 1rem;
-    }
-    .rating-icon {
-        font-size: 4rem;
-        color: var(--bs-primary);
-    }
-    .incorrect-answer-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 1px solid var(--bs-border-color);
-    }
-    .incorrect-answer-item:last-child {
-        border-bottom: none;
-    }
-    .question-col {
-        flex: 0 0 50%;  /* Fixed basis: 50% for question (cards), no shrink/grow */
-        min-width: 0;   /* Allows flex child to shrink if needed */
-        white-space: nowrap;  /* Keeps cards in a single row, no wrapping */
-        overflow: hidden;     /* Hides overflow if cards are ultra-wide (rare) */
-        text-overflow: ellipsis;  /* Optional: Ellipsis for long questions */
-    }
-    .answer-col {
-        flex: 1 1 auto;  /* Equal flex for answers: grow/shrink equally */
-        text-align: center;
-        min-width: 120px;    /* Minimum for badge text to prevent squishing */
-    }
-    .list-group-item.d-flex {
-        align-items: center;  /* Vertically centers cards + badges */
-        gap: 1rem;            /* Adds consistent spacing between columns (Bootstrap 5+) */
-    }
-    .incorrect-answer-item .badge {
-        font-size: 0.8em;  /* Slightly smaller badges to reduce width */
-        white-space: nowrap;  /* Prevents badge text from wrapping */
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 768px) {
-        .list-group-item.d-flex {
-            flex-wrap: wrap;
-        }
-        .question-col {
-            flex: 1 1 100%;  /* Stack question full-width on tiny screens */
-        }
-        .answer-col {
-            flex: 1 1 50%;    /* Answers side-by-side below */
-            margin-top: 0.5rem;
-        }
-    }
-</style>
+    {{ super() }}
 {% endblock %}
 
 {% block content %}
@@ -69,8 +15,9 @@
             <div class="card text-center shadow-sm mb-4">
                 <div class="card-body p-4">
                     <h2 class="card-title">Your Score: {{ score }} / {{ total_questions }}</h2>
-                    <div class="progress my-4">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percentage }}%;" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">{{ "%.0f"|format(percentage) }}%</div>
+                    <div class="progress my-4 align-items-center">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percentage }}%;" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        <span class="progress-bar-text">{{ "%.0f"|format(percentage) }}%</span>
                     </div>
                     <div class="d-flex align-items-center justify-content-center">
                         <i class="{{ rating.icon }} rating-icon me-3"></i>
@@ -106,8 +53,13 @@
             {% endif %}
 
             <!-- Action Buttons -->
-            <div class="text-center">
-                <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary btn-lg">Back to Tools</a>
+            <div class="text-center d-grid gap-2 d-md-flex justify-content-md-center">
+                {% if quiz_type == 'plo_hand_strength' %}
+                    <a href="{{ url_for('hand_eval.plo_hand_strength_quiz') }}" class="btn btn-secondary btn-lg">Try Again</a>
+                {% else %}
+                    <a href="{{ url_for('hand_eval.hud_stats_quiz') }}" class="btn btn-secondary btn-lg">Try Again</a>
+                {% endif %}
+                <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary btn-lg">Back to All Tools</a>
             </div>
         </div>
     </div>

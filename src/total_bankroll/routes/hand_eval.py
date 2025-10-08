@@ -367,6 +367,29 @@ def _render_hand_images(hand_string):
         
     return "".join(image_tags)
 
+def _pretty_print_hand(hand_string: str) -> str:
+    """
+    Converts a hand string like 'AcKcQcJc' into a color-coded HTML string with suit symbols.
+    """
+    if not isinstance(hand_string, str) or len(hand_string) % 2 != 0:
+        return hand_string # Return original string if format is invalid
+
+    suit_map = {
+        's': ('♠', 'suit-s'),  # Spades
+        'c': ('♣', 'suit-c'),  # Clubs
+        'h': ('♥', 'suit-h'),  # Hearts
+        'd': ('♦', 'suit-d')   # Diamonds
+    }
+    
+    pretty_cards = []
+    for i in range(0, len(hand_string), 2):
+        rank = hand_string[i].upper()
+        suit_char = hand_string[i+1].lower()
+        symbol, color_class = suit_map.get(suit_char, ('?', ''))
+        pretty_cards.append(f'<span class="card-text {color_class}"><strong>{rank}</strong>{symbol}</span>')
+        
+    return ' '.join(pretty_cards)
+
 def _parse_plo_article(markdown_text):
     """
     Parses a subset of Markdown with special handling for PLO hand notations into HTML.
@@ -546,7 +569,7 @@ class HudStatsQuizForm(FlaskForm):
     """Form for starting the HUD stats quiz."""
     num_questions = SelectField(
         'Number of Questions',
-        choices=[('5', '5'), ('10', '10'), ('20', '20')],
+        choices=[('1', '1'), ('5', '5'), ('10', '10'), ('20', '20')],
         validators=[DataRequired()]
     )
     submit = SubmitField('Start Quiz')
@@ -675,7 +698,7 @@ def quiz():
         return redirect(url_for('hand_eval.quiz'))
 
     # Prepare the question for display (render hand images if needed)
-    question_display = _render_hand_images(question['question']) if question.get('is_hand_strength_quiz') else question['question']
+    question_display = _pretty_print_hand(question['question']) if question.get('is_hand_strength_quiz') else question['question']
 
     return render_template(
         'quiz.html',
@@ -700,6 +723,12 @@ def quiz_results():
     questions = session.get('quiz_questions', [])
     total_questions = len(questions)
     percentage = (score / total_questions) * 100 if total_questions > 0 else 0
+
+    # Determine which quiz was taken to set the correct 'Try Again' link
+    quiz_type = 'hud_stats' # default
+    if questions and questions[0].get('is_hand_strength_quiz'):
+        quiz_type = 'plo_hand_strength'
+
 
     ratings = [
         {'name': 'Crusher', 'icon': 'bi-star-fill', 'min_score': 90},
@@ -733,7 +762,7 @@ def quiz_results():
     # Prepare incorrect answers for display with card images
     for item in incorrect_answers:
         if 'is_hand_strength_quiz' in item and item['is_hand_strength_quiz']:
-            item['question_display'] = _render_hand_images(item['question'])
+            item['question_display'] = _pretty_print_hand(item['question'])
             # Ensure the answer is an integer before looking it up in the map
             try:
                 your_answer_tier = int(item['your_answer'])
@@ -755,5 +784,6 @@ def quiz_results():
         total_questions=total_questions,
         percentage=percentage,
         rating=user_rating,
-        incorrect_answers=incorrect_answers
+        incorrect_answers=incorrect_answers,
+        quiz_type=quiz_type
     )
