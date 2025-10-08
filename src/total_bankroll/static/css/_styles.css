@@ -6933,9 +6933,15 @@
     }.dark-mode th[scope="row"] {
     color: var(--dark-text-0) !important
     }/* Fix for all table text text color in dark mode */
-    .dark-mode .table {
+.dark-mode .table {
     --bs-table-color: var(--dark-text-0);
-    }body.dark-mode .alert-bankroll-safe {
+}
+.card-image-small {
+    height: 1.5em;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 1px;
+}body.dark-mode .alert-bankroll-safe {
     background-color: #155724;
     color: #fff;
     border-color: #155724
@@ -6943,9 +6949,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
-    max-width: 700px;
-    margin: 0 auto
     }.image-container {
     margin: 2rem auto;
     max-width: 700px;

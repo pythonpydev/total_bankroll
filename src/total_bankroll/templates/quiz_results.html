@@ -12,11 +12,6 @@
         font-size: 4rem;
         color: var(--bs-primary);
     }
-    .card-image-small {
-        height: 1.5em;
-        vertical-align: middle;
-        margin: 0 1px;
-    }
     .incorrect-answer-item {
         display: flex;
         justify-content: space-between;
@@ -28,13 +23,38 @@
         border-bottom: none;
     }
     .question-col {
-        flex: 1 1 50%; /* Allow shrinking and growing, base size 50% */
-        min-width: 150px; /* Prevent it from becoming too small */
+        flex: 0 0 50%;  /* Fixed basis: 50% for question (cards), no shrink/grow */
+        min-width: 0;   /* Allows flex child to shrink if needed */
+        white-space: nowrap;  /* Keeps cards in a single row, no wrapping */
+        overflow: hidden;     /* Hides overflow if cards are ultra-wide (rare) */
+        text-overflow: ellipsis;  /* Optional: Ellipsis for long questions */
     }
     .answer-col {
-        flex: 1 1 25%; /* Allow shrinking and growing, base size 25% */
-        min-width: 120px; /* Prevent it from becoming too small */
+        flex: 1 1 auto;  /* Equal flex for answers: grow/shrink equally */
         text-align: center;
+        min-width: 120px;    /* Minimum for badge text to prevent squishing */
+    }
+    .list-group-item.d-flex {
+        align-items: center;  /* Vertically centers cards + badges */
+        gap: 1rem;            /* Adds consistent spacing between columns (Bootstrap 5+) */
+    }
+    .incorrect-answer-item .badge {
+        font-size: 0.8em;  /* Slightly smaller badges to reduce width */
+        white-space: nowrap;  /* Prevents badge text from wrapping */
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .list-group-item.d-flex {
+            flex-wrap: wrap;
+        }
+        .question-col {
+            flex: 1 1 100%;  /* Stack question full-width on tiny screens */
+        }
+        .answer-col {
+            flex: 1 1 50%;    /* Answers side-by-side below */
+            margin-top: 0.5rem;
+        }
     }
 </style>
 {% endblock %}
@@ -69,13 +89,13 @@
                     <h3 class="mb-0">Review Your Mistakes</h3>
                 </div>
                 <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between fw-bold bg-light">
+                    <div class="list-group-item d-flex justify-content-between fw-bold bg-light align-items-center">
                         <div class="question-col">Question</div>
                         <div class="answer-col">Your Answer</div>
                         <div class="answer-col">Correct Answer</div>
                     </div>
                     {% for item in incorrect_answers %}
-                    <div class="list-group-item incorrect-answer-item">
+                    <div class="list-group-item incorrect-answer-item d-flex justify-content-between">
                         <div class="question-col">{% if item.question_display %}{{ item.question_display|safe }}{% else %}{{ item.question }}{% endif %}</div>
                         <div class="answer-col"><span class="badge bg-danger">{{ item.your_answer_display }}</span></div>
                         <div class="answer-col"><span class="badge bg-success">{{ item.correct_answer_display }}</span></div>

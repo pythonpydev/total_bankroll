@@ -28,11 +28,14 @@ function sortCards(cards) {
  * @param {string} cardImagePath - The base path to the card image directory.
  */
 function displayCards(hand, container, cardImagePath) {
-  hand.forEach(card => {
+  const sortedHand = sortCards(hand);
+  sortedHand.forEach(card => {
     const img = document.createElement('img');
     img.src = `${cardImagePath}${card}.png`;
     img.alt = card;
-    img.classList.add('card-image');
+    img.classList.add('card-image', 'card-image-small');
+    img.style.maxHeight = '1.5em';
+    img.style.width = 'auto';
     container.appendChild(img);
   });
 }

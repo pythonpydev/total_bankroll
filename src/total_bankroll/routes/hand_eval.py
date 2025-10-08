@@ -363,7 +363,7 @@ def _render_hand_images(hand_string):
         rank_char = rank.upper()
         image_name = f"{rank_char}{suit}.png"
         image_url = url_for('static', filename=f'images/cards/{image_name}')
-        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.6em; vertical-align: middle;">')
+        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.5em; width: auto; vertical-align: middle;">')
         
     return "".join(image_tags)
 
@@ -398,9 +398,8 @@ def _parse_plo_article(markdown_text):
                     rank_char = '10'
                 else:
                     rank_char = rank
-                
-                image_name = f"{rank_char.upper()}{suit_char}.png"
-                processed_text += f'<img src="/static/images/cards/{image_name}" alt="{rank}{suit_symbol}" class="card-image-small" style="height: 1.5em; margin: 0 1px;">'
+                image_name = f"{rank.upper()}{suit_char}.png"
+                processed_text += f'<img src="/static/images/cards/{image_name}" alt="{rank}{suit_symbol}" class="card-image-small" style="height: 1.5em; width: auto; vertical-align: middle;">'
                 i += 2
             else:
                 processed_text += char
