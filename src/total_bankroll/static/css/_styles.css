@@ -6976,6 +6976,80 @@
     border-color: var(--dark-accent)
     }
 
+/* ============================================= */
+/*           Pretty Print Card Styles            */
+/* ============================================= */
+
+/* Base style for card text containers used in quizzes */
+.card-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Light Mode Suit Colors */
+.suit-s { color: #212529; } /* Black */
+.suit-h { color: #dc3545; } /* Red */
+.suit-d { color: #0d6efd; } /* Blue */
+.suit-c { color: #198754; } /* Green */
+
+/* Dark Mode Suit Colors */
+body.dark-mode .suit-s { color: #dee2e6; } /* Off-white/Light Gray */
+body.dark-mode .suit-h { color: #ff7b7b; } /* Lighter Red */
+body.dark-mode .suit-d { color: #74a9ff; } /* Lighter Blue */
+body.dark-mode .suit-c { color: #63e6be; } /* Lighter Green */
+
+/* ============================================= */
+/*              Quiz Results Styles              */
+/* ============================================= */
+
+.progress {
+    height: 2rem;
+    font-size: 1rem;
+    position: relative; /* Needed for absolute positioning of the text */
+}
+.progress-bar-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #212529; /* A dark color for good contrast */
+}
+.rating-icon {
+    font-size: 4rem;
+    color: var(--bs-primary);
+}
+.incorrect-answer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+.incorrect-answer-item:last-child {
+    border-bottom: none;
+}
+.question-col {
+    flex: 0 0 50%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.answer-col {
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Mobile Responsiveness for results table */
+@media (max-width: 768px) {
+    .incorrect-answer-item {
+        flex-wrap: wrap;
+    }
+    .question-col { flex: 1 1 100%; }
+    .answer-col { flex: 1 1 50%; margin-top: 0.5rem; }
+}
+
 /* ==========================================================================
    Player Color Scheme Page Styles
    ========================================================================== */

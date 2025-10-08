@@ -1,0 +1,28 @@
+The sources emphasize that providing a definitive, exhaustive ranking of all PLO starting hands is challenging because hand strength is highly dependent on post-flop play, Stack-to-Pot Ratio (SPR), and position. However, the sources classify hands into distinct quality groups based on their **Big Play Potential**—the ability to flop the nuts, strong redraws, or multi-way hands.
+
+Below is a table summarizing PLO starting hand classifications, generally ranked from best to worst categories, using the standard notation found in the sources (e.g., **ds** = double-suited, **ss** = single-suited):
+
+---
+
+## PLO Starting Hand Rankings by Classification
+
+| Ranking Class                       | Hand Examples & Notation                                                                                                                        | Key Characteristics & Context                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. PREMIUM (MAGNUM)**             | **A-A-K-K ds**, **A-A-J-T ds**                                                                                                                  | These are the **best hands in PLO**. Magnum Aces are ultra-premium: double-suited, possessing Broadway Wrap potential, connectors, or a second big pair. They offer maximum potential for top set, dual-nut flush draws, and dominating straight draws. They are strong enough to be **raising hands from any position**.                                         |
+| **2. PREMIUM (Top Rundowns/Pairs)** | **K-Q-J-T ss** or **ds**, **J-T-9-8 ss** or **ds**, **Q-Q-J-J**, **K-K-T-T**                                                                    | These hands have the highest probability of hitting the flop strongly. **Four cards 10-and-higher** that are at least single-suited are premium drawing hands. Sequential rundowns (J-T-9-8) have the **best chance of hitting the flop strongly**. Double pairs are premium because they flop a set **21.4 percent of the time**.                                |
+| **3. SPECULATIVE**                  | **A-K-Q-9 ss**, **A-J-T-9 ss** down to **A-6-5-4 ss**. **J-T-9-7 ss** or **ds**. **Q-J-T-7 ss**.                                                | These hands require implied odds and position to play profitably. They have legitimate potential to develop into a big-pot hand. They often involve a single gap, preferably low in the structure (e.g., Q-J-T-7, rundown with a two-gap). **Suited Ace hands** (ss) are speculative, looking to hit the nut flush draw alongside a straight draw (like A-8-7-5). |
+| **4. MARGINAL**                     | **K-Q-J-3 ds** (Three Broadway cards, one dangler). **J-9-8-7 ss** (Rundown with top gap).                                                      | These are typically **one-way hands** and should be played as **late-position, minimum bet only**. They are hands with structural weaknesses, such as top gaps (J-9-8-7). The positional advantage is crucial to make marginal hands playable.                                                                                                                    |
+| **5. TRASH / AVOID**                | **J-8-7-6** (Two-gap on top). **5-4-3-2** (Smallest rundown failure). **K-T-7-2 rainbow**. **Unsuited straight hands** (e.g., 7-6-5-4 rainbow). | These hands lack big-play potential and are likely to win a small pot or lose a big one. Hands with **two gaps on top** should all be ditched unless Ace-high. **Unsuited straight hands** should be avoided because the blinds are insignificant compared to the risk of getting freerolled.                                                                     |
+
+---
+
+### Hand Structure Notes and Terminology
+
+- **Suitedness:** Hands are far more valuable when they are **double-suited (ds)** or at least **single-suited (ss)**. A double-suited hand improves your chances of flopping a pair and a flush draw, which is sufficient to commit in low SPR situations.
+- **Gaps/Connectivity:** Hands are characterized by their connectedness.
+  - **Sequential Rundown:** Four cards in order (e.g., J-T-9-8).
+  - **Single Gap:** A hand missing one card, ideally on the bottom (e.g., Q-J-T-8).
+  - **Top Gap:** A gap between the top two or three cards (e.g., J-9-8-7), which is a major structural flaw unless the hand contains an Ace.
+- **Big Pot vs. Small Pot Hands:** The classification determines your post-flop strategy:
+  - **Big-Pot Hands** (Premium): Capable of winning large pots (e.g., nut straight with redraws, top set with redraws, nut flush) and should often be "rammed and jammed" pre-flop or on the flop when stacks are deep (SPR > 13).
+  - **Small-Pot Hands** (Marginal/Speculative): Should be played cautiously, typically smooth-called on the flop when deep (SPR > 13), but aggressively committed when stacks are shallow (SPR $\le 4$), such as the bare nut straight or middle set.
