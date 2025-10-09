@@ -141,8 +141,10 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     elif is_single_suited:
         score += 10
         score_breakdown.append(("Single-Suited", "+10"))
-        # Bonus for nut suit
-        if ranks[0] == ranks_str.index('A') and suits[ranks.index(ranks[0])] in [s for s, c in suit_counts.items() if c >= 2]:
+        # Bonus for nut suit (check if an Ace is part of the suited cards)
+        suited_suit = next((s for s, c in suit_counts.items() if c >= 2), None)
+        ace_index_in_ranks = ranks.index(ranks_str.index('A')) if ranks_str.index('A') in ranks else -1
+        if suited_suit and ace_index_in_ranks != -1 and suits[ace_index_in_ranks] == suited_suit:
             score += 5
             score_breakdown.append(("Nut Suit Bonus", "+5"))
 
