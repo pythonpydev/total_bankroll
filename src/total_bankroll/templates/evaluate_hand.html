@@ -1,24 +1,21 @@
 {% extends "base.html" %}
-{% from "_form_helpers.html" import render_field %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">PLO Hand Strength Evaluator</h1>
-    <p>
-        Enter a 4-card Pot Limit Omaha hand (e.g., <code>AsKsQhJh</code> or <code>AAKK</code>) to get a tier-based strength evaluation.
-        This tool uses a heuristic based on the principles of suitedness, connectivity, and high-card value described in the site's articles.
-    </p>
-
-    <div class="card bg-light mb-4">
+{{ page_header('Hand Strength Evaluator', 'Get an instant analysis of your PLO starting hand.') }}
+<div class="container my-5">
+    <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="POST" action="{{ url_for('hand_eval.evaluate_hand') }}">
                 {{ form.hidden_tag() }}
                 <div class="row align-items-end">
                     <div class="col-md-5">
-                        {{ render_field(form.hand, class="form-control form-control-lg", placeholder="e.g., AsKsQhJh or AA44ds") }}
+                        {{ form.hand.label(class="form-label") }}
+                        {{ form.hand(class="form-control form-control-lg" + (" is-invalid" if form.hand.errors else "")) }}
                     </div>
                     <div class="col-md-4">
-                        {{ render_field(form.position, class="form-select form-select-lg") }}
+                        {{ form.position.label(class="form-label") }}
+                        {{ form.position(class="form-select form-select-lg") }}
                     </div>
                     <div class="col-md-3 d-flex align-items-end gap-2">
                         {{ form.submit(class="btn btn-primary btn-lg w-100") }}
