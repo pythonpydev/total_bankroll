@@ -4,133 +4,112 @@
 {% block content %}
 {{ page_header('SPR Strategy', 'Guidance on playing different SPR spots effectively.') }}
 
-<div class="container">
-  <div class="spr-article-box">
-    <p class="text-center">Here is a comprehensive summary of information related to Stack-to-Pot Ratio (SPR) from the provided sources, presented in a downloadable Markdown file format.</p>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
 
-    <p>The Stack-to-Pot Ratio (SPR) is a crucial concept in Advanced Pot-Limit Omaha, particularly in understanding and applying the "Small Ball" and "3-betting preflop" strategies. It is explicitly introduced as a tool for thinking about Pot-Limit Omaha (PLO) and is considered even more useful in PLO than in No-Limit Hold'em (NLHE) due to PLO's bet-size restrictions and standard pot-sized betting.</p>
-
-    <h2>Definition and Calculation</h2>
-    <p>The <strong>Stack-to-Pot Ratio (SPR)</strong> is simply the <strong>ratio of the effective stacks to the current size of the pot</strong>.</p>
-    <ul>
-        <li>For example, if you have a £1,000 remaining stack and there is £100 in the pot, your SPR is £1,000 / £100 = <strong>10</strong>.</li>
-        <li>The <strong>effective SPR</strong> is always the SPR of the <strong>smaller stack</strong> in a heads-up confrontation.</li>
-    </ul>
-
-    <h2>What SPR Actually Means (in terms of bets)</h2>
-    <p>SPR indicates how many pot-sized bets are left to play relative to the pot size.</p>
-    <ul>
-        <li>An <strong>SPR of 1</strong> means there is <strong>exactly one pot-sized bet left</strong>.</li>
-        <li>An <strong>SPR of 4</strong> means there is <strong>enough money for two pot-sized bets</strong> heads-up, or a pot-sized bet and a pot-sized raise.</li>
-        <li>An <strong>SPR of 13</strong> is the equivalent of <strong>three pot-sized bets</strong> heads-up.</li>
-        <li>If the effective SPR is over 13, and only two players contest the pot after the flop, the only way for all the money to go in is if someone puts in a raise at some point in the hand.</li>
-    </ul>
-
-    <h2>SPR Categories and Their Impact</h2>
-    <p>The distinction between different SPR ranges is critical, as SPR has a <strong>dramatic effect on post-flop playing decisions</strong>.</p>
-
-    <ol>
-        <li><strong>Ultralow-SPR Situations (SPR ≤ 1)</strong>:
-            <ul>
-                <li>This is considered <strong>pot-odds territory</strong>.</li>
-                <li>You only need about <strong>33.3% equity</strong> to justify an all-in confrontation when SPR is 1, and only <strong>25% equity</strong> when SPR is 0.5.</li>
-                <li>You are <strong>virtually pot-committed if you catch any piece of the flop whatsoever</strong>.</li>
-                <li>You <strong>cannot fold hands</strong> like middle set, underfull, top two pair, bare nut straight with no redraw, or the second-nut flush, as you can beat many other hands for one bet.</li>
-                <li><strong>In a low-SPR situation, you are essentially pot committed when holding the nut flush draw. Shove.</strong></li>
-            </ul>
-        </li>
-        <li><strong>Low-SPR Situations (SPR ≤ 4)</strong>:
-            <ul>
-                <li>This is considered <strong>"shove-or-fold territory"</strong>.</li>
-                <li>If you face a bet, you should <strong>generally shove all-in</strong> if you decide to contest the pot at all.</li>
-                <li>The range of hands you should be willing to commit with on the flop <strong>widens dramatically</strong>.</li>
-                <li>You should <strong>raise and commit your stack</strong> when facing a bet with "small-pot hands" (e.g., bare nut straight, middle or bottom set, top two pair, weaker wraps, undertrips, or top pair with redraws). These are hands you would rarely raise with when SPR is high.</li>
-                <li>In these situations, the penalty for being wrong (e.g., your opponent has a better hand) is not as steep.</li>
-            </ul>
-        </li>
-        <li><strong>Mid-SPR Situations (4 &lt; SPR ≤ 13)</strong>:
-            <ul>
-                <li>This is considered the <strong>"Gray Area"</strong> or <strong>"Judgment Territory"</strong>.</li>
-                <li>Play is <strong>more read-dependent</strong>.</li>
-                <li>If the SPR is in the <strong>low-mid range (closer to 4)</strong>, you should lean towards treating the situation like a low-SPR situation (i.e., be more aggressive).</li>
-                <li>If the SPR is in the <strong>high-mid range (closer to 13)</strong>, you should lean towards treating it like a high-SPR situation and proceed more cautiously (e.g., by smooth-calling rather than raising).</li>
-                <li>The updated SPR chart classifies SPR <strong>above 8</strong> as <strong>Deep Stack Territory</strong>, and SPR <strong>between 8 and 13</strong> as the <strong>mid-high-SPR range</strong>.</li>
-            </ul>
-        </li>
-        <li><strong>High-SPR Situations (SPR &gt; 13)</strong>:
-            <ul>
-                <li>This is <strong>"Big Play (Implied Odds) Territory"</strong>.</li>
-                <li>It is crucial to distinguish between "big-pot hands" and "small-pot hands".</li>
-                <li><strong>Big-pot hands</strong> (e.g., nut straight with redraws, overfull, top set with redraws, nut flush, dominating draws) are universally strong, and you should "ram and jam" with them, aiming to get all the money in on the flop.</li>
-                <li><strong>Small-pot hands</strong> (e.g., bare nut straight with no redraws, underfull, middle or bottom set, bare top two pair, undertrips, second-nut flush, sucker wraps/draws) should <strong>not commit their stack</strong>. It would be a "disaster" to commit your stack with these hands.</li>
-                <li>You should tend to <strong>refrain from raising on the flop</strong> with small-pot hands unless you have a hand strong enough to justify putting in a fourth bet; generally <strong>smooth-call</strong> when facing a bet.</li>
-                <li>The deeper the stacks and the higher the SPR, the bigger a mistake it is to commit your stack to small-pot hands.</li>
-            </ul>
-        </li>
-    </ol>
-
-    <h2>Deep Stack Leverage and SPR</h2>
-    <p><strong>Deep stack leverage</strong> is the use of the <strong>threat of further bets</strong> to magnify the effective size of a bet, thereby creating <strong>fold equity</strong>.</p>
-    <ul>
-        <li>It adds considerable value to big draws and dry-Ace bluffs.</li>
-        <li>It <strong>discourages raising and check-raising with marginal hands</strong> in deep stack situations.</li>
-        <li>A "deep stack" is defined as one that is <strong>deep enough to fire a legitimate third bet</strong> (i.e., a stack that allows for a pot/pot/half-pot sequence). This typically equates to an **SPR of about 8 or 9 or higher** (8.5 is enough for pot/pot/half-pot).</li>
-        <li>The actual "deepness" of a stack is determined by the SPR on the flop, not necessarily the starting big blind count. A 100BB stack might be deep in a passive game but not in an aggressive one.</li>
-        <li><strong>The threat of the third bet</strong> is the source of leverage's power.</li>
-    </ul>
-
-    <h2>SPR in Strategic Plays</h2>
-
-    <h3>Small Ball</h3>
-    <ul>
-        <li>Small Ball is a **loose-passive preflop approach** that focuses on playing shorthanded pots with the positional advantage, but without the preflop initiative.</li>
-        <li>The goal is to utilise the positional advantage via the float to control pot size and opponents.</li>
-        <li>In deep stack scenarios (SPR &gt; 8), if your opponent makes a continuation bet, you should **tend to call (float)** if you have a piece of the board or a nut draw.</li>
-        <li>You should **smooth-call with strong small-pot hands** (bare nut straight, middle set, top two pair, undertrips) to keep the pot size down and add weight to your floats.</li>
-        <li>The weaker your draw, the more dependent the value of your call is on the float.</li>
-    </ul>
-
-    <h3>3-Betting Before the Flop</h3>
-    <p>There are two main strategies for 3-betting preflop, both heavily influenced by SPR:</p>
-
-    <ol>
-        <li><strong>The Pump-and-Shove (Maniac/Low-SPR Play)</strong>:
-            <ul>
-                <li>Involves a preflop reraise to create a **low-SPR situation (SPR ≤ 4)** after the flop, leaving two bets or less.</li>
-                <li>The idea is to build a big pot preflop. If the original raiser calls, you'll often be able to **shove all-in** on the flop if you catch any piece of the board.</li>
-                <li>This strategy is **volatile, high-volume, and has a relatively low edge**, requiring a larger bankroll than Small Ball. It also minimizes post-flop play, reducing the skill advantage.</li>
-                <li>For "trashy AA hands," the target post-flop SPR is under 1, meaning you aim to get at least one-third of your stack in preflop.</li>
-            </ul>
-        </li>
-        <li><strong>Isolation Play (Tactical/Deep-Stack Play)</strong>:
-            <ul>
-                <li>Involves a 3-bet to isolate the preflop raiser, aiming to play heads-up with the positional advantage in a **deep-stacked scenario (target SPR roughly 8 or higher)**. This SPR allows for three legitimate bets (pot/pot/half-pot) after the flop.</li>
-                <li>Advantages include:
+            <!-- Definition Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header h5"><i class="bi bi-calculator-fill me-2"></i>Definition and Calculation</div>
+                <div class="card-body">
+                    <p>The <strong>Stack-to-Pot Ratio (SPR)</strong> is the ratio of the <strong>effective stack size to the current size of the pot</strong>.</p>
+                    <blockquote class="blockquote">
+                        <p class="mb-0"><code>SPR = Effective Stack / Pot Size</code></p>
+                    </blockquote>
                     <ul>
-                        <li>**Leverage discourages opponents from check-raising** marginal hands, making them more predictable.</li>
-                        <li>Enables the **float** as a viable weapon (SPR of around 8 is sufficient).</li>
-                        <li>Gives you a **level of control over the hand**, allowing for smooth-calls, floats, and checking behind more often.</li>
+                        <li>For example, if you have a £1,000 remaining stack and there is £100 in the pot, your SPR is £1,000 / £100 = <strong>10</strong>.</li>
+                        <li>The <strong>effective SPR</strong> is always the SPR of the <strong>smaller stack</strong> in a heads-up confrontation.</li>
                     </ul>
-                </li>
-                <li>This strategy is also relatively volatile and difficult to play, making mistakes easy.</li>
-            </ul>
-        </li>
-    </ol>
+                </div>
+            </div>
 
-    <h2>Key SPR Tips</h2>
+            <!-- SPR Categories Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header h5"><i class="bi bi-diagram-3-fill me-2"></i>SPR Categories and Their Impact</div>
+                <div class="card-body">
+                    <p>The distinction between different SPR ranges is critical, as SPR has a <strong>dramatic effect on post-flop playing decisions</strong>. SPR indicates how many pot-sized bets are left to play.</p>
+                    
+                    <!-- Ultralow-SPR -->
+                    <div class="alert alert-danger mt-3">
+                        <h5 class="alert-heading">1. Ultralow-SPR (SPR ≤ 1) - Pot-Odds Territory</h5>
+                        <p>This is all-in or fold territory based on raw equity. You are committed if you have any reasonable piece of the flop.</p>
+                        <ul>
+                            <li><strong>Meaning:</strong> Exactly one pot-sized bet (or less) left.</li>
+                            <li><strong>Commitment:</strong> You only need ~33% equity to get all-in. You cannot fold hands like middle set, top two pair, or a bare nut straight.</li>
+                            <li><strong>Action:</strong> With a nut flush draw, you are committed. <strong>Shove.</strong></li>
+                        </ul>
+                    </div>
 
-    <ul>
-        <li><strong>The deeper the stacks and the higher the SPR, the bigger a mistake it is to commit your stack to small-pot hands</strong> such as a bare nut straight, middle or bottom set, bare two pair, or undertrips.</li>
-        <li><strong>In a low-SPR situation (SPR ≤ 4), you should generally shove all-in if you contest the pot at all</strong>.</li>
-        <li><strong>In ultralow-SPR situations (SPR ≤ 1), you are virtually pot-committed if you catch any piece of the flop</strong>.</li>
-        <li><strong>The source of leverage tends to be the third bet.</strong></li>
-        <li><strong>A deep stack is one that is deep enough to fire a legitimate third bet, or about a half-pot sized bet on the river.</strong></li>
-        <li><strong>An SPR of 8.5 is enough to run the pot/pot/half-pot sequence.</strong></li>
-        <li><strong>A deep stack is not necessarily a 150BB or 200BB stack, but one that is deep enough to consistently see the flop with an SPR of about 8 or 9 or higher.</strong> In a passive game, a 100BB stack may be enough to constitute a deep stack.</li>
-    </ul>
-  </div>
-  <div class="text-center mt-4">
-    <a href="{{ url_for('home.home') }}" class="btn btn-primary">Back to Home</a>
-  </div>
+                    <!-- Low-SPR -->
+                    <div class="alert alert-warning mt-3">
+                        <h5 class="alert-heading">2. Low-SPR (1 &lt; SPR ≤ 4) - Shove-or-Fold Territory</h5>
+                        <p>Your decision is simplified: if you decide to play, you should generally commit your entire stack.</p>
+                        <ul>
+                            <li><strong>Meaning:</strong> Enough money for two pot-sized bets (a bet and a raise).</li>
+                            <li><strong>Commitment:</strong> The range of hands you commit with widens dramatically. "Small-pot" hands like bare top two pair or a middle set become strong commitment candidates.</li>
+                            <li><strong>Action:</strong> If you face a bet and want to continue, your default action should be to <strong>raise all-in</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Mid-SPR -->
+                    <div class="alert alert-info mt-3">
+                        <h5 class="alert-heading">3. Mid-SPR (4 &lt; SPR ≤ 13) - The "Gray Area"</h5>
+                        <p>This is judgment territory where decisions are more complex and read-dependent.</p>
+                        <ul>
+                            <li><strong>Meaning:</strong> Between two and three pot-sized bets left.</li>
+                            <li><strong>Commitment:</strong> Your action depends on where you are in the range. Closer to 4, play like it's a low-SPR spot. Closer to 13, play more cautiously like it's a high-SPR spot.</li>
+                            <li><strong>Action:</strong> Proceed with caution. Smooth-calling becomes a more viable option than in lower SPR scenarios.</li>
+                        </ul>
+                    </div>
+
+                    <!-- High-SPR -->
+                    <div class="alert alert-success mt-3">
+                        <h5 class="alert-heading">4. High-SPR (SPR &gt; 13) - Big Play / Implied Odds Territory</h5>
+                        <p>Hand selection is paramount. You must distinguish between hands that can win a huge pot and those that can't.</p>
+                        <ul>
+                            <li><strong>Meaning:</strong> Three or more pot-sized bets left.</li>
+                            <li><strong>Commitment:</strong> Only commit with "big-pot hands" (top set with redraws, nut flushes, nut straights with redraws). Committing with "small-pot hands" (bare two pair, middle set) is a disaster.</li>
+                            <li><strong>Action:</strong> With big-pot hands, "ram and jam." With small-pot hands, <strong>smooth-call</strong> to control the pot size.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Plays Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header h5"><i class="bi bi-joystick me-2"></i>SPR in Strategic Plays</div>
+                <div class="card-body">
+                    <h5 class="card-title">Small Ball Strategy</h5>
+                    <p>A loose-passive pre-flop approach focused on playing with position. In deep stack scenarios (SPR > 8), you should often <strong>call (float)</strong> with any piece of the board or a nut draw, using your position to control the pot.</p>
+                    
+                    <hr>
+
+                    <h5 class="card-title">3-Betting Pre-Flop</h5>
+                    <p>Your 3-betting strategy is defined by the post-flop SPR you are targeting.</p>
+                    <ul>
+                        <li><strong>The Pump-and-Shove (Low-SPR Play):</strong> Reraise pre-flop to create a low-SPR situation (≤ 4). The goal is to build a big pot and be able to shove on many flops. This is a high-variance strategy.</li>
+                        <li><strong>The Isolation Play (Deep-Stack Play):</strong> Reraise pre-flop to isolate one opponent and play a deep-stacked pot (SPR ≥ 8) with position. This allows you to use leverage and skill to out-play your opponent post-flop.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Key Takeaways Card -->
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-primary text-white h5"><i class="bi bi-key-fill me-2"></i>Key Takeaways</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">The deeper the stacks (high SPR), the bigger a mistake it is to commit with "small-pot" hands.</li>
+                        <li class="list-group-item">In low-SPR (≤ 4) spots, your decision is simple: <strong>shove or fold</strong>.</li>
+                        <li class="list-group-item">In ultralow-SPR (≤ 1) spots, you are committed with almost any piece of the flop.</li>
+                        <li class="list-group-item">A "deep stack" is defined by the SPR, not just starting stack size. An SPR of ~8 or higher is considered deep as it allows for three streets of betting.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary"><i class="bi bi-arrow-left-circle me-2"></i>Back to Tools</a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
