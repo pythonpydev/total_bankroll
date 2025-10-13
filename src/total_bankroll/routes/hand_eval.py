@@ -278,9 +278,17 @@ def submit_form():
 
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
+    sorted_csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings_sorted.csv')
+    original_csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+    
+    csv_path = sorted_csv_path
+    if not os.path.exists(sorted_csv_path):
+        app.logger.warning(f"Sorted CSV not found at {sorted_csv_path}. Falling back to original file.")
+        csv_path = original_csv_path
+
     try:
-        # Relative path: Assumes 'data' folder is at the root of the app package
-        csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+        # Use the pre-sorted CSV file
+        # csv_path is now determined above
         df = pd.read_csv(csv_path, low_memory=False)  # low_memory=False for large files
         
         # Log the actual columns found in the CSV
@@ -416,6 +424,35 @@ def load_plo_hand_rankings_data(app):
         app.logger.error(f"Unexpected error loading PLO hand data: {e}")
 
 # Added: Preload function for optimization
+def sort_hand_string(hand_str):
+    """
+    Sorts a 4-card hand string (e.g., '4sAcKd5d') by rank in descending order and then by suit.
+    This function is a copy of the one in scripts/sort_hand_data.py, adapted for Flask logging.
+    """
+    rank_order = "AKQJT98765432"
+    suit_order = "shdc" # Spades > Hearts > Diamonds > Clubs
+
+    if not isinstance(hand_str, str):
+        return hand_str  # Return as is if not a string
+
+    # Clean the hand string by removing commas and spaces
+    cleaned_hand_str = hand_str.replace(',', '').replace(' ', '')
+
+    # Validate length after cleaning
+    if len(cleaned_hand_str) % 2 != 0:
+        current_app.logger.debug(f"Partial hand string '{cleaned_hand_str}' has odd length, not sorting.")
+        return hand_str # Return original if length is odd, as it's an incomplete card
+
+    cards = [cleaned_hand_str[i:i+2] for i in range(0, len(cleaned_hand_str), 2)]
+
+    try:
+        sorted_cards = sorted(cards, key=lambda card: (rank_order.index(card[0].upper()), suit_order.index(card[1].lower())))
+    except ValueError as e:
+        current_app.logger.warning(f"Could not sort hand '{hand_str}'. Invalid character found. Error: {e}")
+        return hand_str
+
+    return "".join(sorted_cards)
+
 def _pretty_print_hand(hand_str):
     """Formats a hand string (e.g., 'AsKsQhJh') with HTML for suit symbols and colors."""
     # Add a check to handle potential None or empty strings from the data
@@ -445,14 +482,17 @@ def plo_hand_rankings():
             start = int(request.form.get('start', 0))
             length = int(request.form.get('length', 25))
             search_value = request.form.get('search[value]', '').strip().lower()
+            
+            # Apply sorting logic to the search value
+            processed_search_value = sort_hand_string(search_value)
 
             # Ordering
             order_col = int(request.form.get('order[0][column]', 1))  # Default to Tier (column 1)
             order_dir = request.form.get('order[0][dir]', 'asc')
 
             # Filter
-            if search_value:
-                filtered_df = df[df['Hand'].str.lower().str.contains(search_value, na=False)]
+            if processed_search_value:
+                filtered_df = df[df['Hand'].str.lower().str.contains(processed_search_value.lower(), na=False)]
             else:
                 filtered_df = df.copy()
 
