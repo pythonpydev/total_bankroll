@@ -17,6 +17,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="{% block meta_description %}StakeEasy.net is a free tool for poker players to track their bankroll, manage funds across sites, and analyze their financial performance with powerful charts and tools.{% endblock %}" />
         <meta name="author" content="" />
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>StakeEasy.net</title>
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon/favicon-96x96.png') }}" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon/favicon.svg') }}" />

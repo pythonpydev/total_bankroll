@@ -235,30 +235,6 @@ def get_preflop_suggestion(tier: int, position: str) -> tuple[str, str]:
 
     return action, reason
 
-@hand_eval_bp.route('/evaluate-hand', methods=['GET', 'POST'])
-def evaluate_hand():
-    """
-    Renders the PLO Hand Strength Evaluator page.
-    Handles form submission to evaluate a hand and display the results.
-    """
-    form = HandStrengthForm()
-    evaluation_result = None
-    if form.validate_on_submit():
-        hand = form.hand.data
-        position = form.position.data
-        
-        # Perform evaluation
-        tier, reason, score_breakdown, score = evaluate_hand_strength(hand)
-        action, action_reason = get_preflop_suggestion(tier, position)
-        
-        evaluation_result = {
-            'hand': _pretty_print_hand(hand),
-            'tier': tier, 'reason': reason, 'score_breakdown': score_breakdown, 'score': score,
-            'action': action, 'action_reason': action_reason, 'position': position
-        }
-
-    return render_template('evaluate_hand.html', title='PLO Hand Strength Evaluator', form=form, result=evaluation_result)
-
 @hand_eval_bp.route('/tables')
 def tables():
     """Tables page route"""
@@ -300,23 +276,135 @@ def submit_form():
 
     return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
-# Added: Preload function for optimization
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
     try:
         # Relative path: Assumes 'data' folder is at the root of the app package
-        # Adjust if your structure is different (e.g., os.path.join(app.root_path, '..', 'data', ...) if outside)
         csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
         df = pd.read_csv(csv_path, low_memory=False)  # low_memory=False for large files
         
-        # Optional: Rename columns if CSV uses different names (e.g., 'cards' -> 'Hand')
-        # df = df.rename(columns={'cards': 'Hand', 'rating': 'Tier', 'score': 'Rating Score', 'reason': 'Rating Reason'})
+        # Log the actual columns found in the CSV
+        app.logger.info(f"Original CSV columns: {list(df.columns)}")
         
-        # Ensure numeric columns for sorting
-        if 'Tier' in df.columns:
+        # Create a mapping for flexible column renaming
+        column_mapping = {}
+        for col in df.columns:
+            col_lower = col.lower().strip()
+            if col_lower in ['cards', 'hand']:
+                column_mapping[col] = 'Hand'
+            elif col_lower in ['rating', 'tier']:
+                column_mapping[col] = 'Tier'
+            elif col_lower in ['score', 'rating score', 'rating_score', 'strength']:
+                column_mapping[col] = 'Rating Score'
+            elif col_lower in ['reason', 'rating reason', 'rating_reason', 'description']:
+                column_mapping[col] = 'Rating Reason'
+        
+        # Apply the mapping
+        df = df.rename(columns=column_mapping)
+        app.logger.info(f"Renamed columns: {list(df.columns)}")
+        
+        # Ensure Rating Score is numeric
+        df['Rating Score'] = pd.to_numeric(df['Rating Score'], errors='coerce')
+        
+        # Check if Tier column exists and has valid data
+        if 'Tier' not in df.columns or df['Tier'].isna().all():
+            app.logger.info("Tier column missing or empty - calculating from Rating Score")
+            # Calculate tier based on Rating Score using the same logic as evaluate_hand_strength
+            def score_to_tier(score):
+                if pd.isna(score):
+                    return 5
+                elif score >= 85:
+                    return 1
+                elif score >= 70:
+                    return 2
+                elif score >= 50:
+                    return 3
+                elif score >= 30:
+                    return 4
+                else:
+                    return 5
+            
+            df['Tier'] = df['Rating Score'].apply(score_to_tier)
+            app.logger.info("Successfully calculated Tier from Rating Score")
+        else:
+            # Try to convert text-based ratings to numeric tiers
+            rating_to_tier = {
+                'Elite+': 1,
+                'Elite': 1,
+                'Premium': 2,
+                'Strong': 3,
+                'Playable': 4,
+                'Marginal': 5,
+                'Trash': 5,
+                '1': 1,
+                '2': 2,
+                '3': 3,
+                '4': 4,
+                '5': 5
+            }
+            
+            # First try to convert directly to numeric
             df['Tier'] = pd.to_numeric(df['Tier'], errors='coerce')
-        if 'Rating Score' in df.columns:
-            df['Rating Score'] = pd.to_numeric(df['Rating Score'], errors='coerce')
+            
+            # If we have NaN values, try mapping from text
+            if df['Tier'].isna().any():
+                app.logger.info("Converting text-based ratings to numeric tiers")
+                df['Tier_Text'] = df['Tier'].astype(str).str.strip()
+                df['Tier'] = df['Tier_Text'].map(rating_to_tier)
+                df = df.drop('Tier_Text', axis=1)
+                
+                # For any remaining NaN, calculate from score
+                missing_tiers = df['Tier'].isna()
+                if missing_tiers.any():
+                    app.logger.info(f"Calculating {missing_tiers.sum()} missing tiers from Rating Score")
+                    def score_to_tier(score):
+                        if pd.isna(score):
+                            return 5
+                        elif score >= 85:
+                            return 1
+                        elif score >= 70:
+                            return 2
+                        elif score >= 50:
+                            return 3
+                        elif score >= 30:
+                            return 4
+                        else:
+                            return 5
+                    df.loc[missing_tiers, 'Tier'] = df.loc[missing_tiers, 'Rating Score'].apply(score_to_tier)
+        
+        # Add tier-based descriptions for Rating Reason
+        tier_reasons = {
+            1: "Elite - A top-tier hand with immense nut potential",
+            2: "Premium - A very strong hand with excellent coordination",
+            3: "Strong - A solid, profitable hand",
+            4: "Playable - A speculative hand best played with position",
+            5: "Trash/Marginal - A weak hand with poor coordination"
+        }
+        
+        if 'Rating Reason' not in df.columns:
+            df['Rating Reason'] = df['Tier'].map(tier_reasons).fillna("Unrated hand")
+            app.logger.info("Added 'Rating Reason' column with default values")
+        else:
+            # Fill in missing reasons based on tier
+            df['Rating Reason'] = df['Rating Reason'].fillna(df['Tier'].map(tier_reasons))
+        
+        # Verify required columns exist
+        required_cols = ['Hand', 'Tier', 'Rating Score']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            app.logger.error(f"Missing required columns after renaming: {missing_cols}")
+            app.logger.error(f"Available columns: {list(df.columns)}")
+            raise ValueError(f"Missing required columns: {missing_cols}")
+        
+        # Clean up Hand column - remove commas
+        df['Hand'] = df['Hand'].str.replace(',', '')
+        
+        # Drop rows with invalid data
+        rows_before = len(df)
+        df = df.dropna(subset=['Tier', 'Rating Score'])
+        rows_after = len(df)
+        if rows_before != rows_after:
+            app.logger.warning(f"Dropped {rows_before - rows_after} rows with invalid data")
         
         app.config['PLO_HAND_DF'] = df
         app.logger.info(f"Successfully loaded PLO hand data from {csv_path} ({len(df)} rows)")
@@ -327,12 +415,29 @@ def load_plo_hand_rankings_data(app):
     except Exception as e:
         app.logger.error(f"Unexpected error loading PLO hand data: {e}")
 
+# Added: Preload function for optimization
+def _pretty_print_hand(hand_str):
+    """Formats a hand string (e.g., 'AsKsQhJh') with HTML for suit symbols and colors."""
+    # Add a check to handle potential None or empty strings from the data
+    if not hand_str or not isinstance(hand_str, str) or len(hand_str) % 2 != 0:
+        return ""
+
+    suit_symbols = {'s': '♠', 'h': '♥', 'd': '♦', 'c': '♣'}
+    suit_colors = {'s': 'black', 'h': 'red', 'd': 'blue', 'c': 'green'}  # Adjust colors as needed
+    hand = ''
+    for i in range(0, len(hand_str), 2):
+        rank = hand_str[i]
+        suit = hand_str[i+1].lower()
+        hand += f'<span style="color: {suit_colors.get(suit, "black")}">{rank}{suit_symbols.get(suit, suit)}</span>'
+    return hand
+
 @hand_eval_bp.route('/plo_hand_rankings', methods=['GET', 'POST'])
 def plo_hand_rankings():
     if request.method == 'POST':
         try:
             df = current_app.config.get('PLO_HAND_DF')
             if df is None:
+                current_app.logger.error('PLO hand data not loaded.')
                 return jsonify({'error': 'Hand data not loaded. Check server logs.'}), 500
 
             # Extract DataTables parameters (form data)
@@ -347,7 +452,6 @@ def plo_hand_rankings():
 
             # Filter
             if search_value:
-                # Assuming 'Hand' column; adjust if different
                 filtered_df = df[df['Hand'].str.lower().str.contains(search_value, na=False)]
             else:
                 filtered_df = df.copy()
@@ -365,7 +469,7 @@ def plo_hand_rankings():
             data_out = []
             for _, row in paginated_df.iterrows():
                 data_out.append({
-                    'Hand': f"<span data-search='{row['Hand']}'>{_pretty_print_hand(row['Hand'])}</span>",  # Assuming _pretty_print_hand is defined
+                    'Hand': f"<span data-search='{row['Hand']}'>{_pretty_print_hand(row['Hand'])}</span>",
                     'Tier': row['Tier'],
                     'Rating Score': f"{row['Rating Score']:.1f}",
                     'Rating Reason': row['Rating Reason']
@@ -386,32 +490,6 @@ def plo_hand_rankings():
 
     # GET: Render the template
     return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
-
-@hand_eval_bp.route('/player-types-article')
-def player_types_article():
-    """Renders the player types article page."""
-    return render_template('player_types_article.html', title='Poker Player Archetypes')
-
-@hand_eval_bp.route('/player-color-scheme-guide')
-def player_color_scheme_guide():
-    """Renders the player color scheme guide page."""
-    return render_template('player_color_scheme.html', title='Player Color Scheme Guide')
-
-@hand_eval_bp.route('/hud-player-type-guide')
-def hud_player_type_guide():
-    """Renders the HUD player type guide page."""
-    data = {'player_types': [], 'stats': []}
-    json_path = os.path.join(current_app.root_path, 'data', 'hud_player_types.json')
-    current_app.logger.info(f"Attempting to load HUD data from: {json_path}")
-    try:
-        with open(json_path, 'r') as f:
-            data = json.load(f)
-            current_app.logger.info("Successfully loaded HUD player type data.")
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        error_msg = f"Could not load or parse HUD player type data: {e}"
-        current_app.logger.error(error_msg)
-        flash(error_msg, "error")
-    return render_template('hud_player_type.html', title='HUD Player Type Guide', data=data)
 
 @hand_eval_bp.route('/plo-hand-strength-quiz', methods=['GET', 'POST'])
 def plo_hand_strength_quiz():
@@ -731,3 +809,35 @@ def quiz_results():
         incorrect_answers=incorrect_answers,
         quiz_type=quiz_type
     )
+
+@hand_eval_bp.route('/hud-player-type-guide')
+def hud_player_type_guide():
+    try:
+        json_path = os.path.join(current_app.root_path, 'data', 'hud_player_types.json')
+        current_app.logger.debug(f"Attempting to load JSON from: {json_path}")
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+        current_app.logger.debug(f"Loaded HUD data: {data}")
+        # Verify data structure
+        if not data.get('player_types') or not data.get('stats') or not all(stat.get('values') for stat in data.get('stats', [])):
+            current_app.logger.error("Incomplete HUD data: missing player_types, stats, or values")
+            flash('Error: Incomplete HUD data.', 'danger')
+            data = {"player_types": [], "stats": []}
+    except FileNotFoundError as e:
+        current_app.logger.error(f"HUD JSON file not found: {e}")
+        flash('Error: HUD data file not found.', 'danger')
+        data = {"player_types": [], "stats": []}
+    except json.JSONDecodeError as e:
+        current_app.logger.error(f"Invalid JSON in HUD data file: {e}")
+        flash('Error: Invalid HUD data format.', 'danger')
+        data = {"player_types": [], "stats": []}
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error loading HUD data: {e}")
+        flash('Error loading HUD data.', 'danger')
+        data = {"player_types": [], "stats": []}
+    return render_template('hud_player_type.html', data=data)
+
+@hand_eval_bp.route('/player-color-scheme-guide')
+def player_color_scheme_guide():
+    """Renders the player color scheme guide page."""
+    return render_template('player_color_scheme.html', title='Player Color Scheme Guide')

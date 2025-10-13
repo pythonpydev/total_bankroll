@@ -48,7 +48,18 @@
                 pageLength: 25,
                 ajax: {
                     url: "{{ url_for('hand_eval.plo_hand_rankings') }}",
-                    type: 'POST'
+                    type: 'POST',
+                    // Add CSRF token to the request headers
+                    beforeSend: function(xhr, settings) {
+                        const token = $('meta[name="csrf-token"]').attr('content');
+                        if (token) {
+                            xhr.setRequestHeader('X-CSRFToken', token);
+                        }
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('DataTables AJAX error:', xhr.status, xhr.responseText);
+                        alert('Server error: ' + (xhr.responseText || 'Unknown error. Check console for details.'));
+                    }
                 },
                 columns: [
                     { data: 'Hand', orderable: false }, // Disable sorting on the HTML-heavy hand column
