@@ -407,6 +407,11 @@ def load_plo_hand_rankings_data(app):
         # Clean up Hand column - remove commas
         df['Hand'] = df['Hand'].str.replace(',', '')
         
+        # Create a new column with only the sorted ranks for flexible searching
+        # e.g., 'AsAdKsKd' -> 'AAKK'
+        df['RanksOnly'] = df['Hand'].apply(lambda h: "".join(sorted([c for i, c in enumerate(h) if i % 2 == 0], key=lambda r: "AKQJT98765432".index(r.upper()))))
+        app.logger.info("Successfully created 'RanksOnly' column for searching.")
+
         # Drop rows with invalid data
         rows_before = len(df)
         df = df.dropna(subset=['Tier', 'Rating Score'])
@@ -490,9 +495,20 @@ def plo_hand_rankings():
             order_col = int(request.form.get('order[0][column]', 1))  # Default to Tier (column 1)
             order_dir = request.form.get('order[0][dir]', 'asc')
 
+            # --- Smart Filtering ---
+            # Check if the search value contains suits (by looking for s, h, d, c)
+            contains_suits = any(c in search_value for c in 'shdc')
+
             # Filter
-            if processed_search_value:
-                filtered_df = df[df['Hand'].str.lower().str.contains(processed_search_value.lower(), na=False)]
+            if search_value:
+                if contains_suits:
+                    # If suits are present, search the full hand string
+                    processed_search_value = sort_hand_string(search_value)
+                    filtered_df = df[df['Hand'].str.lower().str.contains(processed_search_value.lower(), na=False)]
+                else:
+                    # If no suits, search the RanksOnly column
+                    sorted_rank_query = "".join(sorted(search_value.upper(), key=lambda r: "AKQJT98765432".index(r)))
+                    filtered_df = df[df['RanksOnly'].str.contains(sorted_rank_query, na=False)]
             else:
                 filtered_df = df.copy()
 
