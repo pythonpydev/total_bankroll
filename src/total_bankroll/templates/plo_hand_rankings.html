@@ -35,17 +35,21 @@
 
 {% block scripts %}
     {{ super() }}
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
-            new DataTable('#handsTable', {
+            $('#handsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 pageLength: 25,
+                pagingType: 'full_numbers',
+                // Define the DOM structure for proper Bootstrap 5 layout
+                // 'l' - length changing input, 'f' - filtering input
+                // 't' - table, 'i' - information summary, 'p' - pagination
+                // The structure below places info and pagination on the same row.
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                 ajax: {
                     url: "{{ url_for('hand_eval.plo_hand_rankings') }}",
                     type: 'POST',
