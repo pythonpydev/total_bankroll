@@ -7,12 +7,13 @@ import logging
 import json
 import os
 import random
-from flask import Blueprint, render_template, request, session, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash, current_app, jsonify
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioField
 from wtforms.validators import DataRequired, Optional, ValidationError
 from operator import itemgetter
 from . import algo
+import pandas as pd  # Added for optimization
 
 hand_eval_bp = Blueprint('hand_eval', __name__)
 
@@ -234,6 +235,30 @@ def get_preflop_suggestion(tier: int, position: str) -> tuple[str, str]:
 
     return action, reason
 
+@hand_eval_bp.route('/evaluate-hand', methods=['GET', 'POST'])
+def evaluate_hand():
+    """
+    Renders the PLO Hand Strength Evaluator page.
+    Handles form submission to evaluate a hand and display the results.
+    """
+    form = HandStrengthForm()
+    evaluation_result = None
+    if form.validate_on_submit():
+        hand = form.hand.data
+        position = form.position.data
+        
+        # Perform evaluation
+        tier, reason, score_breakdown, score = evaluate_hand_strength(hand)
+        action, action_reason = get_preflop_suggestion(tier, position)
+        
+        evaluation_result = {
+            'hand': _pretty_print_hand(hand),
+            'tier': tier, 'reason': reason, 'score_breakdown': score_breakdown, 'score': score,
+            'action': action, 'action_reason': action_reason, 'position': position
+        }
+
+    return render_template('evaluate_hand.html', title='PLO Hand Strength Evaluator', form=form, result=evaluation_result)
+
 @hand_eval_bp.route('/tables')
 def tables():
     """Tables page route"""
@@ -269,331 +294,124 @@ def submit_form():
     # If it's a POST request (form submission), validate and process.
     if hand_form.validate_on_submit():
         logging.debug(f"Request form data: {request.form}")
-        form_data = algo.process_hand_data(request.form, button_position)
+        form_data = algo.process_hand_data(request.form, button_position)  # Assuming this is the full line; replace truncated part if needed
         session['form_data'] = form_data
-        return render_template('hand_details.html', form_data=form_data)
-
-    # If validation fails on POST, or it's a GET without session data, show the form.
-    if request.method == 'POST': # Only flash errors on a failed POST
-        logging.debug(f"Form validation failed. Errors: {hand_form.errors}")
-        for field, errors in hand_form.errors.items():
-            for error in errors:
-                flash(f"Error in {getattr(hand_form, field).label.text}: {error}", 'error')
+        return redirect(url_for('hand_eval.submit_form'))  # Redirect to GET to show details
 
     return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
-@hand_eval_bp.route('/hand_evaluation', methods=['GET'])
-def hand_evaluation():
-    form_data = session.get('form_data', {})
-    if not form_data:
-        flash('No hand data found. Please submit a hand first.', 'warning')
-        return redirect(url_for('hand_eval.plo_hand_form'))
-
-    return render_template('hand_evaluation.html', form_data=form_data, title="Hand Evaluation")
-
-@hand_eval_bp.route('/decisions')
-def decisions():
-    """Decisions page route"""
-    return render_template('decisions.html', title='Decisions')
-
-@hand_eval_bp.route('/evaluate-hand', methods=['GET', 'POST'])
-def evaluate_hand():
-    """Hand strength evaluation page."""
-    form = HandStrengthForm()
-    evaluation_result = None
-    if form.validate_on_submit():
-        hand_string = form.hand.data
-        position = form.position.data
-        tier, tier_reason, breakdown, total_score = evaluate_hand_strength(hand_string)
-        suggestion, suggestion_reason = get_preflop_suggestion(tier, position)
-        evaluation_result = {
-            'hand': _render_hand_images(hand_string),
-            'tier': tier,
-            'reason': tier_reason,
-            'breakdown': breakdown,
-            'total_score': round(total_score, 1),
-            'suggestion': suggestion,
-            'suggestion_reason': suggestion_reason
-        }
-    return render_template('evaluate_hand.html', title='Hand Strength Evaluator', form=form, result=evaluation_result)
-
-@hand_eval_bp.route('/spr_strategy')
-def spr_strategy():
-    """SPR Strategy page route"""
-    return render_template('spr_strategy.html', title='SPR Strategy')
-
-@hand_eval_bp.route('/pot-odds-equity')
-def pot_odds_equity():
-    """Pot Odds vs Equity explanation page route"""
-    return render_template('pot_odds_equity.html', title='Pot Odds vs Equity')
-
-@hand_eval_bp.route('/hud-player-types')
-def hud_player_types():
-    """HUD Player Types reference page route"""
+# Added: Preload function for optimization
+def load_plo_hand_rankings_data(app):
+    """Preloads the large CSV into a Pandas DataFrame at app startup."""
     try:
-        # Use open_resource for a more robust path to the data file
-        with current_app.open_resource('data/hud_player_types.json', 'r') as f:
-            data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        flash(f"Could not load HUD player type data: {e}", "error")
-        data = {'player_types': [], 'stats': []} # Provide empty data on error
-    return render_template('hud_player_type.html', title='HUD Player Types', data=data)
+        # Relative path: Assumes 'data' folder is at the root of the app package
+        # Adjust if your structure is different (e.g., os.path.join(app.root_path, '..', 'data', ...) if outside)
+        csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+        df = pd.read_csv(csv_path, low_memory=False)  # low_memory=False for large files
+        
+        # Optional: Rename columns if CSV uses different names (e.g., 'cards' -> 'Hand')
+        # df = df.rename(columns={'cards': 'Hand', 'rating': 'Tier', 'score': 'Rating Score', 'reason': 'Rating Reason'})
+        
+        # Ensure numeric columns for sorting
+        if 'Tier' in df.columns:
+            df['Tier'] = pd.to_numeric(df['Tier'], errors='coerce')
+        if 'Rating Score' in df.columns:
+            df['Rating Score'] = pd.to_numeric(df['Rating Score'], errors='coerce')
+        
+        app.config['PLO_HAND_DF'] = df
+        app.logger.info(f"Successfully loaded PLO hand data from {csv_path} ({len(df)} rows)")
+    except FileNotFoundError:
+        app.logger.error(f"CSV file not found at {csv_path}")
+    except pd.errors.ParserError:
+        app.logger.error(f"Error parsing CSV at {csv_path}")
+    except Exception as e:
+        app.logger.error(f"Unexpected error loading PLO hand data: {e}")
+
+@hand_eval_bp.route('/plo_hand_rankings', methods=['GET', 'POST'])
+def plo_hand_rankings():
+    if request.method == 'POST':
+        try:
+            df = current_app.config.get('PLO_HAND_DF')
+            if df is None:
+                return jsonify({'error': 'Hand data not loaded. Check server logs.'}), 500
+
+            # Extract DataTables parameters (form data)
+            draw = int(request.form.get('draw', 0))
+            start = int(request.form.get('start', 0))
+            length = int(request.form.get('length', 25))
+            search_value = request.form.get('search[value]', '').strip().lower()
+
+            # Ordering
+            order_col = int(request.form.get('order[0][column]', 1))  # Default to Tier (column 1)
+            order_dir = request.form.get('order[0][dir]', 'asc')
+
+            # Filter
+            if search_value:
+                # Assuming 'Hand' column; adjust if different
+                filtered_df = df[df['Hand'].str.lower().str.contains(search_value, na=False)]
+            else:
+                filtered_df = df.copy()
+
+            # Sort
+            col_map = {1: 'Tier', 2: 'Rating Score'}
+            sort_col = col_map.get(order_col, 'Tier')
+            ascending = order_dir == 'asc'
+            filtered_df = filtered_df.sort_values(by=sort_col, ascending=ascending)
+
+            # Paginate
+            paginated_df = filtered_df.iloc[start:start + length]
+
+            # Format output
+            data_out = []
+            for _, row in paginated_df.iterrows():
+                data_out.append({
+                    'Hand': f"<span data-search='{row['Hand']}'>{_pretty_print_hand(row['Hand'])}</span>",  # Assuming _pretty_print_hand is defined
+                    'Tier': row['Tier'],
+                    'Rating Score': f"{row['Rating Score']:.1f}",
+                    'Rating Reason': row['Rating Reason']
+                })
+
+            return jsonify({
+                'draw': draw,
+                'recordsTotal': len(df),
+                'recordsFiltered': len(filtered_df),
+                'data': data_out
+            })
+        except KeyError as e:
+            current_app.logger.error(f"Missing column in DataFrame: {e}")
+            return jsonify({'error': f"Missing column: {e}"}), 500
+        except Exception as e:
+            current_app.logger.error(f"Error in plo_hand_rankings POST: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+
+    # GET: Render the template
+    return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
 
 @hand_eval_bp.route('/player-types-article')
 def player_types_article():
-    """Player Types article page route"""
-    return render_template('player_types_article.html', title='Player Types Article')
+    """Renders the player types article page."""
+    return render_template('player_types_article.html', title='Poker Player Archetypes')
 
-@hand_eval_bp.route('/player-color-scheme')
-def player_color_scheme():
-    """Player color scheme article page route"""
-    return render_template('player_color_scheme.html', title='Player Color Scheme')
+@hand_eval_bp.route('/player-color-scheme-guide')
+def player_color_scheme_guide():
+    """Renders the player color scheme guide page."""
+    return render_template('player_color_scheme.html', title='Player Color Scheme Guide')
 
-@hand_eval_bp.route('/card_selector')
-def card_selector():
-    """Card selector page route"""
-    return render_template('card_selector.html', title='Card Selector')
-
-def _render_hand_images(hand_string):
-    """Converts a hand string like 'AcKcQcJc' into an HTML string of images."""
-    if not isinstance(hand_string, str) or len(hand_string) % 2 != 0:
-        return ""
-
-    image_tags = []
-    
-    for i in range(0, len(hand_string), 2):
-        rank = hand_string[i]
-        suit = hand_string[i+1].lower()
-        rank_char = rank.upper()
-        image_name = f"{rank_char}{suit}.png"
-        image_url = url_for('static', filename=f'images/cards/{image_name}')
-        image_tags.append(f'<img src="{image_url}" alt="{rank_char}{suit}" class="card-image-small" style="height: 1.5em; width: auto; vertical-align: middle;">')
-        
-    return "".join(image_tags)
-
-def _pretty_print_hand(hand_string: str) -> str:
-    """
-    Converts a hand string like 'AcKcQcJc' into a color-coded HTML string with suit symbols.
-    """
-    if not isinstance(hand_string, str) or len(hand_string) % 2 != 0:
-        return hand_string # Return original string if format is invalid
-
-    suit_map = {
-        's': ('♠', 'suit-s'),  # Spades
-        'c': ('♣', 'suit-c'),  # Clubs
-        'h': ('♥', 'suit-h'),  # Hearts
-        'd': ('♦', 'suit-d')   # Diamonds
-    }
-    
-    pretty_cards = []
-    for i in range(0, len(hand_string), 2):
-        rank = hand_string[i].upper()
-        suit_char = hand_string[i+1].lower()
-        symbol, color_class = suit_map.get(suit_char, ('?', ''))
-        pretty_cards.append(f'<span class="card-text {color_class}"><strong>{rank}</strong>{symbol}</span>')
-        
-    return ' '.join(pretty_cards)
-
-def _parse_plo_article(markdown_text):
-    """
-    Parses a subset of Markdown with special handling for PLO hand notations into HTML.
-    - Handles ### and #### for h3/h4 tags.
-    - Handles paragraphs.
-    - Handles Markdown tables.
-    - Converts card notations like A♠K♥ into images.
-    """
-    html = []
-    in_table = False
-    lines = markdown_text.strip().split('\n')
-
-    def render_hand(text):
-        """Converts card notations in a string to HTML images."""
-        suit_map = {'♠': 's', '♥': 'h', '♦': 'd', '♣': 'c'}
-        
-        processed_text = ""
-        i = 0
-        while i < len(text):
-            char = text[i]
-            next_char = text[i+1] if i + 1 < len(text) else ''
-            
-            if next_char in suit_map:
-                rank = char
-                suit_symbol = next_char
-                suit_char = suit_map.get(suit_symbol, '')
-                
-                if rank == 'T':
-                    rank_char = '10'
-                else:
-                    rank_char = rank
-                image_name = f"{rank.upper()}{suit_char}.png"
-                processed_text += f'<img src="/static/images/cards/{image_name}" alt="{rank}{suit_symbol}" class="card-image-small" style="height: 1.5em; width: auto; vertical-align: middle;">'
-                i += 2
-            else:
-                processed_text += char
-                i += 1
-        return processed_text
-
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-
-        if line.startswith('#### '):
-            if in_table:
-                html.append('</tbody></table>')
-                in_table = False
-            html.append(f'<h4>{render_hand(line[5:])}</h4>')
-        elif line.startswith('### '):
-            if in_table:
-                html.append('</tbody></table>')
-                in_table = False
-            html.append(f'<h3>{render_hand(line[4:])}</h3>')
-        elif line.startswith('|'):
-            cells = [cell.strip() for cell in line.split('|')][1:-1]
-            if not in_table:
-                html.append('<table class="table table-bordered"><thead><tr>')
-                for cell in cells:
-                    html.append(f'<th>{render_hand(cell)}</th>')
-                html.append('</tr></thead><tbody>')
-                in_table = True
-            elif '---' in cells[0]:
-                continue
-            else:
-                html.append('<tr>')
-                for i, cell in enumerate(cells):
-                    if i == 0:
-                        html.append(f'<td><strong>{render_hand(cell)}</strong></td>')
-                    else:
-                        html.append(f'<td>{render_hand(cell)}</td>')
-                html.append('</tr>')
-        else:
-            if in_table:
-                html.append('</tbody></table>')
-                in_table = False
-            html.append(f'<p>{render_hand(line)}</p>')
-
-    if in_table:
-        html.append('</tbody></table>')
-
-    return '\n'.join(html)
-
-@hand_eval_bp.route('/plo-starting-hand-strength')
-def plo_starting_hand_strength():
-    """PLO Starting Hand Strength article page route"""
-    terminology_key = {
-        "ds": "Double-suited: The hand contains two cards of one suit and two cards of another suit (e.g., A♠K♠ J♥T♥).",
-        "ss": "Single-suited: The hand contains exactly two cards of one suit, and the other two cards are of different suits (e.g., A♠K♠ J♥T♦).",
-        "r": "Rainbow: All four cards in the hand are of different suits (e.g., A♠K♥J♦T♣).",
-        "0g": "0-gap: The ranks in a rundown are consecutive (e.g., KQJT).",
-        "1g": "1-gap: There is one rank missing in a sequence of connected ranks (e.g., KQT9).",
-        "2g": "2-gap: There are two ranks missing in a sequence of connected ranks (e.g., KQJ8).",
-        "xx": "Any two cards: Refers to two unspecified cards in the hand.",
-        "[X-Y]": "Rank Range: A range of ranks from X to Y, inclusive (e.g., [K-T] includes King, Queen, Jack, Ten).",
-        "AA, KK, etc.": "Pair: A pair of the specified rank (e.g., AA means two Aces).",
-        "Broadway": "Ranks T, J, Q, K, A.",
-        "Rundown": "Four connected ranks, potentially with gaps (e.g., KQJT, JT98, 9864)."
-    }
-    article_path = '' # Initialize path for error message
+@hand_eval_bp.route('/hud-player-type-guide')
+def hud_player_type_guide():
+    """Renders the HUD player type guide page."""
+    data = {'player_types': [], 'stats': []}
+    json_path = os.path.join(current_app.root_path, 'data', 'hud_player_types.json')
+    current_app.logger.info(f"Attempting to load HUD data from: {json_path}")
     try:
-        # Construct an absolute path from the app's root path to the resource file
-        # current_app.root_path is '.../src/total_bankroll'
-        # We go up two levels to the project root and then into the resources directory.
-        article_path = os.path.join(current_app.root_path, '..', '..', 'resources', 'articles', 'markdown', 'Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables.md')
-        with open(article_path, 'r', encoding='utf-8') as f:
-            markdown_content = f.read()
-        html_content = _parse_plo_article(markdown_content)
-    except FileNotFoundError:
-        flash("Article not found. Please check the file path.", "error")
-        html_content = f"<p>Article content could not be loaded. Path does not exist: {article_path}</p>"
-    except Exception as e:
-        flash(f"An error occurred: {e}", "error")
-        html_content = "<p>An error occurred while processing the article.</p>"
-    return render_template('plo_starting_hand_strength.html', title='PLO Starting Hand Strength', content=html_content, terminology_key=terminology_key)
-
-PLO_HAND_RANKINGS_DATA = []
-
-def load_plo_hand_rankings_data(app):
-    """
-    Loads and caches the PLO hand rankings from the CSV file.
-    This should be called once at application startup.
-    """
-    global PLO_HAND_RANKINGS_DATA
-    if not PLO_HAND_RANKINGS_DATA: # Only load if it's empty
-        try:
-            with app.open_resource('data/definitive_hand_strength_with_ratings.csv', 'r') as f:
-                reader = csv.DictReader(f)
-                # Convert numeric fields for proper sorting later
-                for row in reader:
-                    row['Tier'] = int(row['Tier'])
-                    row['Rating Score'] = float(row['Rating Score'])
-                    PLO_HAND_RANKINGS_DATA.append(row)
-            logging.info("Successfully loaded and cached PLO hand rankings data.")
-        except (FileNotFoundError, Exception) as e:
-            logging.error(f"Failed to load and cache PLO hand rankings data: {e}")
-
-@hand_eval_bp.route('/plo-hand-rankings', methods=['GET', 'POST'])
-def plo_hand_rankings():
-    """
-    Displays PLO hands in a server-side processed table.
-    Handles both initial page load (GET) and DataTables AJAX requests (POST).
-    """
-    if request.method == 'POST':
-        # Handle AJAX requests from DataTables
-        draw = request.form.get('draw', type=int)
-        start = request.form.get('start', type=int)
-        length = request.form.get('length', type=int)
-        search_value = request.form.get('search[value]', '').lower()
-        order_column_index = request.form.get('order[0][column]', type=int)
-        order_dir = request.form.get('order[0][dir]', 'asc')
-        columns = [request.form.get(f'columns[{i}][data]') for i in range(4)] # We have 4 columns
-
-        if not PLO_HAND_RANKINGS_DATA:
-            return jsonify({'error': 'Hand data not available.', 'data': []}), 500
-
-        data = PLO_HAND_RANKINGS_DATA
-        total_records = len(data)
-
-        # Filter based on search
-        if search_value:
-            data = [
-                hand for hand in data
-                if search_value in hand['Hand'].lower()
-            ]
-
-        filtered_records = len(data)
-
-        # Sorting
-        if order_column_index is not None and columns[order_column_index]:
-            sort_column_name = columns[order_column_index]
-            if sort_column_name in ['Tier', 'Rating Score']:
-                data = sorted(data, key=itemgetter(sort_column_name), reverse=(order_dir == 'desc'))
-
-        # Paginate
-        paginated_data = data[start : start + length]
-
-        # Format data for DataTables
-        data_out = []
-        for hand in paginated_data:
-            data_out.append({
-                'Hand': f"<span data-search='{hand['Hand']}'>{_pretty_print_hand(hand['Hand'])}</span>",
-                'Tier': hand['Tier'],
-                'Rating Score': f'{hand["Rating Score"]:.1f}',
-                'Rating Reason': hand['Rating Reason']
-            })
-
-        return jsonify({
-            'draw': draw,
-            'recordsTotal': total_records,
-            'recordsFiltered': filtered_records,
-            'data': data_out
-        })
-
-    # This handles the initial GET request to load the page
-    return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
-
-
-
-
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+            current_app.logger.info("Successfully loaded HUD player type data.")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        error_msg = f"Could not load or parse HUD player type data: {e}"
+        current_app.logger.error(error_msg)
+        flash(error_msg, "error")
+    return render_template('hud_player_type.html', title='HUD Player Type Guide', data=data)
 
 @hand_eval_bp.route('/plo-hand-strength-quiz', methods=['GET', 'POST'])
 def plo_hand_strength_quiz():
@@ -621,20 +439,25 @@ def plo_hand_strength_quiz():
         }
 
         try:
-            # Read data from the CSV file
+            # For quiz, load separately if not using preloaded DF (or use preloaded if available)
+            df = current_app.config.get('PLO_HAND_DF')
+            if df is None:
+                csv_path = os.path.join(current_app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+                df = pd.read_csv(csv_path)
+            
             all_hands = []
-            with current_app.open_resource('data/definitive_hand_strength_with_ratings.csv', 'r') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    # Convert rating to tier and format hand string
-                    rating = row.get('rating', '').strip()
-                    tier = rating_to_tier.get(rating)
-                    if tier is not None:
-                        hand_str = row.get('cards', '').replace(',', '')
-                        all_hands.append({'hand': hand_str, 'tier': tier})
+            for _, row in df.iterrows():
+                rating = row.get('rating', '').strip()  # Adjust column if needed
+                tier = rating_to_tier.get(rating)
+                if tier is not None:
+                    hand_str = row.get('cards', '').replace(',', '')  # Adjust if 'Hand'
+                    all_hands.append({'hand': hand_str, 'tier': tier})
 
         except FileNotFoundError as e:
             flash(f"Could not load hand strength data. File not found: {e}", "error")
+            return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
+        except Exception as e:
+            flash(f"Error loading data for quiz: {e}", "error")
             return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
         if not all_hands:

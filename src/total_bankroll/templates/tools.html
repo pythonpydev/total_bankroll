@@ -69,7 +69,7 @@
                 <div class="card-body">
                     <h5 class="card-title">PLO Decisions Table</h5>
                     <p class="card-text">Reference a table of recommended actions for various PLO scenarios.</p>
-                    <a href="{{ url_for('hand_eval.decisions') }}" class="btn btn-primary">Go to Tool</a>
+                    <a href="{{ url_for('hand_eval.tables') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
                 <div class="card-body">
                     <h5 class="card-title">PLO SPR Strategy</h5>
                     <p class="card-text">Learn about optimal strategies based on Stack-to-Pot Ratio in PLO.</p>
-                    <a href="{{ url_for('hand_eval.spr_strategy') }}" class="btn btn-primary">Go to Tool</a>
+                    <a href="{{ url_for('tools.spr_calculator_page') }}" class="btn btn-primary">Go to Tool</a>
                 </div>
             </div>
         </div>
@@ -92,50 +92,6 @@
                     <h5 class="card-title">Bankroll Goals Calculator</h5>
                     <p class="card-text">Plan your path to higher stakes by calculating the time or win-rate needed to reach your goals.</p>
                     <a href="{{ url_for('tools.bankroll_goals_page') }}" class="btn btn-primary">Go to Tool</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pot Odds vs Equity Guide Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Pot Odds vs. Equity Guide</h5>
-                    <p class="card-text">Learn the foundation of profitable calls by understanding the relationship between pot odds and hand equity.</p>
-                    <a href="{{ url_for('hand_eval.pot_odds_equity') }}" class="btn btn-primary">View Guide</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- HUD Player Types Guide Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">HUD Player Type Guide</h5>
-                    <p class="card-text">A reference guide for typical HUD statistics based on common poker player archetypes.</p>
-                    <a href="{{ url_for('hand_eval.hud_player_types') }}" class="btn btn-primary">View Guide</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Player Types Article Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Poker Player Types</h5>
-                    <p class="card-text">An in-depth guide to player archetypes, their tendencies in PLO, and how to exploit them.</p>
-                    <a href="{{ url_for('hand_eval.player_types_article') }}" class="btn btn-primary">Read Article</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Player Color Scheme Guide Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Player Color Scheme Guide</h5>
-                    <p class="card-text">A guide to color-coding player types in your HUD for quick identification and exploitation.</p>
-                    <a href="{{ url_for('hand_eval.player_color_scheme') }}" class="btn btn-primary">View Guide</a>
                 </div>
             </div>
         </div>
@@ -157,7 +113,7 @@
                 <div class="card-body">
                     <h5 class="card-title">PLO Starting Hand Strength</h5>
                     <p class="card-text">An article on absolute starting hand strength in Pot Limit Omaha.</p>
-                    <a href="{{ url_for('hand_eval.plo_starting_hand_strength') }}" class="btn btn-primary">Read Article</a>
+                    <a href="{{ url_for('hand_eval.evaluate_hand') }}" class="btn btn-primary">Read Article</a>
                 </div>
             </div>
         </div>
@@ -180,6 +136,39 @@
                     <h5 class="card-title">PLO Hand Rankings Table</h5>
                     <p class="card-text">View all 270,725 PLO hands in a searchable and sortable table.</p>
                     <a href="{{ url_for('hand_eval.plo_hand_rankings') }}" class="btn btn-primary">View Table</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Archetypes Article Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Poker Player Archetypes</h5>
+                    <p class="card-text">A guide to identifying and exploiting different player types in PLO.</p>
+                    <a href="{{ url_for('hand_eval.player_types_article') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Color Scheme Guide Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Player Color Scheme Guide</h5>
+                    <p class="card-text">A guide to color-coding player types for quick identification.</p>
+                    <a href="{{ url_for('hand_eval.player_color_scheme_guide') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD Player Type Guide Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">HUD Player Type Guide</h5>
+                    <p class="card-text">Typical HUD stat ranges for common player archetypes.</p>
+                    <a href="{{ url_for('hand_eval.hud_player_type_guide') }}" class="btn btn-primary">Read Guide</a>
                 </div>
             </div>
         </div>

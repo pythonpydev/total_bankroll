@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('HUD Player Type Guide', 'Typical HUD stat ranges for common player archetypes.') }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <p class="lead text-center mb-5">This guide provides a quick reference for typical HUD (Heads-Up Display) statistics like VPIP, PFR, and 3-Bet % for common online poker player archetypes. Use these ranges to help classify opponents you encounter at the tables.</p>
+
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Player Archetype</th>
+                                <th>Typical VPIP %</th>
+                                <th>Typical PFR %</th>
+                                <th>Typical 3-Bet %</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>NIT (Rock)</strong></td>
+                                <td>8-15</td>
+                                <td>6-12</td>
+                                <td>1-4</td>
+                                <td>Extremely tight, plays only premium hands. Very passive post-flop unless they have the nuts.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TAG (Tight-Aggressive)</strong></td>
+                                <td>18-25</td>
+                                <td>15-22</td>
+                                <td>5-9</td>
+                                <td>A strong, balanced player. Plays a selective range of hands aggressively. The typical "regular".</td>
+                            </tr>
+                            <tr>
+                                <td><strong>LAG (Loose-Aggressive)</strong></td>
+                                <td>26-35</td>
+                                <td>20-30</td>
+                                <td>8-12</td>
+                                <td>Plays many hands and applies constant pressure through betting and raising. Can be tricky to play against.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fish (Calling Station)</strong></td>
+                                <td>40-70</td>
+                                <td>5-20</td>
+                                <td>1-5</td>
+                                <td>Plays a very wide range of hands passively. Calls down often with weak holdings. Rarely bluffs.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-5">
+                    <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary">Back to Tools</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
