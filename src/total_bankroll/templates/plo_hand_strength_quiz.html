@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<div class="container mt-5">
+{{ page_header('PLO Starting Hand Strength Quiz', 'Test your knowledge of Pot Limit Omaha starting hand strength tiers.') }}
+
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">PLO Starting Hand Strength Quiz</h3>
+                    <h4 class="card-title mb-0">Start Quiz</h4>
                 </div>
                 <div class="card-body">
-                    <p>Test your knowledge of Pot Limit Omaha starting hand strength tiers.</p>
                     <form method="POST" action="{{ url_for('hand_eval.plo_hand_strength_quiz') }}">
                         {{ form.hidden_tag() }}
                         <div class="form-group mb-3">{{ form.num_questions.label(class="form-label") }} {{ form.num_questions(class="form-select") }}</div>

@@ -1,6 +1,7 @@
 """PLO hand evaluation and spr quiz."""
 
 import re
+import csv
 from collections import Counter
 import logging
 import json
@@ -10,6 +11,7 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioField
 from wtforms.validators import DataRequired, Optional, ValidationError
+from operator import itemgetter
 from . import algo
 
 hand_eval_bp = Blueprint('hand_eval', __name__)
@@ -508,21 +510,135 @@ def plo_starting_hand_strength():
         html_content = "<p>An error occurred while processing the article.</p>"
     return render_template('plo_starting_hand_strength.html', title='PLO Starting Hand Strength', content=html_content, terminology_key=terminology_key)
 
+PLO_HAND_RANKINGS_DATA = []
+
+def load_plo_hand_rankings_data(app):
+    """
+    Loads and caches the PLO hand rankings from the CSV file.
+    This should be called once at application startup.
+    """
+    global PLO_HAND_RANKINGS_DATA
+    if not PLO_HAND_RANKINGS_DATA: # Only load if it's empty
+        try:
+            with app.open_resource('data/definitive_hand_strength_with_ratings.csv', 'r') as f:
+                reader = csv.DictReader(f)
+                # Convert numeric fields for proper sorting later
+                for row in reader:
+                    row['Tier'] = int(row['Tier'])
+                    row['Rating Score'] = float(row['Rating Score'])
+                    PLO_HAND_RANKINGS_DATA.append(row)
+            logging.info("Successfully loaded and cached PLO hand rankings data.")
+        except (FileNotFoundError, Exception) as e:
+            logging.error(f"Failed to load and cache PLO hand rankings data: {e}")
+
+@hand_eval_bp.route('/plo-hand-rankings', methods=['GET', 'POST'])
+def plo_hand_rankings():
+    """
+    Displays PLO hands in a server-side processed table.
+    Handles both initial page load (GET) and DataTables AJAX requests (POST).
+    """
+    if request.method == 'POST':
+        # Handle AJAX requests from DataTables
+        draw = request.form.get('draw', type=int)
+        start = request.form.get('start', type=int)
+        length = request.form.get('length', type=int)
+        search_value = request.form.get('search[value]', '').lower()
+        order_column_index = request.form.get('order[0][column]', type=int)
+        order_dir = request.form.get('order[0][dir]', 'asc')
+        columns = [request.form.get(f'columns[{i}][data]') for i in range(4)] # We have 4 columns
+
+        if not PLO_HAND_RANKINGS_DATA:
+            return jsonify({'error': 'Hand data not available.', 'data': []}), 500
+
+        data = PLO_HAND_RANKINGS_DATA
+        total_records = len(data)
+
+        # Filter based on search
+        if search_value:
+            data = [
+                hand for hand in data
+                if search_value in hand['Hand'].lower()
+            ]
+
+        filtered_records = len(data)
+
+        # Sorting
+        if order_column_index is not None and columns[order_column_index]:
+            sort_column_name = columns[order_column_index]
+            if sort_column_name in ['Tier', 'Rating Score']:
+                data = sorted(data, key=itemgetter(sort_column_name), reverse=(order_dir == 'desc'))
+
+        # Paginate
+        paginated_data = data[start : start + length]
+
+        # Format data for DataTables
+        data_out = []
+        for hand in paginated_data:
+            data_out.append({
+                'Hand': f"<span data-search='{hand['Hand']}'>{_pretty_print_hand(hand['Hand'])}</span>",
+                'Tier': hand['Tier'],
+                'Rating Score': f'{hand["Rating Score"]:.1f}',
+                'Rating Reason': hand['Rating Reason']
+            })
+
+        return jsonify({
+            'draw': draw,
+            'recordsTotal': total_records,
+            'recordsFiltered': filtered_records,
+            'data': data_out
+        })
+
+    # This handles the initial GET request to load the page
+    return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
+
+
+
+
+
 @hand_eval_bp.route('/plo-hand-strength-quiz', methods=['GET', 'POST'])
 def plo_hand_strength_quiz():
     """PLO Hand Strength Quiz page route."""
     form = HudStatsQuizForm() # Reusing the same form is fine
     if form.validate_on_submit():
         num_questions = int(form.num_questions.data)
+        
+        rating_to_tier = {
+            'Elite+': 1,
+            'Elite': 1,
+            'Premium': 2,
+            'Strong': 3,
+            'Playable': 4,
+            'Marginal': 5,
+            'Trash': 5
+        }
+
+        tier_map = {
+            1: "Elite",
+            2: "Premium",
+            3: "Strong",
+            4: "Playable",
+            5: "Trash/Marginal"
+        }
+
         try:
-            with current_app.open_resource('data/hand_strength_all.json', 'r') as f:
-                all_hands = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            flash(f"Could not load hand strength data: {e}", "error")
+            # Read data from the CSV file
+            all_hands = []
+            with current_app.open_resource('data/definitive_hand_strength_with_ratings.csv', 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    # Convert rating to tier and format hand string
+                    rating = row.get('rating', '').strip()
+                    tier = rating_to_tier.get(rating)
+                    if tier is not None:
+                        hand_str = row.get('cards', '').replace(',', '')
+                        all_hands.append({'hand': hand_str, 'tier': tier})
+
+        except FileNotFoundError as e:
+            flash(f"Could not load hand strength data. File not found: {e}", "error")
             return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
         if not all_hands:
-            flash("Hand strength data is empty. Cannot create quiz.", "error")
+            flash("Hand strength data is empty or invalid. Cannot create quiz.", "error")
             return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
         questions = []
@@ -533,27 +649,29 @@ def plo_hand_strength_quiz():
         sampled_hands = random.sample(all_hands, min(num_questions, len(all_hands)))
 
         for hand_data in sampled_hands:
-            correct_answer = hand_data['tier']
-            
+            correct_answer_tier = hand_data['tier']
+            correct_answer_label = f"{correct_answer_tier} - {tier_map.get(correct_answer_tier, '')}"
+
             # Generate 3 unique incorrect answers
-            possible_wrong_answers = [t for t in all_tiers if t != correct_answer]
-            
-            # Ensure we have enough unique tiers to select from
+            possible_wrong_answers = [t for t in all_tiers if t != correct_answer_tier]
             num_wrong_to_select = min(3, len(possible_wrong_answers))
-            
-            answers = random.sample(possible_wrong_answers, num_wrong_to_select)
-            answers.append(correct_answer)
-            
-            # Pad with duplicates if there aren't enough unique tiers
+            wrong_answers_tiers = random.sample(possible_wrong_answers, num_wrong_to_select)
+
+            answers = [(str(correct_answer_tier), correct_answer_label)]
+            for tier in wrong_answers_tiers:
+                answers.append((str(tier), f"{tier} - {tier_map.get(tier, '')}"))
+
+            # Pad with other tiers if there aren't enough unique ones
             while len(answers) < 4:
-                answers.append(random.choice(possible_wrong_answers))
+                padding_choice = random.choice([t for t in all_tiers if t not in [int(a[0]) for a in answers]])
+                answers.append((str(padding_choice), f"{padding_choice} - {tier_map.get(padding_choice, '')}"))
 
             random.shuffle(answers)
 
             questions.append({
                 'question': hand_data['hand'], # The hand string is the question
-                'answers': answers,
-                'correct_answer': correct_answer,
+                'answers': answers, # List of (value, label) tuples
+                'correct_answer': str(correct_answer_tier),
                 'is_hand_strength_quiz': True # Flag for the template
             })
 
@@ -682,11 +800,11 @@ def quiz():
 
     question = questions[current_question_index]
     form = QuizAnswerForm()
-    form.answer.choices = [(ans, ans) for ans in question['answers']]
+    form.answer.choices = question['answers']
 
     if form.validate_on_submit():
         user_answer = form.answer.data
-        if question['correct_answer'] == user_answer:
+        if str(question['correct_answer']) == user_answer:
             session['score'] = session.get('score', 0) + 1
         else:
             is_hand_quiz = question.get('is_hand_strength_quiz', False)

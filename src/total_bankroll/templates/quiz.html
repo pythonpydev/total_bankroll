@@ -15,6 +15,9 @@
                 <form method="POST" action="{{ url_for('hand_eval.quiz') }}">
                     {{ form.hidden_tag() }}
                     <div class="text-center mb-4">
+                        {% if question.is_hand_strength_quiz %}
+                            <p class="lead">Rate the following PLO hand's strength:</p>
+                        {% endif %}
                         <p class="lead">{{ question_display|safe }}</p>
                     </div>
                     <div class="list-group">
