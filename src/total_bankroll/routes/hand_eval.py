@@ -7,6 +7,7 @@ import logging
 import json
 import os
 import random
+import markdown
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash, current_app, jsonify
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioField
@@ -898,6 +899,24 @@ def spr_strategy():
     """Renders the SPR strategy guide page."""
     return render_template('spr_strategy.html', title='SPR Strategy Guide')
 
+@hand_eval_bp.route('/plo-hand-strength-article')
+def plo_hand_strength_article():
+    """Renders the PLO hand strength article from a Markdown file."""
+    try:
+        # The path is relative to the project root, so we construct it carefully.
+        # Assuming the 'resources' directory is at the same level as 'src'.
+        project_root = os.path.abspath(os.path.join(current_app.root_path, '..', '..'))
+        md_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'PLO Starting Hand Rankings by Classification.md')
+        
+        with open(md_path, 'r', encoding='utf-8') as f:
+            content_md = f.read()
+        
+        content_html = markdown.markdown(content_md, extensions=['tables'])
+    except FileNotFoundError:
+        flash("The article file could not be found.", "danger")
+        content_html = "<p>Sorry, the article content is currently unavailable.</p>"
+    
+    return render_template('plo_hand_strength_article.html', title='PLO Starting Hand Strength', content=content_html)
 @hand_eval_bp.route('/player-color-scheme-guide')
 def player_color_scheme_guide():
     """Renders the player color scheme guide page."""
