@@ -553,39 +553,29 @@ def plo_hand_strength_quiz():
     form = HudStatsQuizForm() # Reusing the same form is fine
     if form.validate_on_submit():
         num_questions = int(form.num_questions.data)
-        
-        rating_to_tier = {
-            'Elite+': 1,
-            'Elite': 1,
-            'Premium': 2,
-            'Strong': 3,
-            'Playable': 4,
-            'Marginal': 5,
-            'Trash': 5
-        }
 
         tier_map = {
             1: "Elite",
             2: "Premium",
             3: "Strong",
             4: "Playable",
-            5: "Trash/Marginal"
+            5: "Trash/Marginal",
         }
 
         try:
-            # For quiz, load separately if not using preloaded DF (or use preloaded if available)
+            # Use the pre-loaded DataFrame which is already cleaned and standardized
             df = current_app.config.get('PLO_HAND_DF')
             if df is None:
-                csv_path = os.path.join(current_app.root_path, 'data', 'plo_hands_evaluated.csv')
-                df = pd.read_csv(csv_path)
-            
-            all_hands = []
-            for _, row in df.iterrows():
-                rating = row.get('rating', '').strip()  # Adjust column if needed
-                tier = rating_to_tier.get(rating)
-                if tier is not None:
-                    hand_str = row.get('cards', '').replace(',', '')  # Adjust if 'Hand'
-                    all_hands.append({'hand': hand_str, 'tier': tier})
+                flash("Hand data is not loaded. Cannot create quiz.", "error")
+                return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
+
+            # The DataFrame is already processed, so we can use it directly.
+            # We just need to ensure the columns are what we expect.
+            if 'Hand' not in df.columns or 'Tier' not in df.columns:
+                flash("Hand data is missing required 'Hand' or 'Tier' columns.", "error")
+                return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
+
+            all_hands = df[['Hand', 'Tier']].rename(columns={'Hand': 'hand', 'Tier': 'tier'}).to_dict('records')
 
         except FileNotFoundError as e:
             flash(f"Could not load hand strength data. File not found: {e}", "error")
@@ -648,7 +638,8 @@ class HudStatsQuizForm(FlaskForm):
     num_questions = SelectField(
         'Number of Questions',
         choices=[('1', '1'), ('5', '5'), ('10', '10'), ('20', '20')],
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        default='5'
     )
     submit = SubmitField('Start Quiz')
 
