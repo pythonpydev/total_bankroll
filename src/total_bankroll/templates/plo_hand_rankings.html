@@ -5,44 +5,6 @@
     {{ super() }}
     <!-- DataTables CSS for Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
-    <style>
-        /* Dark mode overrides for DataTables pagination */
-        body.dark-mode .pagination .page-link {
-            background-color: #495057; /* Light grey background */
-            color: #f8f9fa;           /* White-ish text */
-            border-color: #6c757d;
-        }
-
-        /* Style for the active page number */
-        body.dark-mode .pagination .page-item.active .page-link {
-            background-color: #0d6efd; /* Keep Bootstrap's primary blue for active */
-            border-color: #0d6efd;
-            color: #fff;
-        }
-
-        /* Style for disabled buttons (e.g., 'Previous' on the first page) */
-        body.dark-mode .pagination .page-item.disabled .page-link {
-            background-color: #343a40;
-            color: #6c757d;
-            border-color: #495057;
-        }
-
-        /* Hover effect for non-active page numbers */
-        body.dark-mode .pagination .page-link:not(:disabled):hover {
-            background-color: #6c757d;
-        }
-
-        /* Light mode override for table header text color */
-        /* In light mode, we want dark text on the light header */
-        body:not(.dark-mode) .table-light th {
-            color: #212529; /* Bootstrap's default dark text color */
-        }
-
-        /* Dark mode override for table header text color */
-        body.dark-mode .table-dark th {
-            color: #f8f9fa; /* White-ish text for dark mode */
-        }
-    </style>
 {% endblock %}
 
 {% block content %}
