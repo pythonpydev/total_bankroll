@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+{{ page_header('404 - Page Not Found', 'Oops! The page you are looking for does not exist.') }}
+
+<section class="page-section">
+    <div class="container text-center">
+        <p>It seems you've taken a wrong turn. Don't worry, it happens to the best of us.</p>
+        <p>Let's get you back on track:</p>
+        <a href="{{ url_for('home.home') }}" class="btn btn-primary btn-lg mt-3">
+            <i class="bi-house-door-fill me-2"></i>Go to Dashboard
+        </a>
+    </div>
+</section>
+{% endblock %}
