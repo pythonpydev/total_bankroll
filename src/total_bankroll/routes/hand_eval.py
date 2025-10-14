@@ -98,105 +98,193 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     """
     # 1. Parse hand into ranks and suits
     ranks_str = "23456789TJQKA"
-    hand_string = hand_string.replace(" ", "")
-    cards = [hand_string[i:i+2] for i in range(0, 8, 2)]
-    ranks = sorted([ranks_str.index(c[0].upper()) for c in cards], reverse=True)
-    suits = [card[1].lower() for card in cards]
-
+    hand_string = hand_string.replace(" ", "").upper()
+    cards = [hand_string[i:i+2] for i in range(0, len(hand_string), 2)]
+    
+    # Ensure cards are valid before processing
+    try:
+        ranks = sorted([ranks_str.index(c[0]) for c in cards], reverse=True)
+        suits = [c[1].lower() for c in cards]
+    except ValueError as e:
+        # This can happen if an invalid rank character is passed, e.g., '1s'
+        raise ValueError(f"Invalid card rank found in hand '{hand_string}'. {e}")
+    
     # 2. Determine hand properties
     rank_counts = Counter(ranks)
     suit_counts = Counter(suits)
     score = 0
     score_breakdown = []
-
+    
     # --- 3. Score Calculation ---
-
-    # a) Pair scoring
+    
+    # a) Pair scoring (updated with tiered system)
     pairs = {rank: count for rank, count in rank_counts.items() if count == 2}
-    if pairs:
-        for rank in pairs:
-            # Higher pairs are worth more
-            points = round((rank + 1) * 2.5, 1)
+    trips = {rank: count for rank, count in rank_counts.items() if count == 3}
+    quads = {rank: count for rank, count in rank_counts.items() if count == 4}
+    
+    # Handle trips/quads first (new addition)
+    if quads:
+        for rank in quads:
+            points = round((rank + 1) * 10, 1)
             score += points
+            rank_name = ranks_str[rank]
+            score_breakdown.append((f"Quads of {rank_name}s", f"+{points}"))
+    elif trips:
+        for rank in trips:
+            points = round((rank + 1) * 4, 1)
+            score += points
+            rank_name = ranks_str[rank]
+            score_breakdown.append((f"Trips of {rank_name}s", f"+{points}"))
+    
+    # Pairs with tiered scoring
+    if pairs:
+        for rank in sorted(pairs, reverse=True):
             pair_rank_name = ranks_str[rank]
-            score_breakdown.append((f"Pair of {pair_rank_name}s", f"+{points}"))
-        # Bonus for two pairs
+            if rank >= ranks_str.index('Q'):  # Premium: Q=10, K=11, A=12
+                points = round((rank + 1) * 3.5 + 10, 1)
+                tier_name = "Premium"
+            elif rank >= ranks_str.index('7'):  # Mid: 7=5 to J=9 (T=8, J=9)
+                points = round((rank + 1) * 2.5 + 5, 1)
+                tier_name = "Mid"
+            else:  # Low: <7 (0-4)
+                points = round((rank + 1) * 1.5, 1)
+                tier_name = "Low"
+            
+            score += points
+            score_breakdown.append((f"{tier_name} Pair of {pair_rank_name}s", f"+{points}"))
+        
+        # Two Pair Bonus
         if len(pairs) == 2:
-            score += 10
-            score_breakdown.append(("Two Pair Bonus", "+10"))
-
+            bonus = 10
+            pair_ranks = list(pairs.keys())
+            if all(r >= ranks_str.index('7') for r in pair_ranks):
+                bonus += 5
+                score_breakdown.append(("High/Mid Two Pair Bonus", f"+{bonus}"))
+            else:
+                score_breakdown.append(("Two Pair Bonus", f"+{bonus}"))
+            score += bonus
+    
     # b) Suitedness scoring
     is_double_suited = list(suit_counts.values()).count(2) == 2
-    is_single_suited = 2 in suit_counts.values() or 3 in suit_counts.values()
-
+    is_single_suited = max(suit_counts.values()) >= 2
+    
+    suited_ranks = {}
+    for i, card_str in enumerate(cards):
+        rank_val = ranks_str.index(card_str[0])
+        suit_val = card_str[1].lower()
+        if suit_val not in suited_ranks: suited_ranks[suit_val] = []
+        suited_ranks[suit_val].append(rank_val)
+    
     if is_double_suited:
         score += 25
         score_breakdown.append(("Double-Suited", "+25"))
-        # Bonus if one of the suits is an Ace-high suit
-        suited_ranks = {}
-        for i, suit in enumerate(suits):
-            if suit not in suited_ranks: suited_ranks[suit] = []
-            suited_ranks[suit].append(ranks[i])
+        # Nut suit bonus
         for suit_ranks in suited_ranks.values():
-            if len(suit_ranks) >= 2 and ranks_str.index('A') in suit_ranks:
-                score += 10 # Nut suit bonus
+            if len(suit_ranks) >= 2 and max(suit_ranks) == ranks_str.index('A'):
+                score += 10
                 score_breakdown.append(("Nut Suit Bonus", "+10"))
                 break
     elif is_single_suited:
         score += 10
         score_breakdown.append(("Single-Suited", "+10"))
-        # Bonus for nut suit (check if an Ace is part of the suited cards)
-        suited_suit = next((s for s, c in suit_counts.items() if c >= 2), None)
-        ace_index_in_ranks = ranks.index(ranks_str.index('A')) if ranks_str.index('A') in ranks else -1
-        if suited_suit and ace_index_in_ranks != -1 and suits[ace_index_in_ranks] == suited_suit:
+        # Nut suit bonus
+        suited_suit = max(suit_counts, key=suit_counts.get)
+        ace_rank = ranks_str.index('A')
+        if ace_rank in ranks and suited_suit in [s for r, s in zip(ranks, suits) if r == ace_rank]:
             score += 5
             score_breakdown.append(("Nut Suit Bonus", "+5"))
-
-    # c) Connectivity scoring
-    gaps = [ranks[i] - ranks[i+1] - 1 for i in range(3)]
-    total_gaps = sum(gaps)
-
-    if total_gaps == 0: # 0-gap rundown (e.g., JT98)
-        score += 25
-        score_breakdown.append(("0-Gap Rundown", "+25"))
-    elif total_gaps == 1: # 1-gap rundown (e.g., JT97)
-        score += 18
-        score_breakdown.append(("1-Gap Rundown", "+18"))
-    elif total_gaps == 2: # 2-gap rundown (e.g., JT87)
-        score += 12
-        score_breakdown.append(("2-Gap Rundown", "+12"))
-    elif total_gaps == 3:
-        score += 5
-        score_breakdown.append(("3-Gap Rundown", "+5"))
     
-    # d) High-card / Broadway scoring
-    broadway_cards = [r for r in ranks if r >= ranks_str.index('T')]
-
-    # Penalize large gaps (danglers), but be less harsh if the other 3 cards are strong
-    large_gaps = [g for g in gaps if g > 2]
-    if len(large_gaps) > 0 and len(broadway_cards) < 3: # Only penalize if there's a dangler AND the hand isn't top-heavy
-        penalty = min(sum(large_gaps) * 2, 15) # Scale penalty by gap size, capped at -15
-        score -= penalty
-        score_breakdown.append(("Large Gap(s) / Dangler", f"-{penalty}"))
-
-    # d) High-card / Broadway scoring
+    # Rainbow penalty (new)
+    if max(suit_counts.values()) == 1:
+        score -= 10
+        score_breakdown.append(("Rainbow Penalty", "-10"))
+    
+    # c) Connectivity scoring (updated to subset-aware)
+    unique_ranks = sorted(list(set(ranks)), reverse=True)
+    max_streak = 0
+    if len(unique_ranks) > 1:
+        current_streak = 1
+        for i in range(1, len(unique_ranks)):
+            if unique_ranks[i-1] - unique_ranks[i] == 1:
+                current_streak += 1
+            else:
+                max_streak = max(max_streak, current_streak)
+                current_streak = 1
+        max_streak = max(max_streak, current_streak)
+    
+    if max_streak >= 4:
+        score += 25
+        score_breakdown.append(("Full Rundown (4-card streak)", "+25"))
+    elif max_streak == 3:
+        score += 15
+        score_breakdown.append(("Strong Partial Rundown (3-card streak)", "+15"))
+    elif max_streak == 2:
+        score += 5
+        score_breakdown.append(("Basic Connectors (2-card streak)", "+5"))
+    
+    # Wheel bonus (new)
+    ace_rank = ranks_str.index('A')
+    low_ranks = [r for r in ranks if r <= ranks_str.index('5')]
+    if ace_rank in ranks and len(low_ranks) >= 2:
+        bonus = 5 * len(low_ranks)
+        score += bonus
+        score_breakdown.append((f"Wheel Potential ({len(low_ranks)+1} low cards w/ A)", f"+{bonus}"))
+    
+    # d) Suited connector bonuses (new)
+    ace_rank = ranks_str.index('A')
+    for suit, suit_ranks_list in suited_ranks.items():
+        if len(suit_ranks_list) >= 2:
+            suit_ranks_sorted = sorted(suit_ranks_list, reverse=True)
+            for j in range(1, len(suit_ranks_sorted)):
+                diff = suit_ranks_sorted[j-1] - suit_ranks_sorted[j]
+                if diff <= 2:
+                    points = 5 if diff == 1 else 3
+                    score += points
+                    score_breakdown.append((f"Suited Connector/Gapper in {suit.upper()}", f"+{points}"))
+                    if ace_rank in suit_ranks_sorted:
+                        score += 3
+                        score_breakdown.append(("Nut Suited Connector Bonus", "+3"))
+                    break
+    
+    # e) High-card / Broadway scoring (adjusted)
     broadway_cards = [r for r in ranks if r >= ranks_str.index('T')]
     if broadway_cards:
-        points = len(broadway_cards) * 4
+        points = len(broadway_cards) * 5
         score += points
         score_breakdown.append((f"{len(broadway_cards)} Broadway Card(s)", f"+{points}"))
-    if len(broadway_cards) == 4: # All broadway
+    if len(broadway_cards) == 4:
         score += 15
         score_breakdown.append(("All Broadway Bonus", "+15"))
-
-    # --- 4. Tier Assignment ---
-    if score >= 85:
+    
+    # f) Refined dangler penalties (new)
+    unique_ranks = sorted(list(set(ranks)), reverse=True)
+    danglers = 0
+    for i in range(len(unique_ranks)):
+        neighbors = [abs(unique_ranks[i] - unique_ranks[j]) for j in range(len(unique_ranks)) if i != j]
+        min_dist = min(neighbors) if neighbors else 99
+        if min_dist > 3:
+            danglers += 1
+    if danglers > 0:
+        penalty = danglers * 5
+        if len(broadway_cards) >= 3 or is_double_suited:
+            penalty /= 2
+        penalty = round(penalty, 1)
+        score -= penalty
+        score_breakdown.append((f"Dangler Penalty ({danglers} isolated cards)", f"-{penalty}"))
+    
+    # g) Blocker bonus (new, e.g., for AA)
+    if rank_counts.get(ranks_str.index('A'), 0) >= 2:
+        score += 5
+        score_breakdown.append(("Ace Blocker Bonus", "+5"))
+    
+    # --- 4. Tier Assignment (adjusted thresholds) ---
+    if score >= 80:
         return 1, "Elite - A top-tier hand with immense nut potential, combining high pairs, suitedness, and connectivity.", score_breakdown, score
-    elif score >= 70:
+    elif score >= 65:
         return 2, "Premium - A very strong hand with excellent coordination, often featuring suited high pairs or powerful rundowns.", score_breakdown, score
-    elif score >= 50:
+    elif score >= 45:
         return 3, "Strong - A solid, profitable hand with good suited and/or connected components. Playable in most positions.", score_breakdown, score
-    elif score >= 30:
+    elif score >= 25:
         return 4, "Playable - A speculative hand that relies on position and hitting a favorable flop. Best played in late position or multi-way pots.", score_breakdown, score
     else:
         return 5, "Trash/Marginal - A weak hand with poor coordination. Lacks significant pair, suit, or straight potential and should usually be folded.", score_breakdown, score
