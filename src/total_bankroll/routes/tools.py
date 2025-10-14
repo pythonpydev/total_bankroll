@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 import math
 from flask_wtf import FlaskForm
 from wtforms import DecimalField, SubmitField, SelectField, IntegerField
-from wtforms.validators import DataRequired, NumberRange, Optional
+from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError
 from ..utils import get_user_bankroll_data
 from ..recommendations import RecommendationEngine
 import logging
@@ -51,6 +51,30 @@ class SPRCalculatorForm(FlaskForm):
     effective_stack = DecimalField('Effective Stack Size', validators=[DataRequired(), NumberRange(min=0)])
     pot_size = DecimalField('Pot Size', validators=[DataRequired(), NumberRange(min=0.01, message="Pot size must be greater than zero.")])
     submit = SubmitField('Calculate SPR')
+
+class HandStrengthForm(FlaskForm):
+    """Form for submitting a hand for strength evaluation."""
+    hand = DecimalField("Enter PLO Hand (e.g., AsKsQhJh)", validators=[DataRequired()], render_kw={"placeholder": "e.g., AsKsQhJh or AA44ds"})
+    position = SelectField("Your Position", choices=[('UTG', 'UTG'), ('HJ', 'HJ'), ('CO', 'CO'), ('BTN', 'BTN'), ('SB', 'SB'), ('BB', 'BB')], validators=[DataRequired()])
+    submit = SubmitField('Evaluate Hand')
+
+    def validate_hand(self, field):
+        hand_str = str(field.data).replace(" ", "")
+        if len(hand_str) != 8:
+            raise ValidationError("Hand must contain exactly 4 cards (8 characters).")
+        
+        ranks = "23456789TJQKA"
+        suits = "shdc"
+        cards = [hand_str[i:i+2].upper() for i in range(0, len(hand_str), 2)]
+
+        if len(cards) != 4:
+            raise ValidationError("Invalid hand format. Use format like 'AsKsQhJh'.")
+
+        seen_cards = set()
+        for card in cards:
+            if len(card) != 2 or card[0] not in ranks or card[1].lower() not in suits or card in seen_cards:
+                raise ValidationError(f"Invalid or duplicate card '{html.escape(card)}' found.")
+            seen_cards.add(card)
 
 def parse_currency_to_decimal(currency_str):
     """Helper to parse currency string to Decimal."""
@@ -435,3 +459,33 @@ def bankroll_goals_page():
                            current_bankroll=current_bankroll,
                            result=result,
                            chart_data=chart_data)
+
+@tools_bp.route('/tools/plo-hand-strength-evaluator', methods=['GET', 'POST'])
+@login_required
+def plo_hand_strength_evaluator_page():
+    """Renders the PLO Hand Strength Evaluator page and handles evaluation."""
+    form = HandStrengthForm()
+    evaluation_result = None
+
+    if form.validate_on_submit():
+        hand_string = str(form.hand.data)
+        position = form.position.data
+
+        # Import necessary functions locally to avoid circular dependency at module level
+        from ..routes.hand_eval import evaluate_hand_strength, get_preflop_suggestion, _pretty_print_hand
+
+        tier, reason, score_breakdown, score = evaluate_hand_strength(hand_string)
+        action, action_reason = get_preflop_suggestion(tier, position)
+
+        evaluation_result = {
+            'hand_string': hand_string,
+            'pretty_hand': _pretty_print_hand(hand_string),
+            'tier': tier,
+            'reason': reason,
+            'score_breakdown': score_breakdown,
+            'score': f"{score:.1f}",
+            'action': action,
+            'action_reason': action_reason
+        }
+
+    return render_template('plo_hand_strength_evaluator.html', form=form, result=evaluation_result)

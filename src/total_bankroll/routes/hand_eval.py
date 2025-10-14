@@ -277,6 +277,15 @@ def submit_form():
 
     return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
+@hand_eval_bp.route('/hand_evaluation')
+def hand_evaluation():
+    """Renders the detailed hand evaluation page."""
+    if 'form_data' not in session:
+        flash("No hand data available to evaluate. Please set up a new hand.", "warning")
+        return redirect(url_for('hand_eval.plo_hand_form'))
+    
+    return render_template('hand_evaluation.html', form_data=session['form_data'])
+
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
     sorted_csv_path = os.path.join(app.root_path, 'data', 'plo_hands_evaluated_sorted.csv')

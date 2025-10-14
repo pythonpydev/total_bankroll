@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block title %}PLO Hand Strength Evaluator{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        .tier-badge {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .tier-1 { background-color: #dc3545; color: white; } /* Elite - Red */
+        .tier-2 { background-color: #fd7e14; color: white; } /* Premium - Orange */
+        .tier-3 { background-color: #198754; color: white; } /* Strong - Green */
+        .tier-4 { background-color: #0dcaf0; color: black; } /* Playable - Cyan */
+        .tier-5 { background-color: #6c757d; color: white; } /* Trash - Gray */
+    </style>
+{% endblock %}
+
+{% block content %}
+{{ page_header('PLO Hand Strength Evaluator', 'Get a pre-flop strength tier and detailed breakdown for any 4-card PLO hand.') }}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h1 class="h4 mb-0">Evaluate Your PLO Hand</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('tools.plo_hand_strength_evaluator_page') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.hand.label(class="form-label") }}
+                            {{ form.hand(class="form-control" + (" is-invalid" if form.hand.errors else ""), placeholder="e.g., AsKsQhJh") }}
+                            {% if form.hand.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.hand.errors %}<span>{{ error }}</span>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.position.label(class="form-label") }}
+                            {{ form.position(class="form-control" + (" is-invalid" if form.position.errors else "")) }}
+                            {% if form.position.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.position.errors %}<span>{{ error }}</span>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {{ form.submit(class="btn btn-primary w-100") }}
+                    </form>
+                </div>
+            </div>
+
+            {% if result %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Evaluation for: {{ result.pretty_hand|safe }}</h5>
+                    <span class="badge tier-badge tier-{{ result.tier }}">Tier {{ result.tier }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="lead">{{ result.reason }}</p>
+                    <p><strong>Total Score:</strong> {{ result.score }}</p>
+
+                    <h6 class="mt-4">Score Breakdown:</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for item, value in result.score_breakdown %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ item }}
+                                <span class="badge bg-secondary rounded-pill">{{ value }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="alert alert-info mt-4">
+                        <h5 class="alert-heading">Pre-flop Suggestion: {{ result.action }}</h5>
+                        <p class="mb-0">{{ result.action_reason }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        // Ensure card styles are applied correctly in dark mode
+        document.addEventListener('theme-changed', function() {
+            // No specific JS needed for this page as CSS handles it
+        });
+    </script>
+{% endblock %}
+
+```
+
+By creating this file, the `render_template` call will now be able to find it, and the "PLO Hand Strength Evaluator" page will load correctly.
+
+<!--
+[PROMPT_SUGGESTION]The `tools.html` page has several duplicate cards (e.g., two for "PLO Hand Strength Quiz"). Can you clean this up?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]The `sort_hand_data.py` script and `hand_eval.py` route both have a `sort_hand_string` function. Can we refactor this to remove the duplication?[/PROMPT_SUGGESTION]
+-->
