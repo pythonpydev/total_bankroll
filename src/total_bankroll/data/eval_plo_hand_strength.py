@@ -11,7 +11,7 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     hand_string = hand_string.replace(" ", "")
     cards = [hand_string[i:i+2] for i in range(0, 8, 2)]
     ranks = sorted([ranks_str.index(c[0].upper()) for c in cards], reverse=True)
-    suits = [card[1].lower() for c in cards]
+    suits = [c[1].lower() for c in cards]
 
     # 2. Determine hand properties
     rank_counts = Counter(ranks)
@@ -90,17 +90,16 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
         score_breakdown.append(("Double-Suited", "+25"))
         # Nut suit bonus
         for suit_ranks in suited_ranks.values():
-            if len(suit_ranks) >= 2 and max(ranks_str.index('A'), *suit_ranks) == ranks_str.index('A'):
-                score += 10
-                score_breakdown.append(("Nut Suit Bonus", "+10"))
+            if len(suit_ranks) >= 2 and ranks_str.index('A') in suit_ranks:
+                score += 5
+                score_breakdown.append(("Nut Suit Bonus", "+5"))
                 break
     elif is_single_suited:
         score += 10
         score_breakdown.append(("Single-Suited", "+10"))
         # Nut suit bonus
-        suited_suit = max(suit_counts, key=suit_counts.get)
         ace_rank = ranks_str.index('A')
-        if ace_rank in ranks and suits[ranks.index(ace_rank)] == suited_suit:
+        if ace_rank in suited_ranks.get(max(suit_counts, key=suit_counts.get), []):
             score += 5
             score_breakdown.append(("Nut Suit Bonus", "+5"))
 
