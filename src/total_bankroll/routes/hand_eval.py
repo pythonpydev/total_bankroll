@@ -238,8 +238,23 @@ def get_preflop_suggestion(tier: int, position: str) -> tuple[str, str]:
 
 @hand_eval_bp.route('/tables')
 def tables():
-    """Tables page route"""
-    return render_template('tables.html', title='Tables')
+    """Renders the PLO Preflop Ranges article from a Markdown file."""
+    try:
+        project_root = os.path.abspath(os.path.join(current_app.root_path, '..', '..'))
+        md_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'Pot Limit Omaha (PLO) Preflop Ranges in a 6-Max Table.md')
+        
+        with open(md_path, 'r', encoding='utf-8') as f:
+            content_md = f.read()
+        
+        content_html = markdown.markdown(content_md, extensions=['tables'])
+        title = "PLO Pre-flop Ranges"
+        subtitle = "A guide to pre-flop starting hand ranges in 6-Max Pot Limit Omaha."
+    except FileNotFoundError:
+        flash("The article file could not be found.", "danger")
+        content_html = "<p>Sorry, the article content is currently unavailable.</p>"
+        title, subtitle = "Article Not Found", ""
+    
+    return render_template('plo_hand_strength_article.html', title=title, subtitle=subtitle, content=content_html)
 
 @hand_eval_bp.route('/plo_hand_form')
 def plo_hand_form():
