@@ -466,12 +466,12 @@ def _pretty_print_hand(hand_str):
         return ""
 
     suit_symbols = {'s': '♠', 'h': '♥', 'd': '♦', 'c': '♣'}
-    suit_colors = {'s': 'black', 'h': 'red', 'd': 'blue', 'c': 'green'}  # Adjust colors as needed
     hand = ''
     for i in range(0, len(hand_str), 2):
         rank = hand_str[i]
         suit = hand_str[i+1].lower()
-        hand += f'<span style="color: {suit_colors.get(suit, "black")}">{rank}{suit_symbols.get(suit, suit)}</span>'
+        # Use CSS classes for theming instead of inline styles
+        hand += f'<span class="suit-{suit}">{rank}{suit_symbols.get(suit, suit)}</span>'
     return hand
 
 @hand_eval_bp.route('/plo_hand_rankings', methods=['GET', 'POST'])
