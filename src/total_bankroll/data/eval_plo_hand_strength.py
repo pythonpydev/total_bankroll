@@ -1,5 +1,90 @@
 from collections import Counter
 import csv
+from typing import TypedDict, Counter as CounterType, Dict, List
+
+
+class HandProperties(TypedDict):
+    """A dictionary holding the calculated properties of a PLO hand."""
+    rank_counts: CounterType[int]
+    suit_counts: CounterType[str]
+    pairs: Dict[int, int]
+    trips: Dict[int, int]
+    quads: Dict[int, int]
+    is_double_suited: bool
+    is_single_suited: bool
+    suited_ranks: Dict[str, List[int]]
+    max_streak: int
+    is_broadway_streak: bool
+    broadway_cards: List[int]
+    danglers: int
+
+
+def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
+    """
+    Analyzes a PLO hand's ranks and suits to determine its key properties.
+
+    This helper function is the core of the hand analysis, calculating everything
+    from pairs and suitedness to connectivity and danglers.
+
+    Args:
+        ranks: A sorted list of 4 integer card ranks (e.g., [12, 12, 11, 10] for AAKQ).
+        suits: A list of 4 string card suits (e.g., ['s', 'h', 'd', 'c']).
+
+    Returns:
+        A HandProperties dictionary containing the calculated properties of the hand.
+    """
+    ranks_str = "23456789TJQKA"
+    # Initialize with a type-hinted dictionary for better static analysis
+    properties: HandProperties = {}  # type: ignore
+
+    # Rank and suit counts
+    properties['rank_counts'] = Counter(ranks)
+    properties['suit_counts'] = Counter(suits)
+
+    # Pair properties
+    properties['pairs'] = {rank: count for rank, count in properties['rank_counts'].items() if count == 2}
+    properties['trips'] = {rank: count for rank, count in properties['rank_counts'].items() if count == 3}
+    properties['quads'] = {rank: count for rank, count in properties['rank_counts'].items() if count == 4}
+
+    # Suitedness
+    properties['is_double_suited'] = list(properties['suit_counts'].values()).count(2) == 2
+    properties['is_single_suited'] = max(properties['suit_counts'].values()) >= 2
+
+    suited_ranks = {}
+    for i, suit in enumerate(suits):
+        if suit not in suited_ranks: suited_ranks[suit] = []
+        suited_ranks[suit].append(ranks[i])
+    properties['suited_ranks'] = suited_ranks
+
+    # Connectivity
+    max_streak = 1
+    current_streak = 1
+    is_broadway_streak = False
+    for i in range(1, len(ranks)):
+        if ranks[i-1] - ranks[i] == 1:
+            current_streak += 1
+            if ranks[i-1] >= ranks_str.index('T'):
+                is_broadway_streak = True
+        else:
+            max_streak = max(max_streak, current_streak)
+            current_streak = 1
+            is_broadway_streak = False
+    properties['max_streak'] = max(max_streak, current_streak)
+    properties['is_broadway_streak'] = is_broadway_streak
+
+    # High-card / Broadway properties
+    properties['broadway_cards'] = [r for r in ranks if r >= ranks_str.index('T')]
+
+    # Dangler calculation
+    danglers = 0
+    for i in range(len(ranks)):
+        neighbors = [abs(ranks[i] - ranks[j]) for j in range(len(ranks)) if i != j]
+        min_dist = min(neighbors) if neighbors else 99
+        if min_dist > 3:
+            danglers += 1
+    properties['danglers'] = danglers
+
+    return properties
 
 def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     """
@@ -41,8 +126,8 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
             score_breakdown.append((f"Trips of {rank_name}s", f"+{points}"))
 
     # Pairs with tiered scoring
-    if pairs:
-        for rank in sorted(pairs, reverse=True):
+    if props['pairs']:
+        for rank in sorted(props['pairs'], reverse=True):
             pair_rank_name = ranks_str[rank]
             if rank >= ranks_str.index('Q'):  # Premium: Q=10, K=11, A=12
                 points = round((rank + 1) * 3.5 + 10, 1)
@@ -66,9 +151,9 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
             score += points
         
         # Two Pair Bonus
-        if len(pairs) == 2:
+        if len(props['pairs']) == 2:
             bonus = 10
-            pair_ranks = list(pairs.keys())
+            pair_ranks = list(props['pairs'].keys())
             if all(r >= ranks_str.index('7') for r in pair_ranks):
                 bonus += 5
                 score_breakdown.append(("High/Mid Two Pair Bonus", f"+{bonus}"))
@@ -77,64 +162,41 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
             score += bonus
 
     # b) Suitedness scoring
-    is_double_suited = list(suit_counts.values()).count(2) == 2
-    is_single_suited = max(suit_counts.values()) >= 2  # Simplified: any suit with 2+
-
-    suited_ranks = {}
-    for i, suit in enumerate(suits):
-        if suit not in suited_ranks: suited_ranks[suit] = []
-        suited_ranks[suit].append(ranks[i])
-
-    if is_double_suited:
+    if props['is_double_suited']:
         score += 25
         score_breakdown.append(("Double-Suited", "+25"))
         # Nut suit bonus
-        for suit_ranks in suited_ranks.values():
+        for suit_ranks in props['suited_ranks'].values():
             if len(suit_ranks) >= 2 and ranks_str.index('A') in suit_ranks:
                 score += 5
                 score_breakdown.append(("Nut Suit Bonus", "+5"))
                 break
-    elif is_single_suited:
+    elif props['is_single_suited']:
         score += 10
         score_breakdown.append(("Single-Suited", "+10"))
         # Nut suit bonus
         ace_rank = ranks_str.index('A')
-        if ace_rank in suited_ranks.get(max(suit_counts, key=suit_counts.get), []):
+        if ace_rank in props['suited_ranks'].get(max(props['suit_counts'], key=props['suit_counts'].get), []):
             score += 5
             score_breakdown.append(("Nut Suit Bonus", "+5"))
 
     # Rainbow penalty (new)
-    if max(suit_counts.values()) == 1:
+    if max(props['suit_counts'].values()) == 1:
         score -= 10
         score_breakdown.append(("Rainbow Penalty", "-10"))
 
     # c) Connectivity scoring (updated to subset-aware)
-    # Find max streak of consecutive ranks
-    max_streak = 1
-    current_streak = 1
-    is_broadway_streak = False
-    for i in range(1, len(ranks)):
-        if ranks[i-1] - ranks[i] == 1:
-            current_streak += 1
-            if ranks[i-1] >= ranks_str.index('T'):
-                is_broadway_streak = True
-        else:
-            max_streak = max(max_streak, current_streak)
-            current_streak = 1
-            is_broadway_streak = False
-    max_streak = max(max_streak, current_streak)
-
-    if max_streak == 4:
+    if props['max_streak'] == 4:
         score += 25
         score_breakdown.append(("Full Rundown (4-card streak)", "+25"))
-    elif max_streak == 3:
+    elif props['max_streak'] == 3:
         score += 15
         score_breakdown.append(("Strong Partial Rundown (3-card streak)", "+15"))
-    elif max_streak == 2:
+    elif props['max_streak'] == 2:
         score += 5
         score_breakdown.append(("Basic Connectors (2-card streak)", "+5"))
 
-    if is_broadway_streak and max_streak >= 2:
+    if props['is_broadway_streak'] and props['max_streak'] >= 2:
         score += 5
         score_breakdown.append(("Broadway Streak Bonus", "+5"))
 
@@ -147,7 +209,7 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
         score_breakdown.append((f"Wheel Potential ({len(low_ranks)+1} low cards w/ A)", f"+{bonus}"))
 
     # d) Suited connector bonuses (new)
-    for suit, suit_ranks_list in suited_ranks.items():
+    for suit, suit_ranks_list in props['suited_ranks'].items():
         if len(suit_ranks_list) >= 2:
             suit_ranks_sorted = sorted(suit_ranks_list, reverse=True)
             for j in range(1, len(suit_ranks_sorted)):
@@ -163,33 +225,25 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
                     break
 
     # e) High-card / Broadway scoring (adjusted)
-    broadway_cards = [r for r in ranks if r >= ranks_str.index('T')]
-    if broadway_cards:
-        points = len(broadway_cards) * 5  # Increased from 4
+    if props['broadway_cards']:
+        points = len(props['broadway_cards']) * 5  # Increased from 4
         score += points
-        score_breakdown.append((f"{len(broadway_cards)} Broadway Card(s)", f"+{points}"))
-    if len(broadway_cards) == 4:
+        score_breakdown.append((f"{len(props['broadway_cards'])} Broadway Card(s)", f"+{points}"))
+    if len(props['broadway_cards']) == 4:
         score += 15
         score_breakdown.append(("All Broadway Bonus", "+15"))
 
     # f) Refined dangler penalties (new)
-    danglers = 0
-    for i in range(len(ranks)):
-        # Check distance to nearest neighbors
-        neighbors = [abs(ranks[i] - ranks[j]) for j in range(len(ranks)) if i != j]
-        min_dist = min(neighbors) if neighbors else 99
-        if min_dist > 3:
-            danglers += 1
-    if danglers > 0:
-        penalty = danglers * 5
-        if len(broadway_cards) >= 3 or is_double_suited:
+    if props['danglers'] > 0:
+        penalty = props['danglers'] * 5
+        if len(props['broadway_cards']) >= 3 or props['is_double_suited']:
             penalty /= 2  # Halve if strong elsewhere
         penalty = round(penalty, 1)
         score -= penalty
-        score_breakdown.append((f"Dangler Penalty ({danglers} isolated cards)", f"-{penalty}"))
+        score_breakdown.append((f"Dangler Penalty ({props['danglers']} isolated cards)", f"-{penalty}"))
 
     # g) Blocker bonus (new, e.g., for AA)
-    if rank_counts[ranks_str.index('A')] >= 2:
+    if props['rank_counts'][ranks_str.index('A')] >= 2:
         score += 5
         score_breakdown.append(("Ace Blocker Bonus", "+5"))
 
