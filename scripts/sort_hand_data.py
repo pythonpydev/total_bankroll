@@ -45,8 +45,8 @@ def main():
     Main function to read, process, and save the hand data.
     """
     # Define file paths relative to the project root
-    input_csv_path = os.path.join('src', 'total_bankroll', 'data', 'definitive_hand_strength_with_ratings.csv')
-    output_csv_path = os.path.join('src', 'total_bankroll', 'data', 'definitive_hand_strength_with_ratings_sorted.csv')
+    input_csv_path = os.path.join('src', 'total_bankroll', 'data', 'plo_hands_evaluated.csv')
+    output_csv_path = os.path.join('src', 'total_bankroll', 'data', 'plo_hands_evaluated_sorted.csv')
 
     print(f"Reading hand data from: {input_csv_path}")
     df = pd.read_csv(input_csv_path)

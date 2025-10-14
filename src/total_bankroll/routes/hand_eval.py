@@ -278,8 +278,8 @@ def submit_form():
 
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
-    sorted_csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings_sorted.csv')
-    original_csv_path = os.path.join(app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+    sorted_csv_path = os.path.join(app.root_path, 'data', 'plo_hands_evaluated_sorted.csv')
+    original_csv_path = os.path.join(app.root_path, 'data', 'plo_hands_evaluated.csv')
     
     csv_path = sorted_csv_path
     if not os.path.exists(sorted_csv_path):
@@ -576,7 +576,7 @@ def plo_hand_strength_quiz():
             # For quiz, load separately if not using preloaded DF (or use preloaded if available)
             df = current_app.config.get('PLO_HAND_DF')
             if df is None:
-                csv_path = os.path.join(current_app.root_path, 'data', 'definitive_hand_strength_with_ratings.csv')
+                csv_path = os.path.join(current_app.root_path, 'data', 'plo_hands_evaluated.csv')
                 df = pd.read_csv(csv_path)
             
             all_hands = []
