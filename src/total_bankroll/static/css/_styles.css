@@ -6245,9 +6245,12 @@
     color: var(--color-white) !important;
     
     }.page-section {
-    padding: var(--spacing-xl) 0
+    padding: 4rem 0
     }header.masthead.page-masthead {
-    height: 8rem
+    height: auto;
+    min-height: 12rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     }@media (max-width: 768px) {
     .data-display-container {
         flex-direction: column;
