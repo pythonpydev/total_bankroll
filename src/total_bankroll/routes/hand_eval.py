@@ -1,5 +1,6 @@
 """PLO hand evaluation and spr quiz."""
 
+import sys
 import re
 from typing import TypedDict, Counter as CounterType, Dict, List
 import csv
@@ -424,155 +425,29 @@ def hand_evaluation():
 
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
-    sorted_csv_path = os.path.join(app.root_path, 'data', 'plo_hands_evaluated_sorted.csv')
-    original_csv_path = os.path.join(app.root_path, 'data', 'plo_hands_evaluated.csv')
-    
-    csv_path = sorted_csv_path
-    if not os.path.exists(sorted_csv_path):
-        app.logger.warning(f"Sorted CSV not found at {sorted_csv_path}. Falling back to original file.")
-        csv_path = original_csv_path
+    data_dir = os.path.join(app.root_path, 'data')
+    feather_path = os.path.join(data_dir, 'plo_hands_rankings.feather')
 
     try:
-        # Use the pre-sorted CSV file
-        # csv_path is now determined above
-        df = pd.read_csv(csv_path, low_memory=False)  # low_memory=False for large files
-        
-        # Log the actual columns found in the CSV
-        app.logger.info(f"Original CSV columns: {list(df.columns)}")
-        
-        # Create a mapping for flexible column renaming
-        column_mapping = {}
-        for col in df.columns:
-            col_lower = col.lower().strip()
-            if col_lower in ['cards', 'hand']:
-                column_mapping[col] = 'Hand'
-            elif col_lower in ['rating', 'tier']:
-                column_mapping[col] = 'Tier'
-            elif col_lower in ['score', 'rating score', 'rating_score', 'strength']:
-                column_mapping[col] = 'Rating Score'
-            elif col_lower in ['reason', 'rating reason', 'rating_reason', 'description']:
-                column_mapping[col] = 'Rating Reason'
-        
-        # Apply the mapping
-        df = df.rename(columns=column_mapping)
-        app.logger.info(f"Renamed columns: {list(df.columns)}")
-        
-        # Ensure Rating Score is numeric
-        df['Rating Score'] = pd.to_numeric(df['Rating Score'], errors='coerce')
-        
-        # Check if Tier column exists and has valid data
-        if 'Tier' not in df.columns or df['Tier'].isna().all():
-            app.logger.info("Tier column missing or empty - calculating from Rating Score")
-            # Calculate tier based on Rating Score using the same logic as evaluate_hand_strength
-            def score_to_tier(score):
-                if pd.isna(score):
-                    return 5
-                elif score >= 85:
-                    return 1
-                elif score >= 70:
-                    return 2
-                elif score >= 50:
-                    return 3
-                elif score >= 30:
-                    return 4
-                else:
-                    return 5
-            
-            df['Tier'] = df['Rating Score'].apply(score_to_tier)
-            app.logger.info("Successfully calculated Tier from Rating Score")
-        else:
-            # Try to convert text-based ratings to numeric tiers
-            rating_to_tier = {
-                'Elite+': 1,
-                'Elite': 1,
-                'Premium': 2,
-                'Strong': 3,
-                'Playable': 4,
-                'Marginal': 5,
-                'Trash': 5,
-                '1': 1,
-                '2': 2,
-                '3': 3,
-                '4': 4,
-                '5': 5
-            }
-            
-            # First try to convert directly to numeric
-            df['Tier'] = pd.to_numeric(df['Tier'], errors='coerce')
-            
-            # If we have NaN values, try mapping from text
-            if df['Tier'].isna().any():
-                app.logger.info("Converting text-based ratings to numeric tiers")
-                df['Tier_Text'] = df['Tier'].astype(str).str.strip()
-                df['Tier'] = df['Tier_Text'].map(rating_to_tier)
-                df = df.drop('Tier_Text', axis=1)
-                
-                # For any remaining NaN, calculate from score
-                missing_tiers = df['Tier'].isna()
-                if missing_tiers.any():
-                    app.logger.info(f"Calculating {missing_tiers.sum()} missing tiers from Rating Score")
-                    def score_to_tier(score):
-                        if pd.isna(score):
-                            return 5
-                        elif score >= 85:
-                            return 1
-                        elif score >= 70:
-                            return 2
-                        elif score >= 50:
-                            return 3
-                        elif score >= 30:
-                            return 4
-                        else:
-                            return 5
-                    df.loc[missing_tiers, 'Tier'] = df.loc[missing_tiers, 'Rating Score'].apply(score_to_tier)
-        
-        # Add tier-based descriptions for Rating Reason
-        tier_reasons = {
-            1: "Elite - A top-tier hand with immense nut potential",
-            2: "Premium - A very strong hand with excellent coordination",
-            3: "Strong - A solid, profitable hand",
-            4: "Playable - A speculative hand best played with position",
-            5: "Trash/Marginal - A weak hand with poor coordination"
-        }
-        
-        if 'Rating Reason' not in df.columns:
-            df['Rating Reason'] = df['Tier'].map(tier_reasons).fillna("Unrated hand")
-            app.logger.info("Added 'Rating Reason' column with default values")
-        else:
-            # Fill in missing reasons based on tier
-            df['Rating Reason'] = df['Rating Reason'].fillna(df['Tier'].map(tier_reasons))
-        
-        # Verify required columns exist
-        required_cols = ['Hand', 'Tier', 'Rating Score']
-        missing_cols = [col for col in required_cols if col not in df.columns]
-        if missing_cols:
-            app.logger.error(f"Missing required columns after renaming: {missing_cols}")
-            app.logger.error(f"Available columns: {list(df.columns)}")
-            raise ValueError(f"Missing required columns: {missing_cols}")
-        
-        # Clean up Hand column - remove commas
-        df['Hand'] = df['Hand'].str.replace(',', '')
-        
-        # Create a new column with only the sorted ranks for flexible searching
-        # e.g., 'AsAdKsKd' -> 'AAKK'
-        df['RanksOnly'] = df['Hand'].apply(lambda h: "".join(sorted([c for i, c in enumerate(h) if i % 2 == 0], key=lambda r: "AKQJT98765432".index(r.upper()))))
-        app.logger.info("Successfully created 'RanksOnly' column for searching.")
+        if not os.path.exists(feather_path):
+            app.logger.warning(f"Optimized data file not found at {feather_path}. Attempting to generate it now...")
+            # Dynamically import and run the preparation script
+            # This assumes the 'scripts' directory is at the project root
+            project_root = os.path.abspath(os.path.join(app.root_path, '..', '..'))
+            scripts_path = os.path.join(project_root, 'scripts')
+            sys.path.insert(0, scripts_path)
+            from prepare_rankings_data import prepare_plo_rankings_data
+            prepare_plo_rankings_data()
+            sys.path.pop(0) # Clean up path
 
-        # Drop rows with invalid data
-        rows_before = len(df)
-        df = df.dropna(subset=['Tier', 'Rating Score'])
-        rows_after = len(df)
-        if rows_before != rows_after:
-            app.logger.warning(f"Dropped {rows_before - rows_after} rows with invalid data")
-        
+        df = pd.read_feather(feather_path)
+        # Set Hand as index for faster lookups if it's not already
+        if df.index.name != 'Hand':
+            df = df.set_index('Hand')
         app.config['PLO_HAND_DF'] = df
-        app.logger.info(f"Successfully loaded PLO hand data from {csv_path} ({len(df)} rows)")
-    except FileNotFoundError:
-        app.logger.error(f"CSV file not found at {csv_path}")
-    except pd.errors.ParserError:
-        app.logger.error(f"Error parsing CSV at {csv_path}")
+        app.logger.info(f"Successfully loaded optimized PLO hand data from {feather_path} ({len(df)} rows)")
     except Exception as e:
-        app.logger.error(f"Unexpected error loading PLO hand data: {e}")
+        app.logger.error(f"Failed to load or generate PLO hand data: {e}")
 
 # Added: Preload function for optimization
 def sort_hand_string(hand_str):
@@ -625,6 +500,11 @@ def plo_hand_rankings():
         try:
             df = current_app.config.get('PLO_HAND_DF')
             if df is None:
+                current_app.logger.warning('PLO hand data not loaded. Attempting to load now...')
+                load_plo_hand_rankings_data(current_app)
+                df = current_app.config.get('PLO_HAND_DF')
+
+            if df is None:
                 current_app.logger.error('PLO hand data not loaded.')
                 return jsonify({'error': 'Hand data not loaded. Check server logs.'}), 500
 
@@ -649,12 +529,12 @@ def plo_hand_rankings():
             if search_value:
                 if contains_suits:
                     # If suits are present, search the full hand string
-                    processed_search_value = sort_hand_string(search_value)
-                    filtered_df = df[df['Hand'].str.lower().str.contains(processed_search_value.lower(), na=False)]
+                    # Use fast index matching instead of str.contains
+                    filtered_df = df[df.index.str.lower().str.contains(processed_search_value.lower(), na=False)]
                 else:
                     # If no suits, search the RanksOnly column
                     sorted_rank_query = "".join(sorted(search_value.upper(), key=lambda r: "AKQJT98765432".index(r)))
-                    filtered_df = df[df['RanksOnly'].str.contains(sorted_rank_query, na=False)]
+                    filtered_df = df[df['RanksOnly'] == sorted_rank_query]
             else:
                 filtered_df = df.copy()
 
@@ -670,8 +550,9 @@ def plo_hand_rankings():
             # Format output
             data_out = []
             for _, row in paginated_df.iterrows():
+                hand_str = row.name # The hand is now in the index
                 data_out.append({
-                    'Hand': f"<span data-search='{row['Hand']}'>{_pretty_print_hand(row['Hand'])}</span>",
+                    'Hand': f"<span data-search='{hand_str}'>{_pretty_print_hand(hand_str)}</span>",
                     'Tier': row['Tier'],
                     'Rating Score': f"{row['Rating Score']:.1f}",
                     'Rating Reason': row['Rating Reason']
