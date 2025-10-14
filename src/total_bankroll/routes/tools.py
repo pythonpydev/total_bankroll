@@ -6,7 +6,7 @@ from flask_security import current_user, login_required, login_required
 from decimal import Decimal, InvalidOperation
 import math
 from flask_wtf import FlaskForm
-from wtforms import DecimalField, SubmitField, SelectField, IntegerField
+from wtforms import StringField, DecimalField, SubmitField, SelectField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError
 from ..utils import get_user_bankroll_data
 from ..recommendations import RecommendationEngine
@@ -54,12 +54,12 @@ class SPRCalculatorForm(FlaskForm):
 
 class HandStrengthForm(FlaskForm):
     """Form for submitting a hand for strength evaluation."""
-    hand = DecimalField("Enter PLO Hand (e.g., AsKsQhJh)", validators=[DataRequired()], render_kw={"placeholder": "e.g., AsKsQhJh or AA44ds"})
+    hand = StringField("Enter PLO Hand (e.g., AsKsQhJh)", validators=[DataRequired()], render_kw={"placeholder": "e.g., AsKsQhJh or AA44ds"})
     position = SelectField("Your Position", choices=[('UTG', 'UTG'), ('HJ', 'HJ'), ('CO', 'CO'), ('BTN', 'BTN'), ('SB', 'SB'), ('BB', 'BB')], validators=[DataRequired()])
     submit = SubmitField('Evaluate Hand')
 
     def validate_hand(self, field):
-        hand_str = str(field.data).replace(" ", "")
+        hand_str = field.data.replace(" ", "")
         if len(hand_str) != 8:
             raise ValidationError("Hand must contain exactly 4 cards (8 characters).")
         
@@ -72,8 +72,12 @@ class HandStrengthForm(FlaskForm):
 
         seen_cards = set()
         for card in cards:
-            if len(card) != 2 or card[0] not in ranks or card[1].lower() not in suits or card in seen_cards:
-                raise ValidationError(f"Invalid or duplicate card '{html.escape(card)}' found.")
+            rank = card[0].upper()
+            suit = card[1].lower()
+            if rank not in ranks or suit not in suits:
+                raise ValidationError(f"Invalid card '{html.escape(card)}'. Use ranks 2-9, T, J, Q, K, A and suits s, h, d, c.")
+            if card in seen_cards:
+                raise ValidationError(f"Duplicate card '{html.escape(card)}' found in hand.")
             seen_cards.add(card)
 
 def parse_currency_to_decimal(currency_str):
@@ -468,7 +472,7 @@ def plo_hand_strength_evaluator_page():
     evaluation_result = None
 
     if form.validate_on_submit():
-        hand_string = str(form.hand.data)
+        hand_string = form.hand.data
         position = form.position.data
 
         # Import necessary functions locally to avoid circular dependency at module level

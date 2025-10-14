@@ -169,10 +169,15 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
         score += 5
         score_breakdown.append(("3-Gap Rundown", "+5"))
     
-    # Penalize large gaps (danglers)
-    if any(g > 2 for g in gaps):
-        score -= 10
-        score_breakdown.append(("Large Gap(s) / Dangler", "-10"))
+    # d) High-card / Broadway scoring
+    broadway_cards = [r for r in ranks if r >= ranks_str.index('T')]
+
+    # Penalize large gaps (danglers), but be less harsh if the other 3 cards are strong
+    large_gaps = [g for g in gaps if g > 2]
+    if len(large_gaps) > 0 and len(broadway_cards) < 3: # Only penalize if there's a dangler AND the hand isn't top-heavy
+        penalty = min(sum(large_gaps) * 2, 15) # Scale penalty by gap size, capped at -15
+        score -= penalty
+        score_breakdown.append(("Large Gap(s) / Dangler", f"-{penalty}"))
 
     # d) High-card / Broadway scoring
     broadway_cards = [r for r in ranks if r >= ranks_str.index('T')]
