@@ -15,7 +15,7 @@ from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioFi
 from wtforms.validators import DataRequired, Optional, ValidationError
 from operator import itemgetter
 from . import algo
-from ..data_utils import prepare_plo_rankings_data
+from ..data_utils import prepare_plo_rankings_data, sort_hand_string
 import pandas as pd  # Added for optimization
 
 hand_eval_bp = Blueprint('hand_eval', __name__)
@@ -443,36 +443,6 @@ def load_plo_hand_rankings_data(app):
         app.logger.info(f"Successfully loaded optimized PLO hand data from {feather_path} ({len(df)} rows)")
     except Exception as e:
         app.logger.error(f"Failed to load or generate PLO hand data: {e}")
-
-# Added: Preload function for optimization
-def sort_hand_string(hand_str):
-    """
-    Sorts a 4-card hand string (e.g., '4sAcKd5d') by rank in descending order and then by suit.
-    This function is a copy of the one in scripts/sort_hand_data.py, adapted for Flask logging.
-    """
-    rank_order = "AKQJT98765432"
-    suit_order = "shdc" # Spades > Hearts > Diamonds > Clubs
-
-    if not isinstance(hand_str, str):
-        return hand_str  # Return as is if not a string
-
-    # Clean the hand string by removing commas and spaces
-    cleaned_hand_str = hand_str.replace(',', '').replace(' ', '')
-
-    # Validate length after cleaning
-    if len(cleaned_hand_str) % 2 != 0:
-        current_app.logger.debug(f"Partial hand string '{cleaned_hand_str}' has odd length, not sorting.")
-        return hand_str # Return original if length is odd, as it's an incomplete card
-
-    cards = [cleaned_hand_str[i:i+2] for i in range(0, len(cleaned_hand_str), 2)]
-
-    try:
-        sorted_cards = sorted(cards, key=lambda card: (rank_order.index(card[0].upper()), suit_order.index(card[1].lower())))
-    except ValueError as e:
-        current_app.logger.warning(f"Could not sort hand '{hand_str}'. Invalid character found. Error: {e}")
-        return hand_str
-
-    return "".join(sorted_cards)
 
 def _pretty_print_hand(hand_str):
     """Formats a hand string (e.g., 'AsKsQhJh') with HTML for suit symbols and colors."""

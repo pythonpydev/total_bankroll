@@ -83,3 +83,37 @@ def prepare_plo_rankings_data(input_csv_path, output_feather_path):
     except Exception as e:
         log.error(f"An error occurred during data preparation: {e}")
         raise
+
+def sort_hand_string(hand_str: str) -> str:
+    """
+    Sorts a card hand string (e.g., '4sAcKd5d') by rank in descending order, then by suit.
+
+    Args:
+        hand_str: The hand string to sort.
+
+    Returns:
+        The sorted hand string (e.g., 'AsKsAc4s').
+    """
+    rank_order = "AKQJT98765432"
+    suit_order = "shdc"  # Spades > Hearts > Diamonds > Clubs
+
+    if not isinstance(hand_str, str):
+        return hand_str  # Return as is if not a string
+
+    # Clean the hand string by removing commas and spaces
+    cleaned_hand_str = hand_str.replace(',', '').replace(' ', '')
+
+    # Validate length after cleaning; odd length means it's a partial/invalid hand
+    if len(cleaned_hand_str) % 2 != 0:
+        log.debug(f"Partial hand string '{cleaned_hand_str}' has odd length, not sorting.")
+        return hand_str
+
+    cards = [cleaned_hand_str[i:i+2] for i in range(0, len(cleaned_hand_str), 2)]
+
+    try:
+        sorted_cards = sorted(cards, key=lambda card: (rank_order.index(card[0].upper()), suit_order.index(card[1].lower())))
+    except (ValueError, IndexError) as e:
+        log.warning(f"Could not sort hand '{hand_str}'. Invalid character found. Error: {e}")
+        return hand_str
+
+    return "".join(sorted_cards)
