@@ -1,6 +1,5 @@
 """PLO hand evaluation and spr quiz."""
 
-import sys
 import re
 from typing import TypedDict, Counter as CounterType, Dict, List
 import csv
@@ -16,6 +15,7 @@ from wtforms import IntegerField, StringField, SubmitField, SelectField, RadioFi
 from wtforms.validators import DataRequired, Optional, ValidationError
 from operator import itemgetter
 from . import algo
+from ..data_utils import prepare_plo_rankings_data
 import pandas as pd  # Added for optimization
 
 hand_eval_bp = Blueprint('hand_eval', __name__)
@@ -426,22 +426,17 @@ def hand_evaluation():
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
     data_dir = os.path.join(app.root_path, 'data')
+    csv_path = os.path.join(data_dir, 'plo_hands_evaluated.csv')
     feather_path = os.path.join(data_dir, 'plo_hands_rankings.feather')
 
     try:
         if not os.path.exists(feather_path):
             app.logger.warning(f"Optimized data file not found at {feather_path}. Attempting to generate it now...")
-            # Dynamically import and run the preparation script
-            # This assumes the 'scripts' directory is at the project root
-            project_root = os.path.abspath(os.path.join(app.root_path, '..', '..'))
-            scripts_path = os.path.join(project_root, 'scripts')
-            sys.path.insert(0, scripts_path)
-            from prepare_rankings_data import prepare_plo_rankings_data
-            prepare_plo_rankings_data()
-            sys.path.pop(0) # Clean up path
+            prepare_plo_rankings_data(csv_path, feather_path)
 
         df = pd.read_feather(feather_path)
         # Set Hand as index for faster lookups if it's not already
+        # The new prepare function saves without index, so we set it here.
         if df.index.name != 'Hand':
             df = df.set_index('Hand')
         app.config['PLO_HAND_DF'] = df
