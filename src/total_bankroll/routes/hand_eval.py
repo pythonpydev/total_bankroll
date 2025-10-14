@@ -893,6 +893,11 @@ def hud_player_type_guide():
         data = {"player_types": [], "stats": []}
     return render_template('hud_player_type.html', data=data)
 
+@hand_eval_bp.route('/spr-strategy')
+def spr_strategy():
+    """Renders the SPR strategy guide page."""
+    return render_template('spr_strategy.html', title='SPR Strategy Guide')
+
 @hand_eval_bp.route('/player-color-scheme-guide')
 def player_color_scheme_guide():
     """Renders the player color scheme guide page."""
