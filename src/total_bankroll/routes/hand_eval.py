@@ -24,6 +24,14 @@ class ButtonPositionForm(FlaskForm):
     button_position = IntegerField('Button Position')
     submit = SubmitField('Submit')
 
+TIER_MAP = {
+    1: "Elite",
+    2: "Premium",
+    3: "Strong",
+    4: "Playable",
+    5: "Trash/Marginal",
+}
+
 POSITIONS = [('UTG', 'UTG'), ('HJ', 'HJ'), ('CO', 'CO'), ('BTN', 'BTN'), ('SB', 'SB'), ('BB', 'BB')]
 
 class HandForm(FlaskForm):
@@ -545,72 +553,49 @@ def plo_hand_strength_quiz():
     form = HudStatsQuizForm() # Reusing the same form is fine
     if form.validate_on_submit():
         num_questions = int(form.num_questions.data)
-
-        tier_map = {
-            1: "Elite",
-            2: "Premium",
-            3: "Strong",
-            4: "Playable",
-            5: "Trash/Marginal",
-        }
-
+        
         try:
-            # Use the pre-loaded DataFrame which is already cleaned and standardized
             df = current_app.config.get('PLO_HAND_DF')
             if df is None:
                 flash("Hand data is not loaded. Cannot create quiz.", "error")
                 return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
-
-            # The DataFrame is already processed, so we can use it directly.
-            # We just need to ensure the columns are what we expect.
-            if 'Hand' not in df.columns or 'Tier' not in df.columns:
-                flash("Hand data is missing required 'Hand' or 'Tier' columns.", "error")
+            
+            # Ensure the DataFrame isn't empty
+            if df.empty:
+                flash("Hand strength data is empty. Cannot create quiz.", "error")
                 return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
-            all_hands = df[['Hand', 'Tier']].rename(columns={'Hand': 'hand', 'Tier': 'tier'}).to_dict('records')
-
-        except FileNotFoundError as e:
-            flash(f"Could not load hand strength data. File not found: {e}", "error")
-            return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
         except Exception as e:
             flash(f"Error loading data for quiz: {e}", "error")
             return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
-        if not all_hands:
-            flash("Hand strength data is empty or invalid. Cannot create quiz.", "error")
-            return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
-
         questions = []
-        # Get all unique tiers for generating wrong answers
-        all_tiers = sorted(list(set(hand['tier'] for hand in all_hands)))
+        all_tier_keys = list(TIER_MAP.keys())
 
-        # Select a random sample of hands for the questions
-        sampled_hands = random.sample(all_hands, min(num_questions, len(all_hands)))
+        # Use pandas.sample for efficient random selection
+        sampled_hands = df.sample(n=min(num_questions, len(df)))
 
-        for hand_data in sampled_hands:
-            correct_answer_tier = hand_data['tier']
-            correct_answer_label = f"{correct_answer_tier} - {tier_map.get(correct_answer_tier, '')}"
+        for hand_str, hand_data in sampled_hands.iterrows():
+            correct_tier = hand_data['Tier']
 
-            # Generate 3 unique incorrect answers
-            possible_wrong_answers = [t for t in all_tiers if t != correct_answer_tier]
-            num_wrong_to_select = min(3, len(possible_wrong_answers))
-            wrong_answers_tiers = random.sample(possible_wrong_answers, num_wrong_to_select)
+            # Generate 3 unique incorrect tiers
+            incorrect_tiers = random.sample([t for t in all_tier_keys if t != correct_tier], 3)
+            
+            # Combine correct and incorrect answers
+            all_answer_tiers = [correct_tier] + incorrect_tiers
 
-            answers = [(str(correct_answer_tier), correct_answer_label)]
-            for tier in wrong_answers_tiers:
-                answers.append((str(tier), f"{tier} - {tier_map.get(tier, '')}"))
-
-            # Pad with other tiers if there aren't enough unique ones
-            while len(answers) < 4:
-                padding_choice = random.choice([t for t in all_tiers if t not in [int(a[0]) for a in answers]])
-                answers.append((str(padding_choice), f"{padding_choice} - {tier_map.get(padding_choice, '')}"))
+            # Create the (value, label) tuples for the form
+            answers = []
+            for tier in all_answer_tiers:
+                label = f"{tier} - {TIER_MAP.get(tier, 'Unknown')}"
+                answers.append((str(tier), label))
 
             random.shuffle(answers)
 
             questions.append({
-                'question': hand_data['hand'], # The hand string is the question
+                'question': hand_str, # The hand string is the question
                 'answers': answers, # List of (value, label) tuples
-                'correct_answer': str(correct_answer_tier),
+                'correct_answer': str(correct_tier),
                 'is_hand_strength_quiz': True # Flag for the template
             })
 
@@ -810,14 +795,6 @@ def quiz_results():
             user_rating = r
             break
 
-    tier_map = {
-        1: "Elite",
-        2: "Premium",
-        3: "Strong",
-        4: "Playable",
-        5: "Trash/Marginal"
-    }
-
     incorrect_answers = session.get('incorrect_answers', [])
     
     # Prepare incorrect answers for display with card images
@@ -828,8 +805,8 @@ def quiz_results():
             try:
                 your_answer_tier = int(item['your_answer'])
                 correct_answer_tier = int(item['correct_answer'])
-                item['your_answer_display'] = f"{your_answer_tier} ({tier_map.get(your_answer_tier, '')})"
-                item['correct_answer_display'] = f"{correct_answer_tier} ({tier_map.get(correct_answer_tier, '')})"
+                item['your_answer_display'] = f"{your_answer_tier} ({TIER_MAP.get(your_answer_tier, '')})"
+                item['correct_answer_display'] = f"{correct_answer_tier} ({TIER_MAP.get(correct_answer_tier, '')})"
             except (ValueError, TypeError):
                  item['your_answer_display'] = item['your_answer']
                  item['correct_answer_display'] = item['correct_answer']
