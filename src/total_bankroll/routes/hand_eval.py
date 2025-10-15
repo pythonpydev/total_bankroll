@@ -254,23 +254,10 @@ def _score_connectivity(props: HandProperties, ranks: List[int], ranks_str: str)
         breakdown.append((f"Wheel Potential ({len(low_ranks)+1} low cards w/ A)", f"+{bonus}"))
     return score, breakdown
 
-def _score_bonuses_and_penalties(props: HandProperties, ranks_str: str) -> tuple[float, list]:
+def _score_bonuses_and_penalties(props: HandProperties, ranks: List[int], ranks_str: str) -> tuple[float, list]:
     score, breakdown = 0.0, []
     ace_rank = ranks_str.index('A')
 
-    # 1. Parse hand into ranks and suits
-    ranks_str = "23456789TJQKA"
-    hand_string = hand_string.replace(" ", "").upper()
-    cards = [hand_string[i:i+2] for i in range(0, 8, 2)]
-    
-    try:
-        ranks_unsorted = [ranks_str.index(c[0]) for c in cards]
-        ranks = sorted(ranks_unsorted, reverse=True)
-        suits = [c[1].lower() for c in cards]
-    except ValueError as e:
-        raise ValueError(f"Invalid card rank found in hand '{hand_string}'. {e}")
-    
-    props = _get_hand_properties(ranks, suits)
     # Suited connector bonuses
     for suit, suit_ranks_list in props['suited_ranks'].items():
         if len(suit_ranks_list) >= 2:
@@ -332,7 +319,7 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
         _score_pairs(props, ranks_str),
         _score_suitedness(props, ranks_str),
         _score_connectivity(props, ranks, ranks_str),
-        _score_bonuses_and_penalties(props, ranks_str)
+        _score_bonuses_and_penalties(props, ranks, ranks_str)
     ]
 
     total_score = sum(s for s, b in score_components)
