@@ -326,16 +326,16 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     score_breakdown = [item for s, b in score_components for item in b]
 
     # 3. Assign Tier based on final score
-    if score >= 80:
-        return 1, "Elite - A top-tier hand with immense nut potential, combining high pairs, suitedness, and connectivity.", score_breakdown, score
-    elif score >= 65:
-        return 2, "Premium - A very strong hand with excellent coordination, often featuring suited high pairs or powerful rundowns.", score_breakdown, score
-    elif score >= 45:
-        return 3, "Strong - A solid, profitable hand with good suited and/or connected components. Playable in most positions.", score_breakdown, score
-    elif score >= 25:
-        return 4, "Playable - A speculative hand that relies on position and hitting a favorable flop. Best played in late position or multi-way pots.", score_breakdown, score
+    if total_score >= 80:
+        return 1, "Elite - A top-tier hand with immense nut potential, combining high pairs, suitedness, and connectivity.", score_breakdown, total_score
+    elif total_score >= 65:
+        return 2, "Premium - A very strong hand with excellent coordination, often featuring suited high pairs or powerful rundowns.", score_breakdown, total_score
+    elif total_score >= 45:
+        return 3, "Strong - A solid, profitable hand with good suited and/or connected components. Playable in most positions.", score_breakdown, total_score
+    elif total_score >= 25:
+        return 4, "Playable - A speculative hand that relies on position and hitting a favorable flop. Best played in late position or multi-way pots.", score_breakdown, total_score
     else:
-        return 5, "Trash/Marginal - A weak hand with poor coordination. Lacks significant pair, suit, or straight potential and should usually be folded.", score_breakdown, score
+        return 5, "Trash/Marginal - A weak hand with poor coordination. Lacks significant pair, suit, or straight potential and should usually be folded.", score_breakdown, total_score
 
 def get_preflop_suggestion(tier: int, position: str) -> tuple[str, str]:
     """
