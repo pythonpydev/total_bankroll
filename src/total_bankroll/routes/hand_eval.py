@@ -381,8 +381,8 @@ def get_preflop_suggestion(tier: int, position: str) -> tuple[str, str]:
 def tables():
     """Renders the PLO Preflop Ranges article from a Markdown file."""
     try:
-        project_root = os.path.abspath(os.path.join(current_app.root_path, '..', '..'))
-        md_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'Pot Limit Omaha (PLO) Preflop Ranges in a 6-Max Table.md')
+        # current_app.instance_path is <project_root>/instance, so '..' gets to the project root
+        md_path = os.path.join(current_app.instance_path, '..', 'resources', 'articles', 'markdown', 'Pot Limit Omaha (PLO) Preflop Ranges in a 6-Max Table.md')
         
         with open(md_path, 'r', encoding='utf-8') as f:
             content_md = f.read()
@@ -874,9 +874,8 @@ def plo_hand_strength_article():
     """Renders the PLO hand strength article from a Markdown file."""
     try:
         # The path is relative to the project root, so we construct it carefully.
-        # Assuming the 'resources' directory is at the same level as 'src'.
-        project_root = os.path.abspath(os.path.join(current_app.root_path, '..', '..'))
-        md_path = os.path.join(project_root, 'resources', 'articles', 'markdown', 'PLO Starting Hand Rankings by Classification.md')
+        # current_app.instance_path is <project_root>/instance, so '..' gets to the project root
+        md_path = os.path.join(current_app.instance_path, '..', 'resources', 'articles', 'markdown', 'PLO Starting Hand Rankings by Classification.md')
         
         with open(md_path, 'r', encoding='utf-8') as f:
             content_md = f.read()
