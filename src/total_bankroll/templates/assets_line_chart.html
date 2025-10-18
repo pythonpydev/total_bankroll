@@ -1,29 +1,25 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
 
 {% block content %}
-<section class="page-section bg-primary" id="charts-top">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="text-white mt-0">Assets Value Over Time (Line Chart)</h2>
-                <hr class="divider divider-light" />
-                <p class="text-white-75 mb-4">Line graph showing the amount of money in $ for different assets over time on the same axis.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
+{{ page_header('Assets Value Over Time', 'Line graph showing the value of different assets over time.') }}
 <section class="page-section" id="charts-content">
     <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-12">
-                <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary mb-4"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
-                <canvas id="assetsChart"></canvas>
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <canvas id="assetsChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/assets_historical_data')
