@@ -142,14 +142,14 @@ def get_poker_sites_historical_data():
          .order_by(SiteHistory.recorded_at).all()
 
         if not sites_data:
-            return jsonify({'labels': [], 'datasets': []})
+            return jsonify({'datasets': []})
 
         # Group data by site
         site_data_points = {}
-        dates = set()
+        all_dates = set()
         for row in sites_data:
             site_name = row.name
-            date = row.recorded_at.date()
+            date = row.recorded_at
             amount_usd = Decimal(str(row.amount)) / currency_rates.get(row.currency, Decimal('1.0'))
             if site_name not in site_data_points:
                 site_data_points[site_name] = []
@@ -157,11 +157,28 @@ def get_poker_sites_historical_data():
                 'date': date,
                 'amount_usd': amount_usd
             })
-            dates.add(date)
+            all_dates.add(date.date())
 
-        # Sort dates for labels
-        sorted_dates = sorted(list(dates))
-        labels = [d.isoformat() for d in sorted_dates]
+        if not all_dates:
+            return jsonify({'datasets': []})
+
+        # Determine the full date range for the chart's x-axis
+        min_day = min(all_dates)
+        max_day = max(all_dates)
+        
+        # This logic is for Chart.js time cartesian axis, which uses {x, y} data points
+        # instead of separate labels and data arrays. This is more robust for time-series data.
+        # The frontend will need to be adjusted to handle this data format.
+        # However, to minimize changes, we will stick to the labels/data format for now,
+        # but generate it more robustly.
+
+        date_range = []
+        current_day = min_day
+        while current_day <= max_day:
+            date_range.append(current_day)
+            current_day += timedelta(days=1)
+
+        labels = [d.isoformat() for d in date_range]
         # Create datasets for each site
         datasets = []
         colors = [
@@ -175,21 +192,26 @@ def get_poker_sites_historical_data():
         color_index = 0
 
         for site_name, points in site_data_points.items():
-            # Sort points by date
-            points_sorted = sorted(points, key=lambda x: x['date'])
-            # Create data array aligned with labels
+            # points are already sorted by recorded_at from the query
             data = []
             point_index = 0
-            for date in sorted_dates:
-                if point_index < len(points_sorted) and points_sorted[point_index]['date'] == date:
-                    data.append(float(round(points_sorted[point_index]['amount_usd'], 2)))  # Convert to float for JSON
-                    point_index += 1
-                else:
-                    # Carry forward the last known value or use 0 if no previous value
-                    if point_index > 0:
-                        data.append(float(round(points_sorted[point_index - 1]['amount_usd'], 2)))
-                    else:
-                        data.append(0.0)
+            last_known_value = Decimal('0.0')
+
+            for day in date_range:
+                # Find the last update for this site on or before the current day
+                todays_points = [p for p in points if p['date'].date() == day]
+
+                if todays_points:
+                    # If there are updates today, use the last one
+                    last_known_value = todays_points[-1]['amount_usd']
+                elif not data:
+                    # If it's the first day and no data, check for previous data
+                    previous_points = [p for p in points if p['date'].date() < day]
+                    if previous_points:
+                        last_known_value = previous_points[-1]['amount_usd']
+
+                # Append the value for the day (either new or carried over)
+                data.append(float(round(last_known_value, 2)))
 
             datasets.append({
                 'label': site_name,
@@ -202,9 +224,7 @@ def get_poker_sites_historical_data():
 
         return jsonify({
             'labels': labels,
-            'datasets': datasets,
-            'min_date': labels[0] if labels else None,
-            'max_date': labels[-1] if labels else None
+            'datasets': datasets
         })
     except Exception as e:
         current_app.logger.error(f"Error in get_poker_sites_historical_data: {e}")
