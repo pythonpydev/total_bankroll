@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('PLO Hand Range Visualizer', 'Enter a percentage range to see the corresponding PLO starting hands based on pre-flop equity.') }}
+
+<section class="page-section" id="plo-range-tool">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Select Hand Range</h5>
+                        <form id="range-form" class="row g-3 align-items-center">
+                            <div class="col-sm">
+                                <label for="start-percent" class="form-label">Top %</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="start-percent" value="0" min="0" max="100" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-sm">
+                                <label for="end-percent" class="form-label">to</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="end-percent" value="10" min="0" max="100" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-auto align-self-end">
+                                <button type="submit" class="btn btn-primary">Show Hands</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-10">
+                <h3 id="results-heading" class="text-center mb-4"></h3>
+                <div id="hand-results" class="table-responsive">
+                    <!-- Hand results will be injected here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('range-form');
+        const startPercentEl = document.getElementById('start-percent');
+        const endPercentEl = document.getElementById('end-percent');
+        const resultsContainer = document.getElementById('hand-results');
+        const resultsHeading = document.getElementById('results-heading');
+        let ploHands = [];
+
+        function displayHands() {
+            if (ploHands.length === 0) {
+                resultsHeading.textContent = 'Loading hand data...';
+                return;
+            }
+
+            const totalHands = ploHands.length;
+            const startPercent = parseFloat(startPercentEl.value);
+            const endPercent = parseFloat(endPercentEl.value);
+
+            if (isNaN(startPercent) || isNaN(endPercent) || startPercent < 0 || endPercent > 100 || startPercent >= endPercent) {
+                resultsHeading.textContent = 'Invalid Range';
+                resultsContainer.innerHTML = '<div class="alert alert-danger" role="alert">Please enter a valid percentage range (e.g., 0% to 10%).</div>';
+                return;
+            }
+
+            const startIndex = Math.floor(totalHands * (startPercent / 100));
+            const endIndex = Math.ceil(totalHands * (endPercent / 100));
+            const handsToShow = ploHands.slice(startIndex, endIndex);
+            const numHandsInRange = endIndex - startIndex;
+
+            resultsHeading.textContent = `Showing Top ${startPercent}% to ${endPercent}% of Hands (${numHandsInRange} combos)`;
+
+            if (handsToShow.length === 0) {
+                resultsContainer.innerHTML = '<div class="alert alert-info" role="alert">No hands found in this range.</div>';
+                return;
+            }
+
+            let tableHtml = `<table class="table table-custom table-striped table-hover">
+                                <thead><tr><th>Rank</th><th>Hand</th><th>Type</th><th>Avg. Strength</th></tr></thead>
+                                <tbody>`;
+            handsToShow.forEach(hand => {
+                tableHtml += \`<tr><td>\${hand.rank}</td><td>\${hand.hand}</td><td>\${hand.type}</td><td>\${hand.strength.toFixed(2)}</td></tr>\`;
+            });
+            tableHtml += '</tbody></table>';
+
+            resultsContainer.innerHTML = tableHtml;
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            displayHands();
+        });
+
+        // Fetch data and then do the initial display
+        fetch("{{ url_for('hand_eval.plo_hand_rankings') }}")
+            .then(response => response.json())
+            .then(data => {
+                ploHands = data;
+                displayHands(); // Initial display on page load
+            })
+            .catch(error => {
+                console.error('Error fetching PLO hand data:', error);
+                resultsContainer.innerHTML = '<div class="alert alert-danger" role="alert">Could not load hand ranking data.</div>';
+            });
+    });
+</script>
+{% endblock %}

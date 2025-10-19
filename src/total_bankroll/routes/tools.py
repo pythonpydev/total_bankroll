@@ -493,3 +493,9 @@ def plo_hand_strength_evaluator_page():
         }
 
     return render_template('plo_hand_strength_evaluator.html', form=form, result=evaluation_result)
+
+@tools_bp.route('/tools/plo-hand-range')
+@login_required
+def plo_hand_range_page():
+    """Renders the PLO Hand Range Visualizer page."""
+    return render_template('plo_hand_range.html')
