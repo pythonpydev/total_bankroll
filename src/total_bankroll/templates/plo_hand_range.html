@@ -38,7 +38,7 @@
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-lg-10">
                 <h3 id="results-heading" class="text-center mb-4"></h3>
-                <div id="hand-results" class="table-responsive">
+                <div id="hand-results" class="table-responsive" style="max-height: 80vh; overflow-y: auto;">
                     <!-- Hand results will be injected here by JavaScript -->
                 </div>
             </div>
@@ -56,15 +56,8 @@
         const endPercentEl = document.getElementById('end-percent');
         const resultsContainer = document.getElementById('hand-results');
         const resultsHeading = document.getElementById('results-heading');
-        let ploHands = [];
 
-        function displayHands() {
-            if (ploHands.length === 0) {
-                resultsHeading.textContent = 'Loading hand data...';
-                return;
-            }
-
-            const totalHands = ploHands.length;
+        function fetchAndDisplayHands() {
             const startPercent = parseFloat(startPercentEl.value);
             const endPercent = parseFloat(endPercentEl.value);
 
@@ -73,46 +66,60 @@
                 resultsContainer.innerHTML = '<div class="alert alert-danger" role="alert">Please enter a valid percentage range (e.g., 0% to 10%).</div>';
                 return;
             }
+            
+            resultsHeading.textContent = `Loading hands for Top ${startPercent}% to ${endPercent}%...`;
+            resultsContainer.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            
+            // Fetch data for the specific range
+            fetch("{{ url_for('hand_eval.plo_range_data') }}" + `?start=${startPercent}&end=${endPercent}`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(handsToShow => {
+                    console.log('Received data:', handsToShow);
+                    if (handsToShow.error) {
+                        throw new Error(handsToShow.error);
+                    }
+                    
+                    const numHandsInRange = handsToShow.length;
+                    resultsHeading.textContent = `Showing Top ${startPercent}% to ${endPercent}% of Hands (${numHandsInRange} combos)`;
 
-            const startIndex = Math.floor(totalHands * (startPercent / 100));
-            const endIndex = Math.ceil(totalHands * (endPercent / 100));
-            const handsToShow = ploHands.slice(startIndex, endIndex);
-            const numHandsInRange = endIndex - startIndex;
+                    if (handsToShow.length === 0) {
+                        console.log('No hands returned for range');
+                        resultsContainer.innerHTML = '<div class="alert alert-info" role="alert">No hands found in this percentile range.</div>';
+                        return;
+                    }
 
-            resultsHeading.textContent = `Showing Top ${startPercent}% to ${endPercent}% of Hands (${numHandsInRange} combos)`;
+                    let tableHtml = `<table class="table table-custom table-striped table-hover">
+                                        <thead><tr><th>Percentile</th><th>Hand</th><th>Type</th><th>Strength Score</th></tr></thead>
+                                        <tbody>`;
+                    handsToShow.forEach(hand => {
+                        console.log('Processing hand:', hand);
+                        tableHtml += `<tr><td>${hand.percentile.toFixed(2)}%</td><td>${hand.hand_html}</td><td>${hand.type}</td><td>${hand.strength.toFixed(2)}</td></tr>`;
+                    });
+                    tableHtml += '</tbody></table>';
 
-            if (handsToShow.length === 0) {
-                resultsContainer.innerHTML = '<div class="alert alert-info" role="alert">No hands found in this range.</div>';
-                return;
-            }
-
-            let tableHtml = `<table class="table table-custom table-striped table-hover">
-                                <thead><tr><th>Rank</th><th>Hand</th><th>Type</th><th>Avg. Strength</th></tr></thead>
-                                <tbody>`;
-            handsToShow.forEach(hand => {
-                tableHtml += \`<tr><td>\${hand.rank}</td><td>\${hand.hand}</td><td>\${hand.type}</td><td>\${hand.strength.toFixed(2)}</td></tr>\`;
-            });
-            tableHtml += '</tbody></table>';
-
-            resultsContainer.innerHTML = tableHtml;
+                    resultsContainer.innerHTML = tableHtml;
+                    console.log('Updated resultsContainer with new table HTML.');
+                })
+                .catch(error => {
+                    console.error('Error fetching or displaying PLO hand data:', error);
+                    resultsHeading.textContent = 'Error';
+                    resultsContainer.innerHTML = `<div class="alert alert-danger" role="alert">Could not load hand ranking data. ${error.message}</div>`;
+                });
         }
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-            displayHands();
+            fetchAndDisplayHands();
         });
 
-        // Fetch data and then do the initial display
-        fetch("{{ url_for('hand_eval.plo_hand_rankings') }}")
-            .then(response => response.json())
-            .then(data => {
-                ploHands = data;
-                displayHands(); // Initial display on page load
-            })
-            .catch(error => {
-                console.error('Error fetching PLO hand data:', error);
-                resultsContainer.innerHTML = '<div class="alert alert-danger" role="alert">Could not load hand ranking data.</div>';
-            });
+        // Initial display on page load
+        fetchAndDisplayHands();
     });
 </script>
 {% endblock %}
