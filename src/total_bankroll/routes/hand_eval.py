@@ -568,11 +568,15 @@ def plo_range_data():
     try:
         start_percent = request.args.get('start', 0, type=float)
         end_percent = request.args.get('end', 10, type=float)
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 50, type=int)
     except (ValueError, TypeError):
         start_percent = 0
         end_percent = 10
+        page = 1
+        limit = 50
 
-    current_app.logger.debug(f"Received request for PLO range: start={start_percent}%, end={end_percent}%")
+    current_app.logger.debug(f"Received request for PLO range: start={start_percent}%, end={end_percent}%, page={page}, limit={limit}")
 
     data_dir = os.path.join(current_app.root_path, 'data')
     feather_path = os.path.join(data_dir, 'plo_range_data.feather')
@@ -601,13 +605,24 @@ def plo_range_data():
 
         current_app.logger.info(f"Filtering PLO range data for {start_percent}% to {end_percent}%. Found {len(filtered_df)} hands after filtering.")
 
+        # Paginate the filtered data
+        total_records = len(filtered_df)
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+        paginated_df = filtered_df.iloc[start_index:end_index]
+
         # Data is already in the correct format, just need to add the HTML version of the hand
-        df_out = filtered_df.copy()
+        df_out = paginated_df.copy()
 
         # Format hand for pretty printing on the frontend
         df_out['hand_html'] = df_out['hand'].apply(_pretty_print_hand)
 
-        return jsonify(df_out.to_dict(orient='records'))
+        return jsonify({
+            'data': df_out.to_dict(orient='records'),
+            'total_records': total_records,
+            'page': page,
+            'limit': limit
+        })
 
     except Exception as e:
         current_app.logger.error(f"Error loading or processing PLO range data: {e}")
