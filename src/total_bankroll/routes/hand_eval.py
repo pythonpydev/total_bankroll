@@ -558,6 +558,76 @@ def plo_hand_rankings():
     # GET: Render the template
     return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
 
+@hand_eval_bp.route('/plo-range-data', methods=['GET'])
+def plo_range_data():
+    """
+    API endpoint to serve PLO hand data for the range visualizer tool.
+    Loads pre-processed data and returns it as JSON.
+    Accepts 'start' and 'end' query parameters for percentile filtering.
+    """
+    try:
+        start_percent = request.args.get('start', 0, type=float)
+        end_percent = request.args.get('end', 10, type=float)
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 50, type=int)
+    except (ValueError, TypeError):
+        start_percent = 0
+        end_percent = 10
+        page = 1
+        limit = 50
+
+    current_app.logger.debug(f"Received request for PLO range: start={start_percent}%, end={end_percent}%, page={page}, limit={limit}")
+
+    data_dir = os.path.join(current_app.root_path, 'data')
+    feather_path = os.path.join(data_dir, 'plo_range_data.feather')
+
+    try:
+        if not os.path.exists(feather_path):
+            current_app.logger.error(f"Data file not found: {feather_path}. Please run the prepare_plo_range_data.py script.")
+            return jsonify({'error': 'Hand data file not found on server.'}), 500
+
+        df = pd.read_feather(feather_path)
+
+        # --- Start Debug Logging ---
+        current_app.logger.debug(f"Loaded DataFrame. Shape: {df.shape}. Columns: {df.columns.tolist()}")
+        current_app.logger.debug(f"Data types:\n{df.dtypes}")
+        current_app.logger.debug(f"First 5 rows of loaded data:\n{df.head().to_string()}")
+        # --- End Debug Logging ---
+        
+        # Define the column to use for filtering. This makes the code robust.
+        percentile_col = 'percentile'
+        if percentile_col not in df.columns:
+            current_app.logger.error(f"Critical error: The required '{percentile_col}' column was not found in the DataFrame. Columns are: {df.columns.tolist()}")
+            return jsonify({'error': f"Data is missing the '{percentile_col}' column."}), 500
+
+        # Filter based on the standardized percentile column
+        filtered_df = df[(df[percentile_col] >= start_percent) & (df[percentile_col] <= end_percent)]
+
+        current_app.logger.info(f"Filtering PLO range data for {start_percent}% to {end_percent}%. Found {len(filtered_df)} hands after filtering.")
+
+        # Paginate the filtered data
+        total_records = len(filtered_df)
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+        paginated_df = filtered_df.iloc[start_index:end_index]
+
+        # Data is already in the correct format, just need to add the HTML version of the hand
+        df_out = paginated_df.copy()
+
+        # Format hand for pretty printing on the frontend
+        df_out['hand_html'] = df_out['hand'].apply(_pretty_print_hand)
+
+        return jsonify({
+            'data': df_out.to_dict(orient='records'),
+            'total_records': total_records,
+            'page': page,
+            'limit': limit
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error loading or processing PLO range data: {e}")
+        return jsonify({'error': 'Internal server error while loading hand data.'}), 500
+
 @hand_eval_bp.route('/plo-hand-strength-quiz', methods=['GET', 'POST'])
 def plo_hand_strength_quiz():
     """PLO Hand Strength Quiz page route."""

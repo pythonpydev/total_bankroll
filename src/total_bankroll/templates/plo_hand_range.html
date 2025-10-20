@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('PLO Hand Range Visualizer', 'Enter a percentage range to see the corresponding PLO starting hands based on pre-flop equity.') }}
+
+<section class="page-section" id="plo-range-tool">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Select Hand Range</h5>
+                        <form id="range-form" class="row g-3 align-items-center">
+                            <div class="col-sm">
+                                <label for="start-percent" class="form-label">Top %</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="start-percent" value="0" min="0" max="100" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-sm">
+                                <label for="end-percent" class="form-label">to</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="end-percent" value="10" min="0" max="100" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-auto align-self-end">
+                                <button type="submit" class="btn btn-primary">Show Hands</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-10">
+                <h3 id="results-heading" class="text-center mb-4"></h3>
+                <div id="hand-results" class="table-responsive" style="max-height: 80vh; overflow-y: auto;">
+                    <!-- Hand results will be injected here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('range-form');
+        const startPercentEl = document.getElementById('start-percent');
+        const endPercentEl = document.getElementById('end-percent');
+        const resultsContainer = document.getElementById('hand-results');
+        const resultsHeading = document.getElementById('results-heading');
+        let currentPage = 1;
+
+        function fetchAndDisplayHands() {
+            const startPercent = parseFloat(startPercentEl.value);
+            const endPercent = parseFloat(endPercentEl.value);
+
+            if (isNaN(startPercent) || isNaN(endPercent) || startPercent < 0 || endPercent > 100 || startPercent >= endPercent) {
+                resultsHeading.textContent = 'Invalid Range';
+                resultsContainer.innerHTML = '<div class="alert alert-danger" role="alert">Please enter a valid percentage range (e.g., 0% to 10%).</div>';
+                return;
+            }
+            
+            resultsHeading.textContent = `Loading hands for Top ${startPercent}% to ${endPercent}%...`;
+            resultsContainer.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            
+            // Fetch data for the specific range
+            fetch("{{ url_for('hand_eval.plo_range_data') }}" + `?start=${startPercent}&end=${endPercent}&page=${currentPage}&limit=50`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    console.log('Received data:', response);
+                    if (response.error) {
+                        throw new Error(response.error);
+                    }
+                    
+                    const handsToShow = response.data;
+                    const totalRecords = response.total_records;
+                    resultsHeading.textContent = `Showing Top ${startPercent}% to ${endPercent}% of Hands (${totalRecords} combos)`;
+
+                    if (handsToShow.length === 0) {
+                        console.log('No hands returned for range');
+                        resultsContainer.innerHTML = '<div class="alert alert-info" role="alert">No hands found in this percentile range.</div>';
+                        return;
+                    }
+                    
+                    // Build Table
+                    let tableHtml = `<div class="table-responsive"><table class="table table-custom table-striped table-hover">
+                                        <thead><tr><th>Percentile</th><th>Hand</th><th>Type</th><th>Strength Score</th></tr></thead>
+                                        <tbody>`;
+                    handsToShow.forEach(hand => {
+                        console.log('Processing hand:', hand);
+                        tableHtml += `<tr><td>${hand.percentile.toFixed(2)}%</td><td>${hand.hand_html}</td><td>${hand.type}</td><td>${hand.strength.toFixed(2)}</td></tr>`;
+                    });
+                    tableHtml += '</tbody></table></div>';
+
+                    // Build Pagination
+                    const totalPages = Math.ceil(totalRecords / response.limit);
+                    let paginationHtml = buildPagination(currentPage, totalPages);
+
+                    resultsContainer.innerHTML = tableHtml + paginationHtml;
+                    console.log('Updated resultsContainer with new table HTML.');
+
+                    // Add event listeners to new pagination buttons
+                    document.querySelectorAll('.page-link').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const newPage = parseInt(this.dataset.page);
+                            if (newPage && newPage !== currentPage) {
+                                currentPage = newPage;
+                                fetchAndDisplayHands();
+                                // Scroll to the top of the results for better UX
+                                document.getElementById('results-heading').scrollIntoView({ behavior: 'smooth' });
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching or displaying PLO hand data:', error);
+                    resultsHeading.textContent = 'Error';
+                    resultsContainer.innerHTML = `<div class="alert alert-danger" role="alert">Could not load hand ranking data. ${error.message}</div>`;
+                });
+        }
+
+        function buildPagination(currentPage, totalPages) {
+            if (totalPages <= 1) return '';
+
+            const getPageItem = (page, text = null, disabled = false, active = false) => {
+                const liClass = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+                const pageText = text || page;
+                return `<li class="${liClass}"><a class="page-link" href="#" data-page="${page}">${pageText}</a></li>`;
+            };
+
+            const getEllipsis = () => '<li class="page-item disabled"><span class="page-link">...</span></li>';
+
+            let html = '<nav aria-label="Hand range pagination"><ul class="pagination justify-content-center">';
+
+            // First and Previous buttons
+            html += getPageItem(1, 'First', currentPage === 1);
+            html += getPageItem(currentPage - 1, 'Previous', currentPage === 1);
+
+            // Page numbers with ellipses
+            const sideWidth = 1; // How many pages to show on each side of the current page
+            const windowSize = sideWidth * 2 + 1;
+
+            if (totalPages <= 5) { // Show all pages if there are 5 or fewer
+                for (let i = 1; i <= totalPages; i++) {
+                    html += getPageItem(i, null, false, i === currentPage);
+                }
+            } else {
+                // Always show page 1
+                html += getPageItem(1, null, false, currentPage === 1);
+
+                // Ellipsis after 1?
+                if (currentPage > sideWidth + 2) {
+                    html += getEllipsis();
+                }
+
+                // Window of pages around current
+                let start = Math.max(2, currentPage - sideWidth);
+                let end = Math.min(totalPages - 1, currentPage + sideWidth);
+                
+                for (let i = start; i <= end; i++) {
+                    html += getPageItem(i, null, false, i === currentPage);
+                }
+
+                // Ellipsis before last page?
+                if (currentPage < totalPages - (sideWidth + 1)) {
+                    html += getEllipsis();
+                }
+
+                // Always show last page
+                html += getPageItem(totalPages, null, false, currentPage === totalPages);
+            }
+
+            // Next and Last buttons
+            html += getPageItem(currentPage + 1, 'Next', currentPage === totalPages);
+            html += getPageItem(totalPages, 'Last', currentPage === totalPages);
+
+            html += '</ul></nav>';
+            return html;
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            currentPage = 1; // Reset to first page on new search
+            fetchAndDisplayHands();
+        });
+
+        // Initial display on page load
+        fetchAndDisplayHands();
+    });
+</script>
+{% endblock %}
