@@ -4,6 +4,8 @@ from datetime import datetime, UTC
 from flask_security.utils import hash_password
 import markdown
 import bleach
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -120,17 +122,15 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content_md = db.Column(db.Text, nullable=False)
-    content_html = db.Column(db.Text)
-    date_published = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    content_html = db.Column(db.Text, nullable=True)
+    date_published = db.Column(db.DateTime, nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    user = db.relationship('User', backref=db.backref('articles', lazy='dynamic'))
+    author = relationship('User', backref='articles')
 
     def render_content(self):
-        """Render Markdown to HTML with sanitization."""
-        html = markdown.markdown(self.content_md)
-        allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span']
-        allowed_attributes = {'a': ['href'], 'span': ['class']}
-
+        html = markdown.markdown(self.content_md, extensions=['tables'])
+        allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody']
+        allowed_attributes = {'a': ['href'], 'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
         return bleach.clean(html, tags=allowed_tags, attributes=allowed_attributes)
 
 class Topic(db.Model):

@@ -7149,12 +7149,6 @@ body.dark-mode .suit-c { color: #63e6be; } /* Lighter Green */
 .player-gold { color: var(--player-gold) !important; }
 .player-white { color: var(--player-white) !important; }
 
-/* Article Page Styling */
-.article-section {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
 .article-header {
     text-align: left;
 }
@@ -7245,6 +7239,45 @@ body.dark-mode .suit-c { color: #63e6be; } /* Lighter Green */
     margin-left: 0.1rem; /* Small spacing after suit symbol */
 }
 
+/* Table Styling for Articles and Card Previews */
+.article-content table,
+.card-text table {
+    width: 100%;
+    margin-bottom: 1.25rem;
+    border-collapse: collapse;
+    font-family: 'Merriweather', serif;
+    font-size: 1rem;
+}
+
+.article-content table th,
+.article-content table td,
+.card-text table th,
+.card-text table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border: 1px solid var(--bs-gray-300);
+}
+
+.article-content table th,
+.card-text table th {
+    background-color: var(--bs-gray-100);
+    font-family: 'Merriweather Sans', sans-serif;
+    font-weight: 700;
+    text-align: left;
+}
+
+.article-content table tr:nth-child(even),
+.card-text table tr:nth-child(even) {
+    background-color: var(--bs-gray-100);
+}
+
+/* Responsive Tables */
+.article-content .table-responsive,
+.card-text .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 /* Dark Mode */
 body.dark-mode .article-title {
     color: #e9ecef;
@@ -7279,4 +7312,21 @@ body.dark-mode .suit-c {
 body.dark-mode .suit-h,
 body.dark-mode .suit-d {
     color: #ff6b6b; /* Lighter red for hearts and diamonds in dark mode */
+}
+
+body.dark-mode .article-content table th,
+body.dark-mode .article-content table td,
+body.dark-mode .card-text table th,
+body.dark-mode .card-text table td {
+    border-color: #495057;
+}
+
+body.dark-mode .article-content table th,
+body.dark-mode .card-text table th {
+    background-color: #343a40;
+}
+
+body.dark-mode .article-content table tr:nth-child(even),
+body.dark-mode .card-text table tr:nth-child(even) {
+    background-color: #2c3034;
 }

@@ -4,6 +4,8 @@ from flask import Flask, session, flash, redirect, url_for, current_app, g, requ
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from .config import config_by_name
+from jinja2 import pass_context
+from markupsafe import Markup
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
@@ -69,7 +71,7 @@ def create_app(config_name=None):
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
     log_level = logging.DEBUG if (app.config['DEBUG'] or os.getenv('FLASK_ENV') == 'development') else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
+
     # Initialize CSRFProtect
     csrf.init_app(app)
 
@@ -103,24 +105,53 @@ def create_app(config_name=None):
     from . import oauth
     oauth.init_oauth(app)
 
-    # Custom Jinja filter for truncating HTML
-    def truncate_html(html, length):
+# Custom Jinja filter for truncating HTML
+    @pass_context
+    def truncate_html(context, html, length):
         if not html:
             return ""
         # Parse HTML with BeautifulSoup
         soup = BeautifulSoup(html, 'html.parser')
         text = soup.get_text()
         if len(text) <= length:
-            return html
-        # Truncate text and rewrap in valid HTML
-        truncated_text = text[:length] + "..."
-        # Rebuild minimal HTML structure
-        return bleach.clean(truncated_text, tags=['p', 'strong', 'em', 'span'], attributes={'span': ['class']})
+            return str(soup)
+        # Find the point to truncate while preserving whole elements
+        current_length = 0
+        truncated_soup = BeautifulSoup('<div></div>', 'html.parser')
+        div = truncated_soup.div
+        for element in soup.children:
+            if element.name:
+                element_text = element.get_text()
+                if current_length + len(element_text) > length:
+                    remaining = length - current_length
+                    if remaining > 0:
+                        # Truncate text within the element
+                        truncated_text = element_text[:remaining] + "..."
+                        new_element = truncated_soup.new_tag(element.name)
+                        new_element.string = truncated_text
+                        div.append(new_element)
+                    break
+                else:
+                    div.append(element)
+                    current_length += len(element_text)
+            else:
+                # Handle text nodes
+                if current_length < length:
+                    remaining = length - current_length
+                    truncated_text = element[:remaining] + ("..." if len(element) > remaining else "")
+                    div.append(truncated_text)
+                    current_length += len(element)
+                    if current_length >= length:
+                        break
+        # Sanitize the truncated HTML
+        allowed_tags = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody', 'ul', 'ol', 'li']
+        allowed_attributes = {'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
+        return bleach.clean(str(div), tags=allowed_tags, attributes=allowed_attributes)
 
     app.jinja_env.filters['truncate_html'] = truncate_html
 
     register_blueprints(app)
-    
+
     @app.before_request
     def before_request_handler():
         """
@@ -149,7 +180,7 @@ def create_app(config_name=None):
                     'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
                     'SI', 'ES', 'SE'
                 }
-                
+
                 if data.get('countryCode') in eu_countries:
                     session['is_in_eu'] = True
                 else:
