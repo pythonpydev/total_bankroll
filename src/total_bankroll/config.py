@@ -3,11 +3,11 @@ from dotenv import load_dotenv
 
 # Determine the base directory of the project
 basedir = os.path.abspath(os.path.dirname(__file__))
-# Construct the path to the .env file in /home/pythonpydev/total_bankroll
+# Construct the path to the .env file
 dotenv_path = os.path.join(basedir, '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
-# Debug: Confirm .env file exists and environment variables are loaded
+# Debug: Confirm .env file exists
 if not os.path.exists(dotenv_path):
     print(f"Error: .env file not found at {dotenv_path}")
 else:
