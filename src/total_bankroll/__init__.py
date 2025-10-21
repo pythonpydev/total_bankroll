@@ -57,6 +57,11 @@ def register_blueprints(app):
         load_plo_hand_rankings_data(app) # This function is now imported at the top
 
 def create_app(config_name=None):
+    # Load environment variables from .env file, especially for command-line scripts
+    # This will not override existing environment variables (like those set in a WSGI file)
+    # making it safe for both production and local use.
+    load_dotenv()
+
     # Get the absolute path to the directory containing app.py
     basedir = os.path.abspath(os.path.dirname(__file__))
 
