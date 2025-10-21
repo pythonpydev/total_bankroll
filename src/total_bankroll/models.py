@@ -128,8 +128,10 @@ class Article(db.Model):
     def render_content(self):
         """Render Markdown to HTML with sanitization."""
         html = markdown.markdown(self.content_md)
-        allowed_tags = ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'strong', 'em', 'blockquote']
-        return bleach.clean(html, tags=allowed_tags)
+        allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span']
+        allowed_attributes = {'a': ['href'], 'span': ['class']}
+
+        return bleach.clean(html, tags=allowed_tags, attributes=allowed_attributes)
 
 class Topic(db.Model):
     __tablename__ = 'topics'

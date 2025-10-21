@@ -10,7 +10,7 @@
                     <div class="card h-100 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">{{ article.title }}</h5>
-                            <p class="card-text">{{ article.content_md[:150] | safe }}...</p>
+                            <p class="card-text">{{ article.render_content() | truncate_html(150) | safe }}</p>
                             <p class="card-text"><small class="text-muted">Published on {{ article.date_published.strftime('%B %d, %Y') }}</small></p>
                             <a href="{{ url_for('articles.view', id=article.id) }}" class="btn btn-primary">Read More</a>
                         </div>

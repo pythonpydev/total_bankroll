@@ -11,6 +11,8 @@ from .extensions import db, mail, csrf
 from . import commands
 from flask_migrate import Migrate
 import requests
+from bs4 import BeautifulSoup
+import bleach
 
 # --- Blueprint Imports ---
 from .routes.auth import auth_bp
@@ -100,6 +102,22 @@ def create_app(config_name=None):
 
     from . import oauth
     oauth.init_oauth(app)
+
+    # Custom Jinja filter for truncating HTML
+    def truncate_html(html, length):
+        if not html:
+            return ""
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text()
+        if len(text) <= length:
+            return html
+        # Truncate text and rewrap in valid HTML
+        truncated_text = text[:length] + "..."
+        # Rebuild minimal HTML structure
+        return bleach.clean(truncated_text, tags=['p', 'strong', 'em', 'span'], attributes={'span': ['class']})
+
+    app.jinja_env.filters['truncate_html'] = truncate_html
 
     register_blueprints(app)
     
