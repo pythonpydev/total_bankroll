@@ -138,7 +138,7 @@ stack-data==0.6.3
 tinycss2==1.4.0
 toml==0.10.2
 tornado==6.5.2
--e git+https://github.com/pythonpydev/total_bankroll.git@5299dc8d40f6517f9214ea339eab79608903a162#egg=total_bankroll
+-e git+https://github.com/pythonpydev/total_bankroll.git@dc349006206ce691d7aee6f3314f5a23dc33c091#egg=total_bankroll
 tqdm==4.67.1
 traitlets==5.14.3
 treys==0.1.3

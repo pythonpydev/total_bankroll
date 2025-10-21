@@ -4,6 +4,8 @@ from flask import Flask, session, flash, redirect, url_for, current_app, g, requ
 from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from .config import config_by_name
+from jinja2 import pass_context
+from markupsafe import Markup
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
@@ -11,44 +13,48 @@ from .extensions import db, mail, csrf
 from . import commands
 from flask_migrate import Migrate
 import requests
+from bs4 import BeautifulSoup
+import bleach
+
+# --- Blueprint Imports ---
+from .routes.auth import auth_bp
+from .routes.home import home_bp
+from .routes.poker_sites import poker_sites_bp
+from .routes.articles import articles_bp
+from .routes.assets import assets_bp
+from .routes.withdrawal import withdrawal_bp
+from .routes.deposit import deposit_bp
+from .routes.about import about_bp
+from .routes.charts import charts_bp
+from .routes.settings import settings_bp
+from .routes.reset_db import reset_db_bp
+from .routes.import_db import import_db_bp
+from .routes.common import common_bp
+from .routes.add_withdrawal import add_withdrawal_bp
+from .routes.add_deposit import add_deposit_bp
+from .routes.tools import tools_bp
+from .routes.hand_eval import hand_eval_bp
+from .routes.legal import legal_bp
+from .routes.help import help_bp
+from .routes.hand_eval import load_plo_hand_rankings_data # This is a function, but it's imported here
 
 logger = logging.getLogger(__name__)
 
 def register_blueprints(app):
     """Registers all blueprints for the application."""
-    from .routes.auth import auth_bp
-    from .routes.home import home_bp
-    from .routes.poker_sites import poker_sites_bp
-    from .routes.assets import assets_bp
-    from .routes.withdrawal import withdrawal_bp
-    from .routes.deposit import deposit_bp
-    from .routes.about import about_bp
-    from .routes.charts import charts_bp
-    from .routes.settings import settings_bp
-    from .routes.reset_db import reset_db_bp
-    from .routes.import_db import import_db_bp
-    from .routes.common import common_bp
-    from .routes.add_withdrawal import add_withdrawal_bp
-    from .routes.add_deposit import add_deposit_bp
-    from .routes.tools import tools_bp
-    from .routes.hand_eval import hand_eval_bp
-    from .routes.legal import legal_bp
-    from .routes.hand_eval import load_plo_hand_rankings_data
-    from .routes.help import help_bp
-
     blueprints = [
         (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
         (assets_bp, None), (withdrawal_bp, None), (deposit_bp, None),
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None), (add_withdrawal_bp, None),
         (add_deposit_bp, None), (tools_bp, None), (hand_eval_bp, '/hand-eval'),
-        (legal_bp, None), (help_bp, None),
+        (legal_bp, None), (help_bp, None), (articles_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
 
     with app.app_context():
-        load_plo_hand_rankings_data(app)
+        load_plo_hand_rankings_data(app) # This function is now imported at the top
 
 def create_app(config_name=None):
     # Get the absolute path to the directory containing app.py
@@ -65,7 +71,7 @@ def create_app(config_name=None):
     # Configure logging to stream to console (stderr), which PythonAnywhere captures
     log_level = logging.DEBUG if (app.config['DEBUG'] or os.getenv('FLASK_ENV') == 'development') else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
+
     # Initialize CSRFProtect
     csrf.init_app(app)
 
@@ -99,8 +105,53 @@ def create_app(config_name=None):
     from . import oauth
     oauth.init_oauth(app)
 
+# Custom Jinja filter for truncating HTML
+    @pass_context
+    def truncate_html(context, html, length):
+        if not html:
+            return ""
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text()
+        if len(text) <= length:
+            return str(soup)
+        # Find the point to truncate while preserving whole elements
+        current_length = 0
+        truncated_soup = BeautifulSoup('<div></div>', 'html.parser')
+        div = truncated_soup.div
+        for element in soup.children:
+            if element.name:
+                element_text = element.get_text()
+                if current_length + len(element_text) > length:
+                    remaining = length - current_length
+                    if remaining > 0:
+                        # Truncate text within the element
+                        truncated_text = element_text[:remaining] + "..."
+                        new_element = truncated_soup.new_tag(element.name)
+                        new_element.string = truncated_text
+                        div.append(new_element)
+                    break
+                else:
+                    div.append(element)
+                    current_length += len(element_text)
+            else:
+                # Handle text nodes
+                if current_length < length:
+                    remaining = length - current_length
+                    truncated_text = element[:remaining] + ("..." if len(element) > remaining else "")
+                    div.append(truncated_text)
+                    current_length += len(element)
+                    if current_length >= length:
+                        break
+        # Sanitize the truncated HTML
+        allowed_tags = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody', 'ul', 'ol', 'li']
+        allowed_attributes = {'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
+        return bleach.clean(str(div), tags=allowed_tags, attributes=allowed_attributes)
+
+    app.jinja_env.filters['truncate_html'] = truncate_html
+
     register_blueprints(app)
-    
+
     @app.before_request
     def before_request_handler():
         """
@@ -129,7 +180,7 @@ def create_app(config_name=None):
                     'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
                     'SI', 'ES', 'SE'
                 }
-                
+
                 if data.get('countryCode') in eu_countries:
                     session['is_in_eu'] = True
                 else:

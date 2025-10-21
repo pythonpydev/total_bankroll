@@ -2,6 +2,10 @@ from flask_security import UserMixin
 from .extensions import db
 from datetime import datetime, UTC
 from flask_security.utils import hash_password
+import markdown
+import bleach
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -19,7 +23,7 @@ class User(db.Model, UserMixin):
     otp_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
     def get_id(self):
-        return self.fs_uniquifier  # Use fs_uniquifier for Flask-Security
+        return self.fs_uniquifier
 
     @property
     def password(self):
@@ -112,3 +116,29 @@ class CashStakes(db.Model):
     big_blind = db.Column(db.Numeric(10, 2), nullable=False)
     min_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
     max_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
+
+class Article(db.Model):
+    __tablename__ = 'articles'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content_md = db.Column(db.Text, nullable=False)
+    content_html = db.Column(db.Text, nullable=True)
+    date_published = db.Column(db.DateTime, nullable=True)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    author = relationship('User', backref='articles')
+
+    def render_content(self):
+        html = markdown.markdown(self.content_md, extensions=['tables'])
+        allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody']
+        allowed_attributes = {'a': ['href'], 'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
+        return bleach.clean(html, tags=allowed_tags, attributes=allowed_attributes)
+
+class Topic(db.Model):
+    __tablename__ = 'topics'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+article_topics = db.Table('article_topics',
+    db.Column('article_id', db.Integer, db.ForeignKey('articles.id'), primary_key=True),
+    db.Column('topic_id', db.Integer, db.ForeignKey('topics.id'), primary_key=True)
+)
