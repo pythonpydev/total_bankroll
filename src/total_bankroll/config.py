@@ -3,16 +3,22 @@ from dotenv import load_dotenv
 
 # Determine the base directory of the project
 basedir = os.path.abspath(os.path.dirname(__file__))
-# Construct the path to the .env file in the project root
+# Construct the path to the .env file in /home/pythonpydev/total_bankroll
 dotenv_path = os.path.join(basedir, '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
+
+# Debug: Confirm .env file exists and environment variables are loaded
+if not os.path.exists(dotenv_path):
+    print(f"Error: .env file not found at {dotenv_path}")
+else:
+    print(f"Loaded .env file from {dotenv_path}")
 
 class Config:
     """Base configuration settings."""
     # General Flask settings
     SECRET_KEY = os.getenv('SECRET_KEY', 'a-default-dev-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
     # Flask-Security-Too settings
     SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT')
     SECURITY_PASSWORD_HASH = 'argon2'
@@ -48,9 +54,17 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or \
-        (f"mysql+pymysql://{os.getenv('DB_USER_PROD')}:{os.getenv('DB_PASS_PROD')}@"
-         f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}")
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or (
+        f"mysql+pymysql://{os.getenv('DB_USER_PROD')}:{os.getenv('DB_PASS_PROD')}@"
+        f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}"
+    )
+    # Debug: Print database configuration
+    print(f"ProductionConfig - DATABASE_URL: {os.getenv('DATABASE_URL')}")
+    print(f"ProductionConfig - DB_USER_PROD: {os.getenv('DB_USER_PROD')}")
+    print(f"ProductionConfig - DB_PASS_PROD: {os.getenv('DB_PASS_PROD')}")
+    print(f"ProductionConfig - DB_HOST_PROD: {os.getenv('DB_HOST_PROD')}")
+    print(f"ProductionConfig - DB_NAME_PROD: {os.getenv('DB_NAME_PROD')}")
+    print(f"ProductionConfig - SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
 config_by_name = dict(
     development=DevelopmentConfig,
