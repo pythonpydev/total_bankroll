@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section" id="articles">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mb-5">Strategy Articles</h2>
+        <div class="row gx-4 gx-lg-5">
+            {% if articles %}
+                {% for article in articles %}
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            <p class="card-text">{{ article.content_md[:150] | safe }}...</p>
+                            <p class="card-text"><small class="text-muted">Published on {{ article.date_published.strftime('%B %d, %Y') }}</small></p>
+                            <a href="{{ url_for('articles.view', id=article.id) }}" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p class="lead">No articles found. Check back soon!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

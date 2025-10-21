@@ -2,6 +2,8 @@ from flask_security import UserMixin
 from .extensions import db
 from datetime import datetime, UTC
 from flask_security.utils import hash_password
+import markdown
+import bleach
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -19,7 +21,7 @@ class User(db.Model, UserMixin):
     otp_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
     def get_id(self):
-        return self.fs_uniquifier  # Use fs_uniquifier for Flask-Security
+        return self.fs_uniquifier
 
     @property
     def password(self):
@@ -112,3 +114,29 @@ class CashStakes(db.Model):
     big_blind = db.Column(db.Numeric(10, 2), nullable=False)
     min_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
     max_buy_in = db.Column(db.Numeric(10, 2), nullable=False)
+
+class Article(db.Model):
+    __tablename__ = 'articles'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content_md = db.Column(db.Text, nullable=False)
+    content_html = db.Column(db.Text)
+    date_published = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user = db.relationship('User', backref=db.backref('articles', lazy='dynamic'))
+
+    def render_content(self):
+        """Render Markdown to HTML with sanitization."""
+        html = markdown.markdown(self.content_md)
+        allowed_tags = ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'strong', 'em', 'blockquote']
+        return bleach.clean(html, tags=allowed_tags)
+
+class Topic(db.Model):
+    __tablename__ = 'topics'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+article_topics = db.Table('article_topics',
+    db.Column('article_id', db.Integer, db.ForeignKey('articles.id'), primary_key=True),
+    db.Column('topic_id', db.Integer, db.ForeignKey('topics.id'), primary_key=True)
+)

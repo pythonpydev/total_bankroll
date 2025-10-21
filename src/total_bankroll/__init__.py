@@ -12,43 +12,45 @@ from . import commands
 from flask_migrate import Migrate
 import requests
 
+# --- Blueprint Imports ---
+from .routes.auth import auth_bp
+from .routes.home import home_bp
+from .routes.poker_sites import poker_sites_bp
+from .routes.articles import articles_bp
+from .routes.assets import assets_bp
+from .routes.withdrawal import withdrawal_bp
+from .routes.deposit import deposit_bp
+from .routes.about import about_bp
+from .routes.charts import charts_bp
+from .routes.settings import settings_bp
+from .routes.reset_db import reset_db_bp
+from .routes.import_db import import_db_bp
+from .routes.common import common_bp
+from .routes.add_withdrawal import add_withdrawal_bp
+from .routes.add_deposit import add_deposit_bp
+from .routes.tools import tools_bp
+from .routes.hand_eval import hand_eval_bp
+from .routes.legal import legal_bp
+from .routes.help import help_bp
+from .routes.hand_eval import load_plo_hand_rankings_data # This is a function, but it's imported here
+
 logger = logging.getLogger(__name__)
 
 def register_blueprints(app):
     """Registers all blueprints for the application."""
-    from .routes.auth import auth_bp
-    from .routes.home import home_bp
-    from .routes.poker_sites import poker_sites_bp
-    from .routes.assets import assets_bp
-    from .routes.withdrawal import withdrawal_bp
-    from .routes.deposit import deposit_bp
-    from .routes.about import about_bp
-    from .routes.charts import charts_bp
-    from .routes.settings import settings_bp
-    from .routes.reset_db import reset_db_bp
-    from .routes.import_db import import_db_bp
-    from .routes.common import common_bp
-    from .routes.add_withdrawal import add_withdrawal_bp
-    from .routes.add_deposit import add_deposit_bp
-    from .routes.tools import tools_bp
-    from .routes.hand_eval import hand_eval_bp
-    from .routes.legal import legal_bp
-    from .routes.hand_eval import load_plo_hand_rankings_data
-    from .routes.help import help_bp
-
     blueprints = [
         (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
         (assets_bp, None), (withdrawal_bp, None), (deposit_bp, None),
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None), (add_withdrawal_bp, None),
         (add_deposit_bp, None), (tools_bp, None), (hand_eval_bp, '/hand-eval'),
-        (legal_bp, None), (help_bp, None),
+        (legal_bp, None), (help_bp, None), (articles_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
 
     with app.app_context():
-        load_plo_hand_rankings_data(app)
+        load_plo_hand_rankings_data(app) # This function is now imported at the top
 
 def create_app(config_name=None):
     # Get the absolute path to the directory containing app.py
