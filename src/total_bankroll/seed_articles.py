@@ -23,6 +23,6 @@ def seed_articles(app, md_directory):
         print("Articles seeded successfully")
 
 if __name__ == '__main__':
-    app = create_app()
+    app = create_app(config_name='production')
     md_dir = 'resources/articles/markdown'
     seed_articles(app, md_dir)
