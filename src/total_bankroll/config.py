@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-dotenv_path = os.path.join(basedir, '..', '..', '.env')
+dotenv_path = '/home/pythonpydev/total_bankroll/.env'
 print(f"Current working directory: {os.getcwd()}")
 print(f"Attempting to load .env from: {dotenv_path}")
 print(f".env file exists: {os.path.exists(dotenv_path)}")
