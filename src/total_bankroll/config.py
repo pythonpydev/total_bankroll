@@ -48,8 +48,9 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = (
-        'mysql+pymysql://pythonpydev:f3gWoQe7X7BFCm@pythonpydev.mysql.pythonanywhere-services.com/pythonpydev$bankroll'
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or (
+        f"mysql+pymysql://{os.getenv('DB_USER_PROD')}:{os.getenv('DB_PASS_PROD')}@"
+        f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}"
     )
     print(f"ProductionConfig - SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
