@@ -2,9 +2,13 @@ import os
 from total_bankroll import create_app, db
 from total_bankroll.models import Article
 from datetime import datetime, UTC
+from total_bankroll.config import config_by_name
 
 def seed_articles(app, md_directory):
     with app.app_context():
+        print(f"FLASK_ENV: {os.getenv('FLASK_ENV')}")
+        print(f"Config used: {app.config.__class__.__name__}")
+        print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
         print(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
         # Create tables if they don't exist
         db.create_all()
