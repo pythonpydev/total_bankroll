@@ -36,7 +36,7 @@ from .routes.tools import tools_bp
 from .routes.hand_eval import hand_eval_bp
 from .routes.legal import legal_bp
 from .routes.help import help_bp
-from .routes.hand_eval import load_plo_hand_rankings_data # This is a function, but it's imported here
+from .routes.hand_eval import load_plo_hand_rankings_data
 
 logger = logging.getLogger(__name__)
 
@@ -46,40 +46,35 @@ def register_blueprints(app):
         (auth_bp, '/auth'), (home_bp, None), (poker_sites_bp, None),
         (assets_bp, None), (withdrawal_bp, None), (deposit_bp, None),
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
-        (reset_db_bp, None), (import_db_bp, None), (common_bp, None), (add_withdrawal_bp, None),
-        (add_deposit_bp, None), (tools_bp, None), (hand_eval_bp, '/hand-eval'),
-        (legal_bp, None), (help_bp, None), (articles_bp, None),
+        (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
+        (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None),
+        (hand_eval_bp, '/hand-eval'), (legal_bp, None), (help_bp, None),
+        (articles_bp, None),
     ]
     for bp, url_prefix in blueprints:
         app.register_blueprint(bp, url_prefix=url_prefix)
 
     with app.app_context():
-        load_plo_hand_rankings_data(app) # This function is now imported at the top
+        load_plo_hand_rankings_data(app)
 
 def create_app(config_name=None):
-    # Load environment variables from .env file, especially for command-line scripts
-    # This will not override existing environment variables (like those set in a WSGI file)
-    # making it safe for both production and local use.
     load_dotenv()
-
-    # Get the absolute path to the directory containing app.py
     basedir = os.path.abspath(os.path.dirname(__file__))
-
-    # App initialization
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
-    config_obj = config_by_name[config_name or os.getenv('FLASK_ENV', 'development')]
+    config_name = config_name or os.getenv('FLASK_ENV', 'production')
+    config_obj = config_by_name[config_name]
+    print(f"create_app: Using config_name={config_name}")
+    print(f"create_app: Available configs={list(config_by_name.keys())}")
     app.config.from_object(config_obj)
-    if config_name == 'development' or os.getenv('FLASK_ENV') == 'development':
-        app.debug = True
+    print(f"create_app: Selected config={config_obj.__class__.__name__}")
+    print(f"create_app: SQLALCHEMY_DATABASE_URI={app.config['SQLALCHEMY_DATABASE_URI']}")
+    app.config['CONFIG_SOURCE'] = config_obj.__class__.__name__
     app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 
-    # Configure logging to stream to console (stderr), which PythonAnywhere captures
-    log_level = logging.DEBUG if (app.config['DEBUG'] or os.getenv('FLASK_ENV') == 'development') else logging.INFO
+    log_level = logging.DEBUG if app.config.get('DEBUG', False) else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # Initialize CSRFProtect
     csrf.init_app(app)
-
     db.init_app(app)
     mail.init_app(app)
     migrate = Migrate(app, db)
@@ -94,33 +89,24 @@ def create_app(config_name=None):
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         return response
 
-    # Initialize Flask-Security and OAuth
     user_datastore = SQLAlchemyUserDatastore(db, User, None)
-    # Since we have implemented all auth views in the 'auth' blueprint,
-    # we can disable the default blueprint from Flask-Security to avoid
-    # route conflicts.
     security = Security(app, user_datastore, register_blueprint=False)
 
-    # Define a custom unauthenticated handler to fix the redirect issue in tests
     @app.login_manager.unauthorized_handler
     def unauthn_handler():
-        # Store the URL they were trying to get to.
         return redirect(url_for("auth.login"))
 
     from . import oauth
     oauth.init_oauth(app)
 
-# Custom Jinja filter for truncating HTML
     @pass_context
     def truncate_html(context, html, length):
         if not html:
             return ""
-        # Parse HTML with BeautifulSoup
         soup = BeautifulSoup(html, 'html.parser')
         text = soup.get_text()
         if len(text) <= length:
             return str(soup)
-        # Find the point to truncate while preserving whole elements
         current_length = 0
         truncated_soup = BeautifulSoup('<div></div>', 'html.parser')
         div = truncated_soup.div
@@ -130,7 +116,6 @@ def create_app(config_name=None):
                 if current_length + len(element_text) > length:
                     remaining = length - current_length
                     if remaining > 0:
-                        # Truncate text within the element
                         truncated_text = element_text[:remaining] + "..."
                         new_element = truncated_soup.new_tag(element.name)
                         new_element.string = truncated_text
@@ -140,7 +125,6 @@ def create_app(config_name=None):
                     div.append(element)
                     current_length += len(element_text)
             else:
-                # Handle text nodes
                 if current_length < length:
                     remaining = length - current_length
                     truncated_text = element[:remaining] + ("..." if len(element) > remaining else "")
@@ -148,55 +132,37 @@ def create_app(config_name=None):
                     current_length += len(element)
                     if current_length >= length:
                         break
-        # Sanitize the truncated HTML
         allowed_tags = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody', 'ul', 'ol', 'li']
         allowed_attributes = {'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
         return bleach.clean(str(div), tags=allowed_tags, attributes=allowed_attributes)
 
     app.jinja_env.filters['truncate_html'] = truncate_html
-
     register_blueprints(app)
 
     @app.before_request
     def before_request_handler():
-        """
-        Runs before each request.
-        - Checks user's location via IP to determine if they are in the EU for GDPR.
-          The result is stored in the session to avoid repeated API calls.
-        - Checks the cookie consent cookie to determine if analytics should be loaded.
-        """
-        # 1. Check user location for EU cookie banner
         if 'is_in_eu' not in session:
-            g.is_in_eu = False # Default to false
+            g.is_in_eu = False
             try:
-                # Use a test IP for local development, otherwise use the request IP
                 ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
                 if ip_address == '127.0.0.1':
-                    ip_address = '8.8.8.8' # Google's DNS for testing non-EU
-                    # ip_address = '212.58.244.20' # BBC's IP for testing EU (UK)
-
-                # Use a free geolocation API
-                response = requests.get(f'http://ip-api.com/json/{ip_address}?fields=countryCode', timeout=2)
+                    ip_address = '8.8.8.8'
+                response = requests.get(f'http://ip-api.com/json/{ip_address}?fields=countryCode', timeout=5)
                 response.raise_for_status()
                 data = response.json()
-
                 eu_countries = {
                     'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
                     'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
                     'SI', 'ES', 'SE'
                 }
-
                 if data.get('countryCode') in eu_countries:
                     session['is_in_eu'] = True
                 else:
                     session['is_in_eu'] = False
-
             except (requests.RequestException, ValueError) as e:
                 logger.warning(f"Could not determine user location: {e}")
-                session['is_in_eu'] = False # Default to not showing banner on error
+                session['is_in_eu'] = False
         g.is_in_eu = session.get('is_in_eu', False)
-
-        # 2. Check for cookie consent to enable/disable analytics
         cookie_consent = request.cookies.get('cookie_consent')
         g.cookie_consent_given = cookie_consent == 'true'
 

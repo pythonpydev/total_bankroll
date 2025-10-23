@@ -3,24 +3,12 @@ from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 dotenv_path = '/home/pythonpydev/total_bankroll/.env'
-print(f"Current working directory: {os.getcwd()}")
-print(f"Attempting to load .env from: {dotenv_path}")
-print(f".env file exists: {os.path.exists(dotenv_path)}")
-if os.path.exists(dotenv_path):
-    with open(dotenv_path, 'r', encoding='utf-8') as f:
-        print(f".env contents:\n{f.read()}")
-else:
-    print(f"Error: .env file not found at {dotenv_path}")
 load_dotenv(dotenv_path=dotenv_path, override=True)
-print(f"After load_dotenv - DB_HOST_PROD: {os.getenv('DB_HOST_PROD')}")
-print(f"After load_dotenv - DB_USER_PROD: {os.getenv('DB_USER_PROD')}")
-print(f"After load_dotenv - DB_PASS_PROD: {os.getenv('DB_PASS_PROD')}")
-print(f"After load_dotenv - DB_NAME_PROD: {os.getenv('DB_NAME_PROD')}")
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'a-default-dev-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT')
+    SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT') or 'a-default-dev-salt'
     SECURITY_PASSWORD_HASH = 'argon2'
     SECURITY_REGISTERABLE = True
     SECURITY_SEND_REGISTER_EMAIL = True
@@ -49,9 +37,9 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = (
-        'mysql+pymysql://pythonpydev:f3gWoQe7X7BFCm@pythonpydev.mysql.pythonanywhere-services.com/pythonpydev$bankroll'
+        f"mysql+pymysql://{os.getenv('DB_USER_PROD')}:{os.getenv('DB_PASS_PROD')}@"
+        f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}"
     )
-    print(f"ProductionConfig - SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
 
 config_by_name = dict(
     development=DevelopmentConfig,
