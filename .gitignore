@@ -123,3 +123,4 @@ dmypy.json
 .pyre/
 .aider*
 .env.bak
+total_bankroll_dev_backup_*.tar.gz
