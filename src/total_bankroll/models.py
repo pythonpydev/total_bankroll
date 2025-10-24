@@ -120,7 +120,7 @@ class CashStakes(db.Model):
 class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(200), nullable=False, unique=True)
     content_md = db.Column(db.Text, nullable=False)
     content_html = db.Column(db.Text, nullable=True)
     date_published = db.Column(db.DateTime, nullable=True)

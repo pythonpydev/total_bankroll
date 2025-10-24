@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-dotenv_path = '/home/pythonpydev/total_bankroll/.env'
+dotenv_path = os.getenv('DOTENV_PATH', os.path.join(basedir, '../.env'))
 load_dotenv(dotenv_path=dotenv_path, override=True)
 
 class Config:
@@ -16,7 +16,7 @@ class Config:
     SECURITY_RECOVERABLE = True
     SECURITY_CHANGEABLE = True
     SECURITY_UNAUTHORIZED_VIEW = '/'
-    SECURITY_OAUTH_ENABLE = False
+    SECURITY_OAUTH_ENABLE = True
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'true').lower() in ['true', '1', 't']
@@ -29,10 +29,10 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = (
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', (
         f"mysql+pymysql://{os.getenv('DEV_DB_USER')}:{os.getenv('DEV_DB_PASS')}@"
         f"{os.getenv('DEV_DB_HOST')}/{os.getenv('DEV_DB_NAME')}"
-    )
+    ))
 
 class ProductionConfig(Config):
     DEBUG = False

@@ -1,7 +1,6 @@
 import os
 __version__ = "0.1.0"
 from flask import Flask, session, flash, redirect, url_for, current_app, g, request
-from dotenv import load_dotenv
 from flask_security import Security, SQLAlchemyUserDatastore
 from .config import config_by_name
 from jinja2 import pass_context
@@ -58,7 +57,6 @@ def register_blueprints(app):
         load_plo_hand_rankings_data(app)
 
 def create_app(config_name=None):
-    load_dotenv()
     basedir = os.path.abspath(os.path.dirname(__file__))
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
     config_name = config_name or os.getenv('FLASK_ENV', 'production')
