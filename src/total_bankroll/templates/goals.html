@@ -43,12 +43,12 @@
                     <h5 class="card-title mb-0">{{ goal.name }}</h5>
                     <div class="btn-group">
                         <form action="{{ url_for('goals.complete_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
-                            {{ form.csrf_token }}
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn btn-sm btn-success">Complete</button>
                         </form>
                         <form action="{{ url_for('goals.archive_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
-                            {{ form.csrf_token }}
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-sm btn-secondary">Archive</button>
                         </form>
                     </div>
                 </div>
@@ -84,14 +84,19 @@
                     <h6 class="mb-0">{{ goal.name }}</h6>
                     <small class="text-muted">Target: ${{ goal.target_value|round(2) }}</small>
                 </div>
-                <span class="badge bg-success rounded-pill">Completed on {{ goal.completed_at.strftime('%b %d, %Y') }}</span>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success rounded-pill me-2">Completed on {{ goal.completed_at.strftime('%b %d, %Y') }}</span>
+                    <form action="{{ url_for('goals.archive_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-sm btn-secondary">Archive</button>
+                    </form>
+                </div>
             </li>
         {% endfor %}
         </ul>
     {% else %}
         <p>You have not completed any goals yet.</p>
     {% endif %}
-</div>
 
     <!-- Section for Archived Goals -->
     <h4 class="mt-5">Archived Goals</h4>
@@ -110,6 +115,8 @@
     {% else %}
         <p>You have no archived goals.</p>
     {% endif %}
+
+</div>
 
 {% endblock %}
 

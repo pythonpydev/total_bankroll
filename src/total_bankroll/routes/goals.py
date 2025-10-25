@@ -72,6 +72,13 @@ def index():
         goal.progress = (current_value / goal.target_value) * 100 if goal.target_value > 0 else 0
         goal.current_value = current_value
 
+        if goal.progress >= 100 and goal.status == 'active':
+            goal.status = 'completed'
+            goal.completed_at = datetime.now(UTC)
+            flash(f'Congratulations! You automatically completed the goal: "{goal.name}".', 'success')
+            db.session.commit()
+            return redirect(url_for('goals.index'))
+
     return render_template('goals.html',
                            form=form,
                            active_goals=active_goals,
@@ -85,12 +92,12 @@ def index():
 def archive_goal(goal_id):
     """Archive an active goal."""
     goal = Goal.query.filter_by(id=goal_id, user_id=current_user.id).first_or_404()
-    if goal.status == 'active':
+    if goal.status in ['active', 'completed']:
         goal.status = 'archived'
         db.session.commit()
         flash(f'Goal "{goal.name}" has been archived.', 'success')
     else:
-        flash('Only active goals can be archived.', 'warning')
+        flash('This goal cannot be archived.', 'warning')
     return redirect(url_for('goals.index'))
 
 @goals_bp.route('/<int:goal_id>/complete', methods=['POST'])

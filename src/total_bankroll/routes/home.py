@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_security import current_user
 from ..utils import get_user_bankroll_data
 from ..models import Goal
+from ..extensions import db
+from datetime import datetime, UTC
 
 home_bp = Blueprint("home", __name__)
 
@@ -26,6 +28,13 @@ def home():
             goal_progress = (current_value / active_goal.target_value) * 100
         else:
             goal_progress = 0
+
+        if goal_progress >= 100 and active_goal.status == 'active':
+            active_goal.status = 'completed'
+            active_goal.completed_at = datetime.now(UTC)
+            db.session.commit()
+            flash(f'Congratulations! You automatically completed the goal: "{active_goal.name}".', 'success')
+            return redirect(url_for('home.home'))
 
     return render_template("index.html",
                            current_poker_total=bankroll_data['current_poker_total'],
