@@ -19,7 +19,7 @@ export FLASK_ENV=development
 export FLASK_APP=total_bankroll:create_app
 
 # Activate virtual environment
-source "$BASE_DIR/.venv/bin/activate"
+source "$BASE_DIR/bankroll_venv/bin/activate"
 
 # Change to project directory
 cd "$BASE_DIR"
