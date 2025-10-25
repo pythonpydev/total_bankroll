@@ -15,9 +15,10 @@ fi
 # Set environment variables
 export FLASK_ENV=production
 export FLASK_APP=total_bankroll:create_app
+export PYTHONPATH="$BASE_DIR/src:$PYTHONPATH"
 
 # Activate virtual environment
-VENV_DIR="/home/pythonpydev/.virtualenvs"
+VENV_DIR="/home/pythonpydev/.virtualenvs/bankroll_venv"
 if [ ! -f "$VENV_DIR/bin/activate" ]; then
     echo "Error: Virtual environment not found at $VENV_DIR/bin/activate."
     exit 1
@@ -29,6 +30,14 @@ cd "$BASE_DIR" || {
     echo "Error: Could not change to directory $BASE_DIR."
     exit 1
 }
+
+# Debug: Print environment variables and Python path
+echo "Environment variables:"
+printenv | grep -E 'FLASK_ENV|FLASK_APP|PYTHONPATH'
+echo "Python version:"
+python --version
+echo "Flask version:"
+pip show flask
 
 # Check command-line argument
 case "$1" in
