@@ -127,6 +127,19 @@ class Article(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     author = relationship('User', backref='articles')
 
+class Goal(db.Model):
+    __tablename__ = 'goals'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False, default='Bankroll Goal')
+    goal_type = db.Column(db.String(50), nullable=False, default='bankroll_target')
+    target_value = db.Column(db.Numeric(10, 2), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
+    end_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='active')  # 'active', 'completed', 'archived'
+    completed_at = db.Column(db.DateTime, nullable=True)
+    user = db.relationship('User', backref=db.backref('goals', lazy='dynamic'))
+
 @db.event.listens_for(Article, 'before_insert')
 @db.event.listens_for(Article, 'before_update')
 def on_article_save(mapper, connection, target):

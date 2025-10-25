@@ -34,5 +34,3 @@ Here’s a comprehensive **Pot Limit Omaha HUD statistics cheat sheet** table th
 - **Aggression** for maniacs can be misleading: they bet every street but also overplay junk. Look at positional stats and turn/river AF for better reads.
 
 ---
-
-Would you like me to provide this as a **downloadable Excel (.xlsx)** HUD reference table as well? (useful for importing or printing for study)

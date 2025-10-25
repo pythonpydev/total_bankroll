@@ -31,6 +31,11 @@ case "$1" in
         echo "Running Flask app..."
         flask run
         ;;
+    "run-dev")
+        echo "Running Flask app in development mode..."
+        export FLASK_ENV=development
+        flask run
+        ;;
     "seed")
         echo "Running seed_articles.py..."
         python src/total_bankroll/seed_articles.py

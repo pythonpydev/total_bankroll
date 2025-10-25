@@ -297,5 +297,3 @@ Here’s a compact recap:
 | Maniac / Ultra‑Aggressive           | Loose             | Aggressive           | Always bets/raises, high variance            | Tighten, let them build pot, trap, avoid bluff wars    |
 
 Ranking from easiest to hardest to exploit (in many PLO contexts): **Station / Fish** → **limp-heavy** → **LAG / Aggro Fish** → **TAG** → **NIT / Rock** → **balanced Maniac (if highly skilled)**.
-
-If you like, I can also give example hands (with card combos) for each archetype in PLO, or show how to construct exploitative lines vs each. Do you want me to do that?

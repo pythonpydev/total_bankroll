@@ -80,3 +80,21 @@
         </ul>
     {% endif %}
 {% endmacro %}
+
+{% macro render_field(field, attrs=None) %}
+    <div class="form-group mb-3">
+        {{ field.label(class="form-label") }}
+        {% if attrs %}
+            {{ field(class="form-control" + (" is-invalid" if field.errors else ""), **attrs) }}
+        {% else %}
+            {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+        {% endif %}
+        {% if field.errors %}
+            <div class="invalid-feedback">
+                {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}

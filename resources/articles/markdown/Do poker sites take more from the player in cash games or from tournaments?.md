@@ -1,7 +1,5 @@
 # Do poker sites take more from the player in cash games or from tournaments?
 
-
-
 Short answer first — yes, you’ll usually pay **less up-front on a $2–$10 PLO tournament (the site takes a fixed fee of ~8–10%)** but **cash-game rake (a percent of every pot) can add up to *much more* over time** depending on how many hands you play, average pot size and whether the site has a cap / “no-flop-no-drop” rule. Read on for a site-by-site comparison, a couple of worked examples, and a practical recommendation.
 
 ---
@@ -128,7 +126,7 @@ We show three avg-pot scenarios (in **dollars**):
 
 ---
 
-# 7) Sources I used (official pages & rake comparison guides)
+# 7) Sources used (official pages & rake comparison guides)
 
 - PokerStars — cash rake tables / rake explanations. ([PokerStars](https://www.pokerstars.com/poker/room/rake/?utm_source=chatgpt.com "Poker Table Rake"))
 
@@ -143,7 +141,3 @@ We show three avg-pot scenarios (in **dollars**):
 - Primedope — “net rake” methodology and rake-per-100-hands comparisons (useful calculator to estimate real costs). ([Primedope](https://www.primedope.com/online-poker-rake-comparison-rake-calculator/ "Online Poker Rake Comparison (Rake Calculator 2023)"))
 
 ---
-
-
-
-

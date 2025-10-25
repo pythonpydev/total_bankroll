@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, page_header %}
+
+{% block content %}
+<div class="container mt-4">
+    {{ page_header("Your Goals") }}
+
+    <!-- Section to Create a New Goal -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Set a New Bankroll Goal</h5>
+        </div>
+        <div class="card-body">
+            <p>Set a target for your bankroll and a date to achieve it by. Your current bankroll is <strong>${{ current_bankroll|round(2) }}</strong>.</p>
+            <form method="POST" action="{{ url_for('goals.index') }}" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ render_field(form.name, attrs={'class': 'form-control'}) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.target_value, attrs={'class': 'form-control'}) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.end_date, attrs={'class': 'form-control'}) }}
+                    </div>
+                </div>
+                {{ form.submit(class="btn btn-primary mt-3") }}
+            </form>
+        </div>
+    </div>
+
+    <!-- Section for Active Goals -->
+    <h4 class="mt-5">Active Goals</h4>
+    {% if active_goals %}
+        {% for goal in active_goals %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ goal.name }}</h5>
+                    <span class="text-muted">Target Date: {{ goal.end_date.strftime('%B %d, %Y') }}</span>
+                </div>
+                <p class="card-text text-muted">
+                    Target: ${{ goal.target_value|round(2) }}
+                </p>
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress|round }}%;" aria-valuenow="{{ goal.progress|round }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ goal.progress|round }}%
+                    </div>
+                </div>
+                <p class="mt-2">Current: ${{ goal.current_value|round(2) }} of ${{ goal.target_value|round(2) }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>You have no active goals. Set one above to get started!</p>
+    {% endif %}
+
+    <!-- Section for Completed Goals -->
+    <h4 class="mt-5">Completed Goals</h4>
+    {% if completed_goals %}
+        <ul class="list-group">
+        {% for goal in completed_goals %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">{{ goal.name }}</h6>
+                    <small class="text-muted">Target: ${{ goal.target_value|round(2) }}</small>
+                </div>
+                <span class="badge bg-success rounded-pill">Completed on {{ goal.completed_at.strftime('%b %d, %Y') }}</span>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not completed any goals yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

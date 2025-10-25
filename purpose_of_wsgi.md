@@ -45,6 +45,7 @@ The `WSGI.py` file interacts with your `.env` (renamed to `env_production.txt`),
 1. **`.env` (env_production.txt)**:
    
    - The `.env` file contains environment-specific configuration variables, such as database credentials, API keys, and mail server settings.
+   
    - In your `env_production.txt`:
      
      ```plaintext
@@ -56,12 +57,15 @@ The `WSGI.py` file interacts with your `.env` (renamed to `env_production.txt`),
      DB_PASS_PROD="f3gWoQe7X7BFCm"
      ...
      ```
+   
    - These variables are loaded by the `load_dotenv` function in `config.py`. The `WSGI.py` file sets `FLASK_ENV='production'`, which influences how `__init__.py` selects the configuration.
 
 2. **`config.py`**:
    
    - The `config.py` file defines configuration classes (`Config`, `DevelopmentConfig`, `ProductionConfig`) that set up your Flask application’s settings.
+   
    - It uses `os.getenv` to read environment variables from the `.env` file (loaded via `load_dotenv`).
+   
    - For example, the `ProductionConfig` class constructs the `SQLALCHEMY_DATABASE_URI` using production database credentials from the `.env` file:
      
      ```python
@@ -70,6 +74,7 @@ The `WSGI.py` file interacts with your `.env` (renamed to `env_production.txt`),
          f"{os.getenv('DB_HOST_PROD')}/{os.getenv('DB_NAME_PROD')}"
      )
      ```
+   
    - When `WSGI.py` calls `create_app(config_name='production')`, it selects the `ProductionConfig` class, which pulls variables like `DB_USER_PROD`, `DB_PASS_PROD`, etc., from the `.env` file.
 
 3. **`__init__.py`**:
@@ -98,6 +103,7 @@ In a development environment, your application does not use a `WSGI.py` file bec
 2. **Configuration**:
    
    - **Production**: Uses `ProductionConfig` from `config.py`, which connects to the production database (`pythonpydev$bankroll` on `pythonpydev.mysql.pythonanywhere-services.com`) using credentials like `DB_USER_PROD` and `DB_PASS_PROD` from `env_production.txt`.
+   
    - **Development**: Uses `DevelopmentConfig` from `config.py`, which connects to a local database (`bankroll` on `localhost`) using credentials like `DEV_DB_USER` and `DEV_DB_PASS` from `env_development.txt`. For example:
      
      ```python
@@ -106,6 +112,7 @@ In a development environment, your application does not use a `WSGI.py` file bec
          f"{os.getenv('DEV_DB_HOST')}/{os.getenv('DEV_DB_NAME')}"
      ))
      ```
+   
    - The `env_development.txt` file specifies `FLASK_ENV=development` and local database credentials, ensuring the application connects to a local MySQL instance.
 
 3. **Running the Application**:

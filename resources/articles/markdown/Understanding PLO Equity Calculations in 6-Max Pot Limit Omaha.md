@@ -98,5 +98,3 @@ Equity calculations use combinatorial probability, considering all possible comm
 - **Flop/Turn**: Estimate equity via outs (e.g., nut flush draw ~35% with 9 outs; wrap ~50% with 13+ outs). Bet/raise with >50% equity IP; call OOP with >40% and odds. Fold low-equity hands (<30%) without draws.
 - **Exploit Opponents**: Vs. loose players, raise/3-bet wider (Tier 3-4, ~50%+ equity); vs. tight players, tighten to Tier 1-2. Use blockers (e.g., A♠) to bluff when opponent’s equity is capped.
 - **Study**: Run equity sims (e.g., AAKKds vs. JT98ds on 7-6-2) to understand shifts. Adjust for position and SPR to maximize realized equity.
-
-For specific scenarios (e.g., exact hand vs. hand on a flop), provide details, and I can simulate precise equities or strategies!

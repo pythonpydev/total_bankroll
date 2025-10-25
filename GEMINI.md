@@ -26,12 +26,25 @@ This project is a Flask-based web application, **StakeEasy.net**, designed to he
 
 The application uses SQLAlchemy to define the database models. The key models are:
 
-* **`User`**: Stores user information, including email, password hash, and confirmation status. Inherits from `flask_security.UserMixin`.
-* **`OAuth`**: Stores OAuth information for users who sign in with Google or Facebook.
+| Table              | Description                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **users**          | Stores user information, including email, password hash, and confirmation status.            |
+| **oauth**          | Stores OAuth information for users who sign in with Google or Facebook.                      |
+| **sites**          | Represents online poker sites or other locations where funds are held.                       |
+| **assets**         | Represents non-site assets, such as cash or cryptocurrency.                                  |
+| **deposits**       | Records deposit transactions made by the user.                                               |
+| **drawings**       | Records withdrawal (drawing) transactions made by the user.                                  |
+| **site_history**   | Tracks the historical balance of each site over time.                                        |
+| **asset_history**  | Tracks the historical value of each asset over time.                                         |
+| **currency**       | Stores currency information, including exchange rates relative to a base currency (USD).     |
+| **cash_stakes**    | Stores information about cash game stakes.                                                   |
+| **articles**       | Stores poker articles, including title, content, and author, for the PLO content repository. |
+| **topics**         | Stores topics for articles.                                                                  |
+| **article_topics** | A many-to-many association table linking articles to topics.                                 |
 
 *Note: The core application tables (`assets`, `asset_history`, `currency`, `deposits`, `drawings`, `sites`, `site_history`) were originally defined in raw SQL. The project has been migrated to use SQLAlchemy for all models, ensuring a consistent and robust way to manage the database schema via Flask-Migrate.*
 
-## Project Structure
+## Development Environment Project Structure
 
 ```
 /home/ed/MEGA/total_bankroll/
@@ -48,23 +61,93 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │   └── workflows/
 │       └── python-ci.yml
 ├── migrations/
-│   └── ... (Alembic migration scripts)
+│   └── versions/
+│       ├── ... (Alembic migration scripts)
 ├── src/
 │   └── total_bankroll/
 │       ├── __init__.py
+│       ├── app.log
+│       ├── commands.py
 │       ├── config.py
+│       ├── currency.py
+│       ├── data_utils.py
+│       ├── extensions.py
 │       ├── models.py
+│       ├── oauth.py
+│       ├── recommendations.py
+│       ├── seed_articles.py
+│       ├── utils.py
+│       ├── data/
+│       │   └── recommendation_logic.json
 │       ├── routes/
-│       │   └── ... (Blueprint route files)
+│       │   ├── __init__.py
+│       │   ├── about.py
+│       │   ├── add_deposit.py
+│       │   ├── add_withdrawal.py
+│       │   ├── algo.py
+│       │   ├── articles.py
+│       │   ├── assets.py
+│       │   ├── auth.py
+│       │   ├── charts.py
+│       │   ├── common.py
+│       │   ├── currency_update.py
+│       │   ├── deposit.py
+│       │   ├── hand_eval.py
+│       │   ├── help.py
+│       │   ├── home.py
+│       │   ├── hud_player_type_guide.html
+│       │   ├── import_db.py
+│       │   ├── legal.py
+│       │   ├── plo_equity_vs_random.py
+│       │   ├── poker_sites.py
+│       │   ├── regenerate_hand_strength_json.py
+│       │   ├── reset_db.py
+│       │   ├── settings.py
+│       │   ├── tools.py
+│       │   └── withdrawal.py
 │       ├── static/
+│       │   ├── assets/
 │       │   ├── css/
-│       │   ├── js/
-│       │   └── assets/
+│       │   ├── images/
+│       │   └── js/
 │       └── templates/
-│           └── ... (Jinja2 template files)
+│           ├── security/
+│           │   └── ... (Flask-Security-Too templates)
+│           ├── __init__.py
+│           ├── ... (numerous Jinja2 template files)
 └── tests/
     └── ... (Pytest test files)
 ```
+
+## Production Environment Project Structure
+
+- The structure for the Production Environment is the same as for the Development Environment except that the top level path is /home/pythonpydev/total_bankroll
+
+## Difference between Production and Development
+
+### Database Configuration
+
+- MySQL username for development is root, MySQL username for production is pythonpydev
+
+- Production database name is pythonpydev$bankroll
+
+- Development database name is bankroll.
+
+- The differences are set out in the .env file:
+  
+  - **Development Database Credentials**
+  
+  - DEV_DBHOST="localhost"
+    DEV_DB_NAME="bankroll"
+    DEV_DB_USER="root"
+
+- **Production Database Credentials**
+
+- DB_HOST_PROD="pythonpydev.mysql.pythonanywhere-services.com"
+  DB_NAME_PROD="pythonpydev$bankroll"
+  DB_USER_PROD="pythonpydev"
+
+- In the development environment in .env, FLASK_ENV=development whereas in the production environment FLASK_ENV=production
 
 ## Security Configuration
 
@@ -290,12 +373,31 @@ Typical buy-in ranges (often 40bb minimum — 100bb maximum). Values shown in US
 - These are typical ranges used on PokerStars' cash-game (no-limit Hold'em) tables; actual availability and buy-in limits vary by region, table type, and traffic.  
 - Many tables use a 40bb–100bb standard (shown above). Some deep-stack tables allow higher maximums (e.g., up to 250bb).
 
-# 
+# Possible New Features
 
-## 
+### User Experience & Interface (UI/UX)
 
+1. **The Ultimate Dashboard:** If a user could only see one page, what would it be? Design a new, more interactive dashboard that gives a complete, at-a-glance summary of a player's entire poker world: current bankroll, recent performance, upcoming goals, and a key strategy tip for the day.
+2. **Gamify the Grind:** How can you make tracking a bankroll feel less like a chore and more like a game? Brainstorm a system of achievements, badges, or streaks for consistent tracking, reaching new bankroll milestones, or studying articles.
+3. **Mobile-First Data Entry:** Redesign the forms for adding a new session, deposit, or withdrawal specifically for a mobile device. How can you make it possible to log a session in under 30 seconds from a phone?
+4. **Personalized Themes:** Implement a "dark mode" and potentially other color themes. Allow users to customize the look and feel of their dashboard to make it their own.
 
+### Core Feature Enhancements
 
+5. **Advanced Session Tracking:** Go beyond simple deposits and drawings. Create a dedicated "Session" model where users can track individual playing sessions, including date, duration, game type (e.g., NLHE Cash, PLO MTT), stakes, location/site, and profit/loss. This would unlock much deeper analysis.
+6. **Smarter Charts:** The current charts are great, but what's next? Add new charting options like "Profit by Game Type," "Hourly Rate Over Time," or "Performance by Day of the Week." Allow users to compare different time periods on the same graph.
+7. **Goal Setting & Tracking:** Add a "Goals" feature. Let users set specific, measurable targets like "Reach a $10,000 bankroll by December" or "Play 100 tournaments this month." Visualize their progress towards these goals on the dashboard.
+8. **Tagging & Filtering:** Implement a tagging system for all transactions and sessions. Users could add tags like `#studying`, `#shot-taking`, `#live`, or `#deep-run`. This would allow for powerful filtering and analysis of their results based on context.
 
+### New Poker Tools & Features
 
-## 
+9. **Hand History Reviewer:** Create a tool where users can paste a hand history from a poker site. The tool could parse the hand, display it visually, and allow the user to add notes or even share it with a unique link for discussion.
+10. **Variance Simulator:** Build a tool that takes a user's estimated win rate and standard deviation and runs a simulation to show the wild swings a bankroll can take. This is an incredibly powerful tool for teaching the reality of variance.
+11. **ICM Calculator:** For your tournament players, add an "Independent Chip Model (ICM)" calculator to help them make correct decisions in the late stages of a tournament, especially when it comes to final table deals.
+12. **Live Poker Tracker:** Develop a simple "live session" mode. When a user starts playing a live game, they can hit a "Start" button. The app would track the duration, and they could quickly add their buy-ins and cash-out amount at the end to automatically calculate their results and hourly rate.
+
+### Content & Community
+
+13. **Interactive Quizzes:** Turn your strategy articles into interactive learning experiences. At the end of an article on SPR, for example, present the user with a few quiz scenarios to test their understanding.
+14. **User-Generated Content:** How could you allow trusted users to contribute? Perhaps a simple forum, a comment section on articles for discussion, or even a way for users to submit their own hands for public review.
+15. **The Mental Game:** The technical side of poker is covered, but what about the psychological side? Create a new content section dedicated to the "Mental Game," with articles and tools related to tilt control, motivation, focus, and dealing with downswings.
