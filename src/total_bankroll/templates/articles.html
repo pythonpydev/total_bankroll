@@ -10,11 +10,11 @@
                     <div class="card h-100 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">{{ article.title }}</h5>
-                            <div class="card-text table-responsive">
-                                {{ article.render_content() | truncate_html(150) | safe }}
+                            <div class="card-text flex-grow-1">
+                                <p>{{ article.content_html | striptags | truncate(200) }}</p>
                             </div>
-                            <p class="card-text"><small class="text-muted">Published on {{ article.date_published.strftime('%B %d, %Y') }}</small></p>
-                            <a href="{{ url_for('articles.view', id=article.id) }}" class="btn btn-primary">Read More</a>
+                            <p class="card-text mt-auto"><small class="text-muted">Published on {{ article.date_published.strftime('%B %d, %Y') if article.date_published }}</small></p>
+                            <a href="{{ url_for('articles.view', id=article.id) }}" class="btn btn-primary mt-2">Read More</a>
                         </div>
                     </div>
                 </div>

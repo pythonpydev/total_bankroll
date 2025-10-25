@@ -5,16 +5,12 @@
 
 # run_total_bankroll.sh in /home/ed/MEGA/total_bankroll/
 
-# Example seed in development:
+# Example:
 # cd ~/MEGA/total_bankroll
 # ./run_total_bankroll.sh seed
 
 # Run the app in development:
 # ./run_total_bankroll.sh run
-
-# In development if the articles model changed
-# ./run_total_bankroll.sh migrate
-# ./run_total_bankroll.sh upgrade
 
 # Set base directory
 BASE_DIR="/home/ed/MEGA/total_bankroll"
@@ -39,6 +35,14 @@ case "$1" in
         echo "Running seed_articles.py..."
         python src/total_bankroll/seed_articles.py
         ;;
+    "purge-articles")
+        echo "Purging all articles from the database..."
+        python src/total_bankroll/purge_articles.py
+        ;;
+    "convert-articles")
+        echo "Converting all articles' markdown to HTML..."
+        python src/total_bankroll/convert_articles.py
+        ;;
     "migrate")
         echo "Generating database migration..."
         flask db migrate
@@ -48,9 +52,11 @@ case "$1" in
         flask db upgrade
         ;;
     *)
-        echo "Usage: $0 {run|seed|migrate|upgrade}"
+        echo "Usage: $0 {run|seed|purge-articles|convert-articles|migrate|upgrade}"
         echo "  run: Start the Flask app"
         echo "  seed: Run seed_articles.py"
+        echo "  purge-articles: Delete all articles from the database"
+        echo "  convert-articles: Convert article markdown to HTML"
         echo "  migrate: Generate database migration"
         echo "  upgrade: Apply database migrations"
         exit 1

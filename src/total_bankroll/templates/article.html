@@ -1,29 +1,15 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
 {% block content %}
-<section class="page-section article-section" id="article">
-    <div class="container px-4 px-lg-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10">
-                <header class="article-header mb-4">
-                    <h1 class="article-title">{{ article.title }}</h1>
-                    <p class="article-meta text-muted">
-                        <i class="bi bi-calendar3 me-1"></i> Published on {{ article.date_published.strftime('%B %d, %Y') }}
-                        {% if article.author %}
-                        | <i class="bi bi-person me-1"></i> By {{ article.author.username }}
-                        {% endif %}
-                    </p>
-                </header>
-                <hr class="article-divider">
-                <div class="article-content shadow-sm p-4 bg-white dark-bg">
-                    {{ content | safe }}
-                </div>
-                <div class="article-footer mt-4">
-                    <a href="{{ url_for('articles.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Back to Articles
-                    </a>
-                </div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            {{ page_header(article.title) }}
+            <div class="article-content">
+                {{ article.content_html|safe }}
             </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}

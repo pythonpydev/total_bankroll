@@ -121,17 +121,25 @@ class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False, unique=True)
-    content_md = db.Column(db.Text, nullable=False)
-    content_html = db.Column(db.Text, nullable=True)
+    content_md = db.Column(db.Text, nullable=True)
+    content_html = db.Column(db.Text, nullable=False)
     date_published = db.Column(db.DateTime, nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     author = relationship('User', backref='articles')
 
-    def render_content(self):
-        html = markdown.markdown(self.content_md, extensions=['tables'])
-        allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody']
-        allowed_attributes = {'a': ['href'], 'span': ['class'], 'table': ['class'], 'th': ['class'], 'td': ['class']}
-        return bleach.clean(html, tags=allowed_tags, attributes=allowed_attributes)
+@db.event.listens_for(Article, 'before_insert')
+@db.event.listens_for(Article, 'before_update')
+def on_article_save(mapper, connection, target):
+    """
+    Automatically generate HTML from Markdown if HTML is not provided.
+    Also, sanitize the final HTML to prevent XSS.
+    """
+    if target.content_md and not target.content_html:
+        target.content_html = markdown.markdown(target.content_md, extensions=['tables'])
+
+    allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'span', 'table', 'tr', 'th', 'td', 'thead', 'tbody']
+    allowed_attributes = {'*': ['class'], 'a': ['href']}
+    target.content_html = bleach.clean(target.content_html, tags=allowed_tags, attributes=allowed_attributes)
 
 class Topic(db.Model):
     __tablename__ = 'topics'

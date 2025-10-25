@@ -26,25 +26,12 @@ This project is a Flask-based web application, **StakeEasy.net**, designed to he
 
 The application uses SQLAlchemy to define the database models. The key models are:
 
-| Table              | Description                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **users**          | Stores user information, including email, password hash, and confirmation status.            |
-| **oauth**          | Stores OAuth information for users who sign in with Google or Facebook.                      |
-| **sites**          | Represents online poker sites or other locations where funds are held.                       |
-| **assets**         | Represents non-site assets, such as cash or cryptocurrency.                                  |
-| **deposits**       | Records deposit transactions made by the user.                                               |
-| **drawings**       | Records withdrawal (drawing) transactions made by the user.                                  |
-| **site_history**   | Tracks the historical balance of each site over time.                                        |
-| **asset_history**  | Tracks the historical value of each asset over time.                                         |
-| **currency**       | Stores currency information, including exchange rates relative to a base currency (USD).     |
-| **cash_stakes**    | Stores information about cash game stakes.                                                   |
-| **articles**       | Stores poker articles, including title, content, and author, for the PLO content repository. |
-| **topics**         | Stores topics for articles.                                                                  |
-| **article_topics** | A many-to-many association table linking articles to topics.                                 |
+* **`User`**: Stores user information, including email, password hash, and confirmation status. Inherits from `flask_security.UserMixin`.
+* **`OAuth`**: Stores OAuth information for users who sign in with Google or Facebook.
 
 *Note: The core application tables (`assets`, `asset_history`, `currency`, `deposits`, `drawings`, `sites`, `site_history`) were originally defined in raw SQL. The project has been migrated to use SQLAlchemy for all models, ensuring a consistent and robust way to manage the database schema via Flask-Migrate.*
 
-## Development Environment Project Structure
+## Project Structure
 
 ```
 /home/ed/MEGA/total_bankroll/
@@ -61,101 +48,23 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │   └── workflows/
 │       └── python-ci.yml
 ├── migrations/
-│   └── versions/
-│       ├── ... (Alembic migration scripts)
+│   └── ... (Alembic migration scripts)
 ├── src/
 │   └── total_bankroll/
 │       ├── __init__.py
-│       ├── app.log
-│       ├── commands.py
 │       ├── config.py
-│       ├── currency.py
-│       ├── data_utils.py
-│       ├── extensions.py
 │       ├── models.py
-│       ├── oauth.py
-│       ├── recommendations.py
-│       ├── seed_articles.py
-│       ├── utils.py
-│       ├── data/
-│       │   └── recommendation_logic.json
 │       ├── routes/
-│       │   ├── __init__.py
-│       │   ├── about.py
-│       │   ├── add_deposit.py
-│       │   ├── add_withdrawal.py
-│       │   ├── algo.py
-│       │   ├── articles.py
-│       │   ├── assets.py
-│       │   ├── auth.py
-│       │   ├── charts.py
-│       │   ├── common.py
-│       │   ├── currency_update.py
-│       │   ├── deposit.py
-│       │   ├── hand_eval.py
-│       │   ├── help.py
-│       │   ├── home.py
-│       │   ├── hud_player_type_guide.html
-│       │   ├── import_db.py
-│       │   ├── legal.py
-│       │   ├── plo_equity_vs_random.py
-│       │   ├── poker_sites.py
-│       │   ├── regenerate_hand_strength_json.py
-│       │   ├── reset_db.py
-│       │   ├── settings.py
-│       │   ├── tools.py
-│       │   └── withdrawal.py
+│       │   └── ... (Blueprint route files)
 │       ├── static/
-│       │   ├── assets/
 │       │   ├── css/
-│       │   ├── images/
-│       │   └── js/
+│       │   ├── js/
+│       │   └── assets/
 │       └── templates/
-│           ├── security/
-│           │   └── ... (Flask-Security-Too templates)
-│           ├── __init__.py
-│           ├── ... (numerous Jinja2 template files)
+│           └── ... (Jinja2 template files)
 └── tests/
     └── ... (Pytest test files)
 ```
-
-## Production Environment Project Structure
-
-- The structure for the Production Environment is the same as for the Development Environment except that the top level path is /home/pythonpydev/total_bankroll
-
-
-
-## Difference between Production and Development
-
-
-
-### Database Configuration
-
-- MySQL username for development is root, MySQL username for production is pythonpydev
-
-- Production database name is pythonpydev$bankroll
-
-- Development database name is bankroll.
-
-- The differences are set out in the .env file:
-  
-  - **Development Database Credentials**
-  
-  - DEV_DBHOST="localhost"
-    DEV_DB_NAME="bankroll"
-    DEV_DB_USER="root"
-    
-  
-  - **Production Database Credentials**
-  
-  - DB_HOST_PROD="pythonpydev.mysql.pythonanywhere-services.com"
-    DB_NAME_PROD="pythonpydev$bankroll"
-    DB_USER_PROD="pythonpydev"
-    
-
-- In the development environment in .env, FLASK_ENV=development whereas in the production environment FLASK_ENV=production
-
-
 
 ## Security Configuration
 
@@ -380,3 +289,13 @@ Typical buy-in ranges (often 40bb minimum — 100bb maximum). Values shown in US
 
 - These are typical ranges used on PokerStars' cash-game (no-limit Hold'em) tables; actual availability and buy-in limits vary by region, table type, and traffic.  
 - Many tables use a 40bb–100bb standard (shown above). Some deep-stack tables allow higher maximums (e.g., up to 250bb).
+
+# 
+
+## 
+
+
+
+
+
+## 

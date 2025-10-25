@@ -12,24 +12,14 @@
 # ./run_total_bankroll.sh upgrade
 
 # Set base directory
-BASE_DIR="/home/pythonpydev/total_bankroll"
+BASE_DIR="/home/ed/MEGA/total_bankroll"
 
 # Set environment variables
-export FLASK_ENV=production
+export FLASK_ENV=development
 export FLASK_APP=total_bankroll:create_app
 
 # Activate virtual environment
-if command -v workon >/dev/null 2>&1; then
-    workon bankroll_venv || {
-        echo "Error: Failed to activate virtualenv with workon bankroll_venv"
-        exit 1
-    }
-else
-    source /home/pythonpydev/.virtualenvs/bankroll_venv/bin/activate || {
-        echo "Error: Failed to source virtualenv at /home/pythonpydev/.virtualenvs/bankroll_venv/bin/activate"
-        exit 1
-    }
-fi
+source "$BASE_DIR/.venv/bin/activate"
 
 # Change to project directory
 cd "$BASE_DIR"
@@ -44,6 +34,14 @@ case "$1" in
         echo "Running seed_articles.py..."
         python src/total_bankroll/seed_articles.py
         ;;
+    "purge-articles")
+        echo "Purging all articles from the database..."
+        python src/total_bankroll/purge_articles.py
+        ;;
+    "convert-articles")
+        echo "Converting all articles' markdown to HTML..."
+        python src/total_bankroll/convert_articles.py
+        ;;
     "migrate")
         echo "Generating database migration..."
         flask db migrate
@@ -53,9 +51,11 @@ case "$1" in
         flask db upgrade
         ;;
     *)
-        echo "Usage: $0 {run|seed|migrate|upgrade}"
+        echo "Usage: $0 {run|seed|purge-articles|convert-articles|migrate|upgrade}"
         echo "  run: Start the Flask app"
         echo "  seed: Run seed_articles.py"
+        echo "  purge-articles: Delete all articles from the database"
+        echo "  convert-articles: Convert article markdown to HTML"
         echo "  migrate: Generate database migration"
         echo "  upgrade: Apply database migrations"
         exit 1

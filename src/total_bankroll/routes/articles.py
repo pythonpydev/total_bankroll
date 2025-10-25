@@ -14,4 +14,4 @@ def index():
 def view(id):
     """Display a single article."""
     article = Article.query.get_or_404(id)
-    return render_template('article.html', article=article, content=article.render_content())
+    return render_template('article.html', article=article)

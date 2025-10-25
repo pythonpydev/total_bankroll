@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import markdown
 from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,16 +42,28 @@ def seed_articles(app, md_directory):
             return
         existing_titles = {article.title for article in Article.query.all()}
         for filename in os.listdir(md_directory):
-            if filename.endswith('.md'):
+            if filename.endswith(('.md', '.html')):
                 with open(os.path.join(md_directory, filename), 'r', encoding='utf-8') as f:
-                    content_md = f.read()
-                    title = filename.replace('.md', '').replace('-', ' ').title()
+                    raw_content = f.read()
+                    content_html = None
+                    content_md = None
+                    
+                    if filename.endswith('.html'):
+                        content_html = raw_content
+                        title = filename.replace('.html', '').replace('-', ' ').title()
+                    else: # .md file
+                        content_md = raw_content
+                        content_html = markdown.markdown(raw_content, extensions=['tables'])
+                        title = filename.replace('.md', '').replace('-', ' ').title()
+
                     if title in existing_titles:
                         logger.debug(f"Skipping duplicate article: {title}")
                         continue
+
                     article = Article(
                         title=title,
                         content_md=content_md,
+                        content_html=content_html,
                         date_published=datetime.now(UTC)
                     )
                     db.session.add(article)
