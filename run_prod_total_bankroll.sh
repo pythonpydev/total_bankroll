@@ -8,11 +8,11 @@
 # Example, seed articles in production:
 # ./run_prod_total_bankroll.sh seed
 
-# Set base directory
-BASE_DIR="/home/pythonpydev/total_bankroll"
-
 # in production after dbase change in dev, then pulling to production
 # ./run_total_bankroll.sh upgrade
+
+# Set base directory
+BASE_DIR="/home/pythonpydev/total_bankroll"
 
 # Set environment variables
 export FLASK_ENV=production
@@ -20,13 +20,13 @@ export FLASK_APP=total_bankroll:create_app
 
 # Activate virtual environment
 if command -v workon >/dev/null 2>&1; then
-    source /home/pythonpydev/.virtualenvs/bankroll_venv/bin/activate || {
+    workon bankroll_venv || {
         echo "Error: Failed to activate virtualenv with workon bankroll_venv"
         exit 1
     }
 else
-    source "$BASE_DIR/.virtualenvs/bankroll_venv/bin/activate" || {
-        echo "Error: Failed to source virtualenv at $BASE_DIR/.virtualenvs/bankroll_venv/bin/activate"
+    source /home/pythonpydev/.virtualenvs/bankroll_venv/bin/activate || {
+        echo "Error: Failed to source virtualenv at /home/pythonpydev/.virtualenvs/bankroll_venv/bin/activate"
         exit 1
     }
 fi
