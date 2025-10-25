@@ -17,7 +17,7 @@ export FLASK_ENV=production
 export FLASK_APP=total_bankroll:create_app
 
 # Activate virtual environment
-VENV_DIR="/home/pythonpydev/.virtualenvs/bankroll_venv"
+VENV_DIR="/home/pythonpydev/.virtualenvs"
 if [ ! -f "$VENV_DIR/bin/activate" ]; then
     echo "Error: Virtual environment not found at $VENV_DIR/bin/activate."
     exit 1
