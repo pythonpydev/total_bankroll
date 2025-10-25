@@ -3,32 +3,38 @@
 # make it executable:
 # chmod +x /home/pythonpydev/total_bankroll/run_prod_total_bankroll.sh
 
-# run_total_bankroll.sh in /home/pythonpydev/total_bankroll/
-
-# Example, seed articles in production:
-# ./run_prod_total_bankroll.sh seed
-
-# in production after dbase change in dev, then pulling to production
-# ./run_total_bankroll.sh upgrade
-
 # Set base directory
-BASE_DIR="/home/ed/MEGA/total_bankroll"
+BASE_DIR="/home/pythonpydev/total_bankroll"
+
+# Check if base directory exists
+if [ ! -d "$BASE_DIR" ]; then
+    echo "Error: Directory $BASE_DIR does not exist."
+    exit 1
+fi
 
 # Set environment variables
-export FLASK_ENV=development
+export FLASK_ENV=production
 export FLASK_APP=total_bankroll:create_app
 
 # Activate virtual environment
-source "$BASE_DIR/bankroll_venv/bin/activate"
+VENV_DIR="/home/pythonpydev/.virtualenvs/bankroll_venv"
+if [ ! -f "$VENV_DIR/bin/activate" ]; then
+    echo "Error: Virtual environment not found at $VENV_DIR/bin/activate."
+    exit 1
+fi
+source "$VENV_DIR/bin/activate"
 
 # Change to project directory
-cd "$BASE_DIR"
+cd "$BASE_DIR" || {
+    echo "Error: Could not change to directory $BASE_DIR."
+    exit 1
+}
 
 # Check command-line argument
 case "$1" in
     "run")
-        echo "Running Flask app..."
-        flask run
+        echo "Running Flask app with Gunicorn..."
+        gunicorn -w 4 -b 0.0.0.0:8000 "total_bankroll:create_app()"
         ;;
     "seed")
         echo "Running seed_articles.py..."
