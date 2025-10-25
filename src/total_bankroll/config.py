@@ -1,9 +1,25 @@
 import os
 from dotenv import load_dotenv
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-dotenv_path = os.getenv('DOTENV_PATH', os.path.join(basedir, '../.env'))
-load_dotenv(dotenv_path=dotenv_path, override=True)
+basedir = os.path.abspath(os.path.dirname(__file__))  # /home/ed/MEGA/total_bankroll/src/total_bankroll
+env_paths = [
+    os.path.join(basedir, '../../.env'),  # /home/ed/MEGA/total_bankroll/.env
+    os.path.join(basedir, '../.env')      # /home/ed/MEGA/total_bankroll/src/.env
+]
+env_loaded = False
+for env_path in env_paths:
+    print(f"Attempting to load .env from: {env_path}")
+    if os.path.exists(env_path):
+        print(f".env file exists at {env_path}")
+        with open(env_path, 'r') as f:
+            print(f".env contents:\n{f.read()}")
+        load_dotenv(dotenv_path=env_path, override=True)
+        env_loaded = True
+        break
+if not env_loaded:
+    print(f"No .env file found at {env_paths}")
+print(f"FLASK_ENV after load: {os.getenv('FLASK_ENV')}")
+print(f"DEV_DB_USER after load: {os.getenv('DEV_DB_USER')}")
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'a-default-dev-secret-key')
@@ -42,6 +58,6 @@ class ProductionConfig(Config):
     )
 
 config_by_name = dict(
-    development=DevelopmentConfig,
-    production=ProductionConfig
+    development=DevelopmentConfig(),
+    production=ProductionConfig()
 )

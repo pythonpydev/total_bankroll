@@ -1,4 +1,4 @@
-# StakeEasy.net Application - Gemini Overview
+# total_bankroll also known as StakeEasy.net Application - Gemini Overview
 
 ## Project Overview
 
@@ -9,7 +9,8 @@ This project is a Flask-based web application, **StakeEasy.net**, designed to he
 * Calculate overall bankroll and profit totals.
 * Handle multiple currencies by converting all values to a base currency (USD) for consistent tracking.
 * Visualize bankroll distribution with charts.
-* Incorporate the functionality of the spr project located at gh issue list -R pythonpydev/total_bankroll
+* Incorporate various tools for poker players (mainly for pot limit omaha)
+* Repository of poker articles (again mainly for pot limit omaha)
 
 ## Technology Stack
 
@@ -17,7 +18,7 @@ This project is a Flask-based web application, **StakeEasy.net**, designed to he
 * **Database:** MySQL (using SQLAlchemy ORM)
 * **Database Migrations:** Flask-Migrate (with Alembic)
 * **Authentication:** Flask-Security-Too (for user registration, login, and password management), Flask-Dance (for OAuth with Google and Facebook)
-* **Frontend:** HTML, Bootstrap, Jinja2
+* **Frontend:** HTML, Bootstrap, Jinja2, javascript
 * **Configuration:** Centralized `config.py` with environment-specific settings, loading sensitive data from a `.env` file using `python-dotenv`.
 * **Deployment:** Hosted on PythonAnywhere, served via WSGI.
 
@@ -25,12 +26,25 @@ This project is a Flask-based web application, **StakeEasy.net**, designed to he
 
 The application uses SQLAlchemy to define the database models. The key models are:
 
-* **`User`**: Stores user information, including email, password hash, and confirmation status. Inherits from `flask_security.UserMixin`.
-* **`OAuth`**: Stores OAuth information for users who sign in with Google or Facebook.
+| Table              | Description                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **users**          | Stores user information, including email, password hash, and confirmation status.            |
+| **oauth**          | Stores OAuth information for users who sign in with Google or Facebook.                      |
+| **sites**          | Represents online poker sites or other locations where funds are held.                       |
+| **assets**         | Represents non-site assets, such as cash or cryptocurrency.                                  |
+| **deposits**       | Records deposit transactions made by the user.                                               |
+| **drawings**       | Records withdrawal (drawing) transactions made by the user.                                  |
+| **site_history**   | Tracks the historical balance of each site over time.                                        |
+| **asset_history**  | Tracks the historical value of each asset over time.                                         |
+| **currency**       | Stores currency information, including exchange rates relative to a base currency (USD).     |
+| **cash_stakes**    | Stores information about cash game stakes.                                                   |
+| **articles**       | Stores poker articles, including title, content, and author, for the PLO content repository. |
+| **topics**         | Stores topics for articles.                                                                  |
+| **article_topics** | A many-to-many association table linking articles to topics.                                 |
 
 *Note: The core application tables (`assets`, `asset_history`, `currency`, `deposits`, `drawings`, `sites`, `site_history`) were originally defined in raw SQL. The project has been migrated to use SQLAlchemy for all models, ensuring a consistent and robust way to manage the database schema via Flask-Migrate.*
 
-## Project Structure
+## Development Environment Project Structure
 
 ```
 /home/ed/MEGA/total_bankroll/
@@ -47,23 +61,101 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │   └── workflows/
 │       └── python-ci.yml
 ├── migrations/
-│   └── ... (Alembic migration scripts)
+│   └── versions/
+│       ├── ... (Alembic migration scripts)
 ├── src/
 │   └── total_bankroll/
 │       ├── __init__.py
+│       ├── app.log
+│       ├── commands.py
 │       ├── config.py
+│       ├── currency.py
+│       ├── data_utils.py
+│       ├── extensions.py
 │       ├── models.py
+│       ├── oauth.py
+│       ├── recommendations.py
+│       ├── seed_articles.py
+│       ├── utils.py
+│       ├── data/
+│       │   └── recommendation_logic.json
 │       ├── routes/
-│       │   └── ... (Blueprint route files)
+│       │   ├── __init__.py
+│       │   ├── about.py
+│       │   ├── add_deposit.py
+│       │   ├── add_withdrawal.py
+│       │   ├── algo.py
+│       │   ├── articles.py
+│       │   ├── assets.py
+│       │   ├── auth.py
+│       │   ├── charts.py
+│       │   ├── common.py
+│       │   ├── currency_update.py
+│       │   ├── deposit.py
+│       │   ├── hand_eval.py
+│       │   ├── help.py
+│       │   ├── home.py
+│       │   ├── hud_player_type_guide.html
+│       │   ├── import_db.py
+│       │   ├── legal.py
+│       │   ├── plo_equity_vs_random.py
+│       │   ├── poker_sites.py
+│       │   ├── regenerate_hand_strength_json.py
+│       │   ├── reset_db.py
+│       │   ├── settings.py
+│       │   ├── tools.py
+│       │   └── withdrawal.py
 │       ├── static/
+│       │   ├── assets/
 │       │   ├── css/
-│       │   ├── js/
-│       │   └── assets/
+│       │   ├── images/
+│       │   └── js/
 │       └── templates/
-│           └── ... (Jinja2 template files)
+│           ├── security/
+│           │   └── ... (Flask-Security-Too templates)
+│           ├── __init__.py
+│           ├── ... (numerous Jinja2 template files)
 └── tests/
     └── ... (Pytest test files)
 ```
+
+## Production Environment Project Structure
+
+- The structure for the Production Environment is the same as for the Development Environment except that the top level path is /home/pythonpydev/total_bankroll
+
+
+
+## Difference between Production and Development
+
+
+
+### Database Configuration
+
+- MySQL username for development is root, MySQL username for production is pythonpydev
+
+- Production database name is pythonpydev$bankroll
+
+- Development database name is bankroll.
+
+- The differences are set out in the .env file:
+  
+  - **Development Database Credentials**
+  
+  - DEV_DBHOST="localhost"
+    DEV_DB_NAME="bankroll"
+    DEV_DB_USER="root"
+    
+  
+  - **Production Database Credentials**
+  
+  - DB_HOST_PROD="pythonpydev.mysql.pythonanywhere-services.com"
+    DB_NAME_PROD="pythonpydev$bankroll"
+    DB_USER_PROD="pythonpydev"
+    
+
+- In the development environment in .env, FLASK_ENV=development whereas in the production environment FLASK_ENV=production
+
+
 
 ## Security Configuration
 
@@ -90,20 +182,7 @@ While the application has a good security foundation, there are several areas th
 
 5. **Clickjacking:** The `X-Frame-Options` header has been set to `SAMEORIGIN` in `src/total_bankroll/__init__.py`. This helps mitigate clickjacking attacks by preventing the site from being embedded in iframes on other origins. Further enhancement could include implementing a Content Security Policy (CSP).
 
-## Access Github Issues Lists
-
-To retrieve a list of GitHub issues for this project, you can use the GitHub CLI (`gh`).
-
-**Command:**
-
-```bash
-gh issue list -R pythonpydev/total_bankroll
-```
-
-**Project's GitHub URL:**
-https://github.com/pythonpydev/total_bankroll
-
-# Deployment Workflow for Database Changes
+## # Deployment Workflow for Database Changes
 
 To ensure that database schema changes are applied safely and consistently to both the local development environment and the production server on PythonAnywhere, follow this procedure for every change that affects the database models.
 
@@ -212,20 +291,24 @@ This section details the business logic behind some of the application's key fea
 
 The logic for calculating tournament stake recommendations is handled by the `get_tournament_recommendation_data` method in `src/total_bankroll/recommendations.py`. It follows these steps:
 
-1.  **Calculate the "Ideal" Average Buy-in**:
-    *   First, it determines a "buy-in multiple" based on the user's selections (Game Type, Skill Level, Risk Tolerance). This multiple, which represents how many buy-ins a user should have in their bankroll (e.g., 100 for aggressive, 200 for conservative), is calculated from rules defined in `src/total_bankroll/data/recommendation_logic.json`.
-    *   It then calculates the user's ideal average buy-in by dividing their total bankroll by this multiple: `ideal_buy_in = total_bankroll / buy_in_multiple`.
+1. **Calculate the "Ideal" Average Buy-in**:
+   
+   * First, it determines a "buy-in multiple" based on the user's selections (Game Type, Skill Level, Risk Tolerance). This multiple, which represents how many buy-ins a user should have in their bankroll (e.g., 100 for aggressive, 200 for conservative), is calculated from rules defined in `src/total_bankroll/data/recommendation_logic.json`.
+   * It then calculates the user's ideal average buy-in by dividing their total bankroll by this multiple: `ideal_buy_in = total_bankroll / buy_in_multiple`.
 
-2.  **Find the Closest Standard Stake**:
-    *   The system compares the "ideal" buy-in against a list of standard tournament buy-ins available on poker sites.
-    *   It iterates backward from the highest stake to find the first one that is less than or equal to the user's ideal average buy-in. This becomes the "recommended stake".
+2. **Find the Closest Standard Stake**:
+   
+   * The system compares the "ideal" buy-in against a list of standard tournament buy-ins available on poker sites.
+   * It iterates backward from the highest stake to find the first one that is less than or equal to the user's ideal average buy-in. This becomes the "recommended stake".
 
-3.  **Generate "Move Up" and "Move Down" Messages**:
-    *   **Move Up**: The system calculates the bankroll required to play the next highest stake (e.g., $11 if the recommended is $5.50). It then informs the user exactly how much more money they need to accumulate to safely play at that level.
-    *   **Move Down**: To help with risk management, the system calculates the minimum bankroll required for the *current* recommended stake. It then shows the user how much they can afford to lose before they should drop down to the next lowest stake to protect their bankroll.
+3. **Generate "Move Up" and "Move Down" Messages**:
+   
+   * **Move Up**: The system calculates the bankroll required to play the next highest stake (e.g., $11 if the recommended is $5.50). It then informs the user exactly how much more money they need to accumulate to safely play at that level.
+   * **Move Down**: To help with risk management, the system calculates the minimum bankroll required for the *current* recommended stake. It then shows the user how much they can afford to lose before they should drop down to the next lowest stake to protect their bankroll.
 
-4.  **Handle Edge Cases**:
-    *   If a user's bankroll is too small for even the lowest available stakes, the system provides a clear explanation and calculates the amount needed to start playing, giving the user their first concrete goal.
+4. **Handle Edge Cases**:
+   
+   * If a user's bankroll is too small for even the lowest available stakes, the system provides a clear explanation and calculates the amount needed to start playing, giving the user their first concrete goal.
 
 In summary, the tournament recommendation engine provides a holistic view: it tells you what you can play **today**, what you need to do to **move up**, and how much you can risk before you need to **move down**.
 
@@ -233,20 +316,24 @@ In summary, the tournament recommendation engine provides a holistic view: it te
 
 The logic for cash game recommendations is handled by the `get_cash_game_recommendation_data` method in `src/total_bankroll/recommendations.py`. It's designed to find the highest stake a user can comfortably play while providing clear guidance on bankroll progression.
 
-1.  **Calculate a Personalized "Buy-in Multiple"**:
-    *   The function first calls `_calculate_weighted_range` to get a personalized `buy_in_multiple` based on the user's selections. For cash games, this multiple represents the number of maximum buy-ins a user should have in their bankroll (e.g., 75).
+1. **Calculate a Personalized "Buy-in Multiple"**:
+   
+   * The function first calls `_calculate_weighted_range` to get a personalized `buy_in_multiple` based on the user's selections. For cash games, this multiple represents the number of maximum buy-ins a user should have in their bankroll (e.g., 75).
 
-2.  **Find the Highest Playable Stake**:
-    *   It iterates *backwards* through the list of available cash game stakes (from highest to lowest).
-    *   For each stake, it calculates the required bankroll: `required_bankroll = max_buy_in * buy_in_multiple`.
-    *   The first stake it finds where the user's `total_bankroll` is greater than or equal to the `required_bankroll` is set as the recommended stake. Because the loop is backwards, this is guaranteed to be the highest stake they are properly bankrolled for.
+2. **Find the Highest Playable Stake**:
+   
+   * It iterates *backwards* through the list of available cash game stakes (from highest to lowest).
+   * For each stake, it calculates the required bankroll: `required_bankroll = max_buy_in * buy_in_multiple`.
+   * The first stake it finds where the user's `total_bankroll` is greater than or equal to the `required_bankroll` is set as the recommended stake. Because the loop is backwards, this is guaranteed to be the highest stake they are properly bankrolled for.
 
-3.  **Generate "Move Up" and "Move Down" Messages**:
-    *   **Move Up**: If the recommended stake isn't the highest available, the system calculates the bankroll needed for the next stake up and tells the user how much more they need to accumulate.
-    *   **Move Down (Stop-Loss)**: This is a key risk management feature. It calculates a "stop-loss" threshold for the current recommended stake, based on the stake's *minimum* buy-in (`move_down_threshold = buy_in_multiple * current_min_buy_in`). It then tells the user the exact amount they can lose before they should move down to the next lowest stake to protect their bankroll.
+3. **Generate "Move Up" and "Move Down" Messages**:
+   
+   * **Move Up**: If the recommended stake isn't the highest available, the system calculates the bankroll needed for the next stake up and tells the user how much more they need to accumulate.
+   * **Move Down (Stop-Loss)**: This is a key risk management feature. It calculates a "stop-loss" threshold for the current recommended stake, based on the stake's *minimum* buy-in (`move_down_threshold = buy_in_multiple * current_min_buy_in`). It then tells the user the exact amount they can lose before they should move down to the next lowest stake to protect their bankroll.
 
-4.  **Handle Edge Cases**:
-    *   If the user's bankroll is too small for even the lowest available stakes, the system sets the recommendation to "Below Smallest Stakes" and provides a clear explanation of how much more money is needed to start playing.
+4. **Handle Edge Cases**:
+   
+   * If the user's bankroll is too small for even the lowest available stakes, the system sets the recommendation to "Below Smallest Stakes" and provides a clear explanation of how much more money is needed to start playing.
 
 ### The `_calculate_weighted_range` Function
 
@@ -256,16 +343,16 @@ The `_calculate_weighted_range` function in `src/total_bankroll/recommendations.
 
 The function's logic is driven by `src/total_bankroll/data/recommendation_logic.json`, which defines two key things:
 
-1.  **`weights`**: The importance of each user selection (e.g., `risk_tolerance` has a higher weight than `game_environment`).
-2.  **`ranges`**: The base "rules" for each selection (e.g., a conservative tournament player should have 100-200 buy-ins).
+1. **`weights`**: The importance of each user selection (e.g., `risk_tolerance` has a higher weight than `game_environment`).
+2. **`ranges`**: The base "rules" for each selection (e.g., a conservative tournament player should have 100-200 buy-ins).
 
 The calculation follows these steps:
 
-1.  **Initialize Sums**: It starts with `total_weight`, `weighted_low_sum`, and `weighted_high_sum` at zero.
-2.  **Iterate Through Selections**: For each user preference (like "Conservative" risk tolerance), it retrieves the corresponding weight and range from the JSON file.
-3.  **Calculate Weighted Sums**: It multiplies the low and high ends of the range by the selection's weight and adds them to the running totals.
-4.  **Calculate Final Averages**: After processing all selections, it divides the `weighted_low_sum` and `weighted_high_sum` by the `total_weight` to get a final, custom range (e.g., 98 to 192 buy-ins).
-5.  **Calculate Average Multiple**: It finds the midpoint of this new custom range (e.g., 145). This single number is what the cash game and tournament recommendation functions use to calculate the required bankroll for a given stake.
+1. **Initialize Sums**: It starts with `total_weight`, `weighted_low_sum`, and `weighted_high_sum` at zero.
+2. **Iterate Through Selections**: For each user preference (like "Conservative" risk tolerance), it retrieves the corresponding weight and range from the JSON file.
+3. **Calculate Weighted Sums**: It multiplies the low and high ends of the range by the selection's weight and adds them to the running totals.
+4. **Calculate Final Averages**: After processing all selections, it divides the `weighted_low_sum` and `weighted_high_sum` by the `total_weight` to get a final, custom range (e.g., 98 to 192 buy-ins).
+5. **Calculate Average Multiple**: It finds the midpoint of this new custom range (e.g., 145). This single number is what the cash game and tournament recommendation functions use to calculate the required bankroll for a given stake.
 
 This process creates a nuanced, personalized bankroll management rule based on a user's specific context, making the application's advice far more relevant and useful.
 
@@ -293,119 +380,3 @@ Typical buy-in ranges (often 40bb minimum — 100bb maximum). Values shown in US
 
 - These are typical ranges used on PokerStars' cash-game (no-limit Hold'em) tables; actual availability and buy-in limits vary by region, table type, and traffic.  
 - Many tables use a 40bb–100bb standard (shown above). Some deep-stack tables allow higher maximums (e.g., up to 250bb).
-
-
-
-# Pot Limit Omaha SPR Calculator
-
-This file provides context and instructions for the Gemini CLI to assist in the
-development of a Pot Limit Omaha (PLO) Stack-to-Pot Ratio (SPR) calculator.
-
-## Project Location
-
-/home/ed/MEGA/spr/
-
-## Overview
-
-The goal of this project is to create a website that assists poker player that
-play four card Pot Limit Omaha (PLO) poker.
-
-The site allows users to input their starting PLO hands, the size of the pot
-etc. and allows players to guess what the Stack to Pot Ratio (SPR) is. The site
-calculates the correct SPR for a given hand of PLO. The user will input the
-effective stack size and the size of the pot, and the tool will output the SPR.
-
-The site should also calculate how many pot sized bets a player could make
-given the hero's stack size and the size of the pot and convert this into
-actions: e.g. raise before the flop, bet pot on the flop, bet pot on the turn
-and bet pot on the river.
-
-The app will be able to evaluate a player's PLO hand on a given flop and
-identify how many cards left in the deck will improve their hand (i.e. number
-of outs). It will then be able to calculate the odds of improving as a
-percentage, decimal and fraction or ration (e.g. 3 to 1 or 3/1).
-
-The app will be able to evaluate the strengths of the hero's hand on a given
-flop and also factor in any draws e.g. draws to a straight, flush, full house,
-four of a kind or a straight flush.
-
-Most of the information required for the project is located in tables.md
-located in /home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/spr/docs/
-
-The site will evaluate the equity of the hero's hand and their opponent's hand
-and will determine what action the hero should take based on the information
-contained party in decisions.html and also based on the information provided
-in the text book
-Advanced Pot-Limit Omaha_ Small Ball and Short-Handed Play ( PDFDrive ).pdf
-which is located in
-/home/ed/Insync/e.f.bird@outlook.com/OneDrive/Dev/spr/docs/
-
-The project is structured as a standard Python package with a `src` directory,
-tests, and configuration files like `pyproject.toml`.
-
-## Key Technologies
-
-- Language: Python 3 (>=3.8)
-- Dependency Management: `pip` with `requirements.txt`
-- Testing: `pytest`
-- Linting: `flake8`
-- Formatting: `black`
-
-## Core Logic
-
-The core logic for the web application is implemented in `src/spr/app.py`. The
-core calculation logic is implemented in `src/spr/algo.py`. [nb. both of these will change when the app is integrated into the total_bankroll app]
-
-### PLO hand strength
-
-The app uses the treys python package to evaluate the strength of PLO hands.
-
-### Interface
-
-The interface is defined in `src/spr/app.py` (however this will change when the app is integrated into total_bankroll) and uses Flask to implement a HTML
-front end. JavaScript is also used throughout for front-end elements and
-form validation etc.  These are all the same as the total_bankroll app making integration much easier.
-
-## Development Guidelines
-
-- All code should be written in Python 3 and conform to the project's existing
-  style.
-- Use `pytest` for testing. Test files are located in the `tests/` directory.
-- Use `flake8` for linting and `black` for formatting.
-- Dependencies are managed in `requirements.txt`.
-
-## Example Usage
-
-Users navigate to form.html, to input the hand details etc. and then click on
-the submit button. The app will then display the hands as images of cards. The
-user is given the opportunity to input their guess of the SPR. When they press
-the Submit SPR Guess button the app displays the correct SPR. Users can also
-click on the View Hand Evaluation button which will display the relative hand
-strengths of the hero's and opponent's hand.
-
-## To do
-
-The following improvements need to be made to the website:
-
-1. [x] Improve the Home page.
-2. [x] Calculate pot-sized bets.
-3. [x] Calculate outs.
-4. [x] Calculate odds.
-5. [ ] Calculate pot equities.
-6. [x] Evaluate hand strength.
-7. [ ] Determine the hero's next action.
-8. [ ] Create a quiz.
-
-### Anticipated difficulties of each task
-
-1. **Improve the Home page:** This is a straightforward task. (Completed)
-2. **Calculate pot-sized bets:** This is a relatively simple calculation. (Completed)
-3. **Calculate outs:** This is a medium-complexity task that will require some logic to identify all possible improving cards. (Completed)
-4. **Calculate odds:** This is a simple calculation once the number of outs is known. (Completed)
-5. **Calculate pot equities:** This is a complex task, but as mentioned before, there are existing libraries and algorithms that can be used for this.
-6. **Evaluate hand strength:** This is a medium-complexity task that will involve combining the absolute hand ranking with the number of outs. (Completed)
-7. **Determine the hero's next action:** This is still the most challenging task. The tables.md file will be a great help, but it will still require careful
-   implementation to translate the tables into a working decision-making engine.
-8. **Create a quiz:** This is a large but well-defined task. The detailed requirements in the "To Do" list will make it much easier to implement.
-
-## 

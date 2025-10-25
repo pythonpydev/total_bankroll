@@ -1,6 +1,6 @@
 # .env file for total_bankroll project
 FLASK_APP=total_bankroll
-FLASK_ENV=production
+FLASK_ENV=development
 
 # Flask Secret Key (for session management)
 SECRET_KEY='daaf7210a6215a899b40ed45c644fa2be222ba7b85a5ed59'

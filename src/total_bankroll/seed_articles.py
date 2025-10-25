@@ -1,15 +1,32 @@
 import os
 import sys
 import logging
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Add project directory to sys.path
-basedir = os.path.abspath(os.path.dirname(__file__))
-project_home = os.path.join(basedir, '..')
+basedir = os.path.abspath(os.path.dirname(__file__))  # /home/ed/MEGA/total_bankroll/src/total_bankroll
+project_home = os.path.join(basedir, '..')  # /home/ed/MEGA/total_bankroll/src
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
+
+# Load .env file from project root or src/
+env_paths = [
+    os.path.join(basedir, '../../.env'),  # /home/ed/MEGA/total_bankroll/.env
+    os.path.join(basedir, '../.env')      # /home/ed/MEGA/total_bankroll/src/.env
+]
+env_loaded = False
+for env_path in env_paths:
+    if os.path.exists(env_path):
+        logger.debug(f"Loading .env from: {env_path}")
+        load_dotenv(env_path, override=True)
+        env_loaded = True
+        break
+if not env_loaded:
+    logger.error(f"No .env file found at {env_paths}")
+    sys.exit(1)
 
 from total_bankroll import create_app, db
 from total_bankroll.models import Article
@@ -49,6 +66,6 @@ if __name__ == '__main__':
     config_name = 'development' if os.getenv('FLASK_ENV') == 'development' else 'production'
     logger.debug(f"Creating app with config: {config_name}")
     app = create_app(config_name=config_name)
-    md_dir = os.path.join(basedir, '../../resources/articles/markdown')
+    md_dir = os.path.join(basedir, '../../resources/articles/markdown')  # /home/ed/MEGA/total_bankroll/resources/articles/markdown
     logger.debug(f"Seeding articles from: {md_dir}")
     seed_articles(app, md_dir)
