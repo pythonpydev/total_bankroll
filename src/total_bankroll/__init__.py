@@ -10,19 +10,26 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Subclass Security to disable OAuthGlue entirely
+# Subclass Security to disable OAuthGlue
 class CustomSecurity(Security):
-    def init_app(self, app, datastore=None, register_blueprint=True, **kwargs):
-        # Call parent's init_app without OAuth initialization
-        super(Security, self).__init__(app, datastore, register_blueprint=register_blueprint)
+    def __init__(self, app=None, datastore=None, register_blueprint=True, **kwargs):
+        super().__init__(app, datastore, register_blueprint=register_blueprint, **kwargs)
         self._oauth = None
         self.oauthglue = None
-        # Initialize other Flask-Security components
+
+    def init_app(self, app, datastore=None, register_blueprint=True, **kwargs):
+        # Call Security.__init__ without app to avoid redundant initialization
+        if not hasattr(self, '_state'):
+            super(Security, self).__init__(datastore=datastore, register_blueprint=register_blueprint, **kwargs)
+        # Initialize Flask-Security components without OAuth
         self._register_blueprint(app, register_blueprint)
         self._configure_routes(app)
         self._configure_signals()
         self._configure_template_filters(app)
         self._configure_context_processors(app)
+        # Explicitly set oauthglue to None to prevent OAuth initialization
+        self._oauth = None
+        self.oauthglue = None
 
 def create_app(config_name='development'):
     app = Flask(__name__)
