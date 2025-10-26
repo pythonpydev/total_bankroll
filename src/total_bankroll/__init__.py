@@ -36,6 +36,7 @@ from .routes.hand_eval import hand_eval_bp
 from .routes.legal import legal_bp
 from .routes.goals import goals_bp
 from .routes.help import help_bp
+from .routes.achievements import achievements_bp
 from .routes.hand_eval import load_plo_hand_rankings_data
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ def register_blueprints(app):
         (about_bp, None), (charts_bp, '/charts'), (settings_bp, None),
         (reset_db_bp, None), (import_db_bp, None), (common_bp, None),
         (add_withdrawal_bp, None), (add_deposit_bp, None), (tools_bp, None),
-        (hand_eval_bp, '/hand-eval'), (legal_bp, None), (goals_bp, None), (help_bp, None),
+        (hand_eval_bp, '/hand-eval'), (legal_bp, None), (goals_bp, None), (help_bp, None), (achievements_bp, None),
         (articles_bp, None),
     ]
     for bp, url_prefix in blueprints:

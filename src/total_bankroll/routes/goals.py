@@ -9,6 +9,7 @@ from datetime import datetime, date, UTC
 from ..extensions import db
 from ..models import Goal
 from ..utils import get_user_bankroll_data
+from ..achievements import check_and_award_achievements
 
 goals_bp = Blueprint('goals', __name__, url_prefix='/goals')
 
@@ -76,6 +77,7 @@ def index():
             goal.status = 'completed'
             goal.completed_at = datetime.now(UTC)
             flash(f'Congratulations! You automatically completed the goal: "{goal.name}".', 'success')
+            check_and_award_achievements(current_user)
             db.session.commit()
             return redirect(url_for('goals.index'))
 
@@ -109,6 +111,7 @@ def complete_goal(goal_id):
         goal.status = 'completed'
         goal.completed_at = datetime.now(UTC)
         db.session.commit()
+        check_and_award_achievements(current_user)
         flash(f'Congratulations! You completed the goal: "{goal.name}".', 'success')
     else:
         flash('Only active goals can be marked as complete.', 'warning')

@@ -9,6 +9,16 @@
             <div class="article-content">
                 {{ article.content_html|safe }}
             </div>
+            <div class="text-center mt-4 py-3">
+                {% if not has_read %}
+                    <form action="{{ url_for('articles.mark_as_read', article_id=article.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi-check-circle me-2"></i>Mark as Read</button>
+                    </form>
+                {% else %}
+                    <p class="text-muted"><i class="bi-check-circle-fill text-success me-2"></i>You have read this article.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

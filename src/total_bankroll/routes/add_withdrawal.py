@@ -3,7 +3,7 @@ from flask_security import login_required, current_user
 from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
-from ..utils import get_user_bankroll_data, get_sorted_currencies
+from ..achievements import update_user_streak
 from ..extensions import db
 from ..models import Drawings  # Add this import
 
@@ -42,6 +42,7 @@ def add_withdrawal():
         current_app.logger.debug(f"Adding withdrawal for user_id: {current_user.id}")
         db.session.add(new_drawing)
         db.session.commit()
+        update_user_streak(current_user)
         flash("Withdrawal added successfully!", "success")
         return redirect(url_for("withdrawal.withdrawal"))
     else:

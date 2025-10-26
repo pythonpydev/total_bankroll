@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired, Length
 
 from ..extensions import db
 from ..models import Assets, AssetHistory, Currency
-from ..utils import get_sorted_currencies
+from ..achievements import update_user_streak
 from datetime import datetime
 
 assets_bp = Blueprint("assets", __name__)
@@ -124,6 +124,7 @@ def update_asset(asset_id):
         new_history = AssetHistory(asset_id=asset.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
+        update_user_streak(current_user)
         flash('Asset amount updated!', 'success')
         return redirect(url_for('assets.assets_page'))
     

@@ -21,6 +21,8 @@ class User(db.Model, UserMixin):
     default_currency_code = db.Column(db.String(3), db.ForeignKey('currency.code'), nullable=False, default='USD')
     otp_secret = db.Column(db.String(16))
     otp_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    last_activity_date = db.Column(db.Date, nullable=True)
+    streak_days = db.Column(db.Integer, nullable=False, default=0)
 
     def get_id(self):
         return self.fs_uniquifier
@@ -139,6 +141,43 @@ class Goal(db.Model):
     status = db.Column(db.String(20), nullable=False, default='active')  # 'active', 'completed', 'archived'
     completed_at = db.Column(db.DateTime, nullable=True)
     user = db.relationship('User', backref=db.backref('goals', lazy='dynamic'))
+
+class Achievement(db.Model):
+    __tablename__ = 'achievements'
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    icon = db.Column(db.String(100), nullable=True)
+    target = db.Column(db.Integer, nullable=True)
+
+class UserAchievement(db.Model):
+    __tablename__ = 'user_achievements'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    achievement_id = db.Column(db.Integer, db.ForeignKey('achievements.id'), primary_key=True)
+    unlocked_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+    user = db.relationship('User', backref=db.backref('user_achievements', cascade="all, delete-orphan"))
+    achievement = db.relationship('Achievement')
+
+class UserReadArticle(db.Model):
+    __tablename__ = 'user_read_articles'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), primary_key=True)
+    read_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+    user = db.relationship('User', backref=db.backref('read_articles', cascade="all, delete-orphan"))
+    article = db.relationship('Article', backref=db.backref('read_by_users', cascade="all, delete-orphan"))
+
+class UserToolUsage(db.Model):
+    __tablename__ = 'user_tool_usage'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    tool_key = db.Column(db.String(50), primary_key=True) # e.g., 'hand_evaluator', 'spr_calculator'
+    used_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+    user = db.relationship('User', backref=db.backref('tool_usages', cascade="all, delete-orphan"))
+
 
 @db.event.listens_for(Article, 'before_insert')
 @db.event.listens_for(Article, 'before_update')

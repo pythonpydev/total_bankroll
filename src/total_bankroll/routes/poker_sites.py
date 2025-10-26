@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired, Length, Optional
 
 from ..extensions import db
 from ..models import Sites, SiteHistory, Currency
-from ..utils import get_sorted_currencies
+from ..achievements import update_user_streak
 from datetime import datetime, UTC
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
@@ -135,6 +135,7 @@ def update_site(site_id):
         new_history = SiteHistory(site_id=site.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
+        update_user_streak(current_user)
         flash('Site amount updated!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
     

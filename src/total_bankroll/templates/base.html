@@ -58,7 +58,6 @@
                                 <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</a>
                                 <ul class="dropdown-menu" aria-labelledby="menuDropdown">
                                     <li><h6 class="dropdown-header">Manage</h6></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('goals.index') }}">Goals</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('poker_sites.poker_sites_page') }}">Poker Sites</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('assets.assets_page') }}">Assets</a></li>
                                     <li><hr class="dropdown-divider"></li>
@@ -72,7 +71,6 @@
                                     <li><h6 class="dropdown-header">Strategy</h6></li>
                                     <li><a class="dropdown-item" href="{{ url_for('tools.tools_page') }}">Tools</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('articles.index') }}">Articles</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('help.help_page') }}">Help</a></li>
                                 </ul>
                             </li>
                             <!-- User Dropdown -->
@@ -82,6 +80,8 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                     <li><h6 class="dropdown-header">{{ current_user.email }}</h6></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('goals.index') }}">Goals</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('achievements.index') }}">Achievements</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('settings.settings_page') }}">Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
@@ -92,6 +92,7 @@
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
                         {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('about.about') }}">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('help.help_page') }}">Help</a></li>
                         <!-- Theme Toggler -->
                         <li class="nav-item ms-lg-2">
                             <button class="btn btn-link nav-link px-2" id="theme-toggle" type="button" aria-label="Toggle theme">
@@ -102,18 +103,36 @@
                 </div>
             </div>
         </nav>
-        <div class="container mt-4">
+
+        <!-- Toast Container for Notifications -->
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="toast align-items-center text-bg-{{ category }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    {% set parts = message.split('|', 1) %}
+                                    {% if parts|length > 1 %}
+                                        {# This is an achievement message with an icon #}
+                                        <i class="{{ parts[0] }} me-2"></i>
+                                        {{ parts[1] }}
+                                    {% else %}
+                                        {# This is a regular flash message #}
+                                        {% if category == 'success' %}<i class="bi-check-circle-fill me-2"></i>{% endif %}
+                                        {% if category == 'danger' %}<i class="bi-exclamation-triangle-fill me-2"></i>{% endif %}
+                                        {% if category == 'warning' %}<i class="bi-exclamation-triangle-fill me-2"></i>{% endif %}
+                                        {{ message }}
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
         </div>
+
         {% block content %}
         {% endblock %}
         <!-- Footer-->
@@ -270,6 +289,18 @@
             });
         });
     </script>    
+    <!-- Toast Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            const toastList = toastElList.map(function (toastEl) {
+                // Create a new toast instance and show it
+                const toast = new bootstrap.Toast(toastEl, { delay: 5000 }); // 5 second delay
+                toast.show();
+                return toast;
+            });
+        });
+    </script>
     {% if g.is_in_eu %}
     <!-- Cookie Consent Script -->
     <script>
