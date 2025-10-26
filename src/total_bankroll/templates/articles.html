@@ -4,12 +4,25 @@
     <div class="container px-4 px-lg-5">
         <h2 class="text-center">Strategy Articles</h2>
 
-        <!-- Search Bar -->
-        <div class="row justify-content-center my-4">
-            <div class="col-lg-8">
-                <form method="GET" action="{{ url_for('articles.index') }}" class="d-flex">
+        <!-- Search and Sort Controls -->
+        <div class="row justify-content-center my-4 g-2">
+            <div class="col-lg-6">
+                <form id="search-form" method="GET" action="{{ url_for('articles.index') }}" class="d-flex">
                     <input type="search" name="q" class="form-control me-2" placeholder="Search articles by keyword..." value="{{ search_query or '' }}" aria-label="Search">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
                     <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+            </div>
+            <div class="col-lg-3">
+                <form id="sort-form" method="GET" action="{{ url_for('articles.index') }}">
+                    <input type="hidden" name="q" value="{{ search_query or '' }}">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Sort by: Newest</option>
+                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Sort by: Oldest</option>
+                        <option value="updated" {% if sort_by == 'updated' %}selected{% endif %}>Sort by: Recently Updated</option>
+                        <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Sort by: Title (A-Z)</option>
+                        <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Sort by: Title (Z-A)</option>
+                    </select>
                 </form>
             </div>
         </div>
@@ -30,6 +43,12 @@
                                 {% else %}
                                     Published: {{ article.date_published.strftime('%b %d, %Y') if article.date_published }}
                                 {% endif %}
+                                {% if article.tags %}
+                                | Tags:
+                                {% for tag in article.tags %}
+                                    <a href="{{ url_for('articles.by_tag', tag_name=tag.name) }}" class="badge bg-secondary text-decoration-none">{{ tag.name }}</a>
+                                {% endfor %}
+                                {% endif %}
                             </small></p>
                             <a href="{{ url_for('articles.view', id=article.id) }}" class="btn btn-primary mt-2">Read More</a>
                         </div>
@@ -48,19 +67,19 @@
         <nav aria-label="Article navigation" class="mt-5">
             <ul class="pagination justify-content-center">
                 <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.prev_num, q=search_query) if pagination.has_prev else '#' }}">Previous</a>
+                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.prev_num, q=search_query, sort=sort_by) if pagination.has_prev else '#' }}">Previous</a>
                 </li>
                 {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
                     {% if page_num %}
                         <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('articles.index', page=page_num, q=search_query) }}">{{ page_num }}</a>
+                            <a class="page-link" href="{{ url_for('articles.index', page=page_num, q=search_query, sort=sort_by) }}">{{ page_num }}</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><span class="page-link">…</span></li>
                     {% endif %}
                 {% endfor %}
                 <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.next_num, q=search_query) if pagination.has_next else '#' }}">Next</a>
+                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.next_num, q=search_query, sort=sort_by) if pagination.has_next else '#' }}">Next</a>
                 </li>
             </ul>
         </nav>

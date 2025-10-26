@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import markdown
+import frontmatter
 from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.DEBUG)
@@ -30,7 +31,7 @@ if not env_loaded:
     sys.exit(1)
 
 from total_bankroll import create_app, db
-from total_bankroll.models import Article
+from total_bankroll.models import Article, Tag
 from datetime import datetime, UTC
 
 def seed_articles(app, md_directory):
@@ -44,7 +45,8 @@ def seed_articles(app, md_directory):
         for filename in os.listdir(md_directory):
             if filename.endswith(('.md', '.html')):
                 with open(os.path.join(md_directory, filename), 'r', encoding='utf-8') as f:
-                    raw_content = f.read()
+                    post = frontmatter.load(f)
+                    raw_content = post.content
                     new_content_html = None
                     content_md = None
                     
@@ -56,6 +58,7 @@ def seed_articles(app, md_directory):
                         new_content_html = markdown.markdown(raw_content, extensions=['tables'])
                         title = filename.replace('.md', '').replace('-', ' ').title()
 
+                    tag_names = post.metadata.get('tags', [])
                     if title in existing_articles:
                         # Article exists, check for content changes
                         article_to_update = existing_articles[title]
@@ -67,6 +70,15 @@ def seed_articles(app, md_directory):
                             logger.info(f"Updating article: {title}")
                             article_to_update.content_md = content_md
                             article_to_update.content_html = new_content_html or content_html
+
+                            # Update tags
+                            article_to_update.tags.clear()
+                            for tag_name in tag_names:
+                                tag = Tag.query.filter_by(name=tag_name).first()
+                                if not tag:
+                                    tag = Tag(name=tag_name)
+                                    db.session.add(tag)
+                                article_to_update.tags.append(tag)
                         else:
                             logger.debug(f"Skipping unchanged article: {title}")
                     else:
@@ -78,6 +90,13 @@ def seed_articles(app, md_directory):
                             content_html=new_content_html or content_html,
                             date_published=datetime.now(UTC)
                         )
+                        for tag_name in tag_names:
+                            tag = Tag.query.filter_by(name=tag_name).first()
+                            if not tag:
+                                tag = Tag(name=tag_name)
+                                db.session.add(tag)
+                            article.tags.append(tag)
+
                         db.session.add(article)
         try:
             db.session.commit()

@@ -129,6 +129,18 @@ class Article(db.Model):
     last_updated = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     author = relationship('User', backref='articles')
+    tags = db.relationship('Tag', secondary='article_tags', lazy='subquery',
+                           backref=db.backref('articles', lazy=True))
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+article_tags = db.Table('article_tags', db.metadata,
+    db.Column('article_id', db.Integer, db.ForeignKey('articles.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+)
 
 class Goal(db.Model):
     __tablename__ = 'goals'
@@ -197,9 +209,3 @@ def on_article_save(mapper, connection, target):
 class Topic(db.Model):
     __tablename__ = 'topics'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-
-article_topics = db.Table('article_topics',
-    db.Column('article_id', db.Integer, db.ForeignKey('articles.id'), primary_key=True),
-    db.Column('topic_id', db.Integer, db.ForeignKey('topics.id'), primary_key=True)
-)

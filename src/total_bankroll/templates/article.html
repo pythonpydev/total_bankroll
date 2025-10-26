@@ -11,6 +11,14 @@
                 {% if article.last_updated and article.date_published and article.last_updated.date() != article.date_published.date() %}
                     <small class="ms-3">| Last updated on {{ article.last_updated.strftime('%B %d, %Y') }}</small>
                 {% endif %}
+                {% if article.tags %}
+                <div class="mt-2">
+                    Tags:
+                    {% for tag in article.tags %}
+                        <a href="{{ url_for('articles.by_tag', tag_name=tag.name) }}" class="badge bg-primary text-decoration-none">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
             <div class="article-content">
                 {{ article.content_html|safe }}
