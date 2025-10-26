@@ -38,6 +38,7 @@ from .routes.goals import goals_bp
 from .routes.help import help_bp
 from .routes.achievements import achievements_bp
 from .routes.hand_eval import load_plo_hand_rankings_data
+from flask_dance.consumer import OAuth
 
 logger = logging.getLogger(__name__)
 
