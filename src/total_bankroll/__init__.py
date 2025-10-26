@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
-from flask_dance.consumer import OAuth  # Import OAuth from Flask-Dance
 from .models import db, User, Role, OAuth as OAuthModel  # Rename model to OAuthModel
 from .extensions import bcrypt, limiter, mail, principal
 from .config import DevelopmentConfig, ProductionConfig
@@ -34,9 +33,9 @@ def create_app(config_name='development'):
     # Initialize Flask-Migrate
     migrate = Migrate(app, db)
     
-    # Setup Flask-Security
+    # Setup Flask-Security without OAuth
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore, register_blueprint=False)
+    security = Security(app, user_datastore, register_blueprint=False, oauth=None)
     
     # Initialize OAuth
     from . import oauth
