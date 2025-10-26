@@ -11,6 +11,8 @@ articles_bp = Blueprint('articles', __name__, url_prefix='/strategy/articles')
 @login_required
 def index():
     """Display a list of articles."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 6  # Display 6 articles per page
     search_query = request.args.get('q', '')
     if search_query:
         articles_query = Article.query.filter(
@@ -21,8 +23,12 @@ def index():
         )
     else:
         articles_query = Article.query
-    articles = articles_query.order_by(Article.date_published.desc()).all()
-    return render_template('articles.html', articles=articles, search_query=search_query)
+    
+    pagination = articles_query.order_by(Article.date_published.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    articles = pagination.items
+    return render_template('articles.html', articles=articles, pagination=pagination, search_query=search_query)
 
 @articles_bp.route('/<int:id>')
 @login_required

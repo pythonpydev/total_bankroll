@@ -42,6 +42,29 @@
                 </div>
             {% endif %}
         </div>
+
+        <!-- Pagination Links -->
+        {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Article navigation" class="mt-5">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.prev_num, q=search_query) if pagination.has_prev else '#' }}">Previous</a>
+                </li>
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('articles.index', page=page_num, q=search_query) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.next_num, q=search_query) if pagination.has_next else '#' }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
