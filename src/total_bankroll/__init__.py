@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
-from .models import db, User, Role, OAuth as OAuthModel  # Rename model to OAuthModel
+from .models import db, User, Role, OAuth as OAuthModel
 from .extensions import bcrypt, limiter, mail, principal
 from .config import DevelopmentConfig, ProductionConfig
 import os
