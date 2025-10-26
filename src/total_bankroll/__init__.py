@@ -18,19 +18,19 @@ class CustomSecurity(Security):
         self.oauthglue = None
 
     def init_app(self, app, datastore=None, register_blueprint=True, **kwargs):
-        # Call Security.__init__ without app to avoid redundant initialization
-        if not hasattr(self, '_state'):
-            super(Security, self).__init__(datastore=datastore, register_blueprint=register_blueprint, **kwargs)
-        # Initialize Flask-Security components without OAuth
+        # Call Security.init_app directly to avoid super chaining to object.__init__
+        Security.init_app(self, app, datastore, register_blueprint=register_blueprint, **kwargs)
+        # Explicitly disable OAuth
+        self._oauth = None
+        self.oauthglue = None
+        # Initialize other Flask-Security components
         self._register_blueprint(app, register_blueprint)
         self._configure_routes(app)
         self._configure_signals()
         self._configure_template_filters(app)
         self._configure_context_processors(app)
-        # Explicitly set oauthglue to None to prevent OAuth initialization
-        self._oauth = None
-        self.oauthglue = None
 
+# Subclass Security to disable OAuthGlue
 def create_app(config_name='development'):
     app = Flask(__name__)
     
