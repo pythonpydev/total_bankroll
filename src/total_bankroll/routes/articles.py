@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_security import login_required, current_user
 from ..extensions import db
+from sqlalchemy import or_
 from ..models import Article, UserReadArticle
 from ..achievements import check_and_award_achievements
 
@@ -10,8 +11,18 @@ articles_bp = Blueprint('articles', __name__, url_prefix='/strategy/articles')
 @login_required
 def index():
     """Display a list of articles."""
-    articles = Article.query.order_by(Article.date_published.desc()).all()
-    return render_template('articles.html', articles=articles)
+    search_query = request.args.get('q', '')
+    if search_query:
+        articles_query = Article.query.filter(
+            or_(
+                Article.title.ilike(f'%{search_query}%'),
+                Article.content_html.ilike(f'%{search_query}%')
+            )
+        )
+    else:
+        articles_query = Article.query
+    articles = articles_query.order_by(Article.date_published.desc()).all()
+    return render_template('articles.html', articles=articles, search_query=search_query)
 
 @articles_bp.route('/<int:id>')
 @login_required

@@ -6,6 +6,12 @@
     <div class="row">
         <div class="col-md-10 offset-md-1">
             {{ page_header(article.title) }}
+            <div class="text-center text-muted mb-4">
+                <small>Published on {{ article.date_published.strftime('%B %d, %Y') if article.date_published }}</small>
+                {% if article.last_updated and article.date_published and article.last_updated.date() != article.date_published.date() %}
+                    <small class="ms-3">| Last updated on {{ article.last_updated.strftime('%B %d, %Y') }}</small>
+                {% endif %}
+            </div>
             <div class="article-content">
                 {{ article.content_html|safe }}
             </div>

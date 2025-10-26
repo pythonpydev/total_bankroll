@@ -40,12 +40,12 @@ def seed_articles(app, md_directory):
         if not os.path.exists(md_directory):
             logger.error(f"Directory {md_directory} does not exist")
             return
-        existing_titles = {article.title for article in Article.query.all()}
+        existing_articles = {article.title: article for article in Article.query.all()}
         for filename in os.listdir(md_directory):
             if filename.endswith(('.md', '.html')):
                 with open(os.path.join(md_directory, filename), 'r', encoding='utf-8') as f:
                     raw_content = f.read()
-                    content_html = None
+                    new_content_html = None
                     content_md = None
                     
                     if filename.endswith('.html'):
@@ -53,21 +53,32 @@ def seed_articles(app, md_directory):
                         title = filename.replace('.html', '').replace('-', ' ').title()
                     else: # .md file
                         content_md = raw_content
-                        content_html = markdown.markdown(raw_content, extensions=['tables'])
+                        new_content_html = markdown.markdown(raw_content, extensions=['tables'])
                         title = filename.replace('.md', '').replace('-', ' ').title()
 
-                    if title in existing_titles:
-                        logger.debug(f"Skipping duplicate article: {title}")
-                        continue
+                    if title in existing_articles:
+                        # Article exists, check for content changes
+                        article_to_update = existing_articles[title]
+                        # Compare based on the source content (MD or HTML)
+                        source_content_changed = (content_md and article_to_update.content_md != content_md) or \
+                                                 (content_html and not content_md and article_to_update.content_html != content_html)
 
-                    article = Article(
-                        title=title,
-                        content_md=content_md,
-                        content_html=content_html,
-                        date_published=datetime.now(UTC)
-                    )
-                    db.session.add(article)
-                    existing_titles.add(title)
+                        if source_content_changed:
+                            logger.info(f"Updating article: {title}")
+                            article_to_update.content_md = content_md
+                            article_to_update.content_html = new_content_html or content_html
+                        else:
+                            logger.debug(f"Skipping unchanged article: {title}")
+                    else:
+                        # This is a new article
+                        logger.info(f"Adding new article: {title}")
+                        article = Article(
+                            title=title,
+                            content_md=content_md,
+                            content_html=new_content_html or content_html,
+                            date_published=datetime.now(UTC)
+                        )
+                        db.session.add(article)
         try:
             db.session.commit()
             logger.info("Articles seeded successfully")

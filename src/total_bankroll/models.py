@@ -126,6 +126,7 @@ class Article(db.Model):
     content_md = db.Column(db.Text, nullable=True)
     content_html = db.Column(db.Text, nullable=False)
     date_published = db.Column(db.DateTime, nullable=True)
+    last_updated = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     author = relationship('User', backref='articles')
 
