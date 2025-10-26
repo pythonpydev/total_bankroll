@@ -10,6 +10,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Subclass Security to disable OAuthGlue
+class CustomSecurity(Security):
+    def init_app(self, app, datastore=None, register_blueprint=True, **kwargs):
+        super().init_app(app, datastore, register_blueprint=register_blueprint)
+        # Skip OAuthGlue initialization
+        self._oauth = None
+        self.oauthglue = None
+
 def create_app(config_name='development'):
     app = Flask(__name__)
     
@@ -35,7 +43,7 @@ def create_app(config_name='development'):
     
     # Setup Flask-Security without OAuth
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore, register_blueprint=False, oauth=None)
+    security = CustomSecurity(app, user_datastore, register_blueprint=False)
     
     # Initialize OAuth
     from . import oauth
