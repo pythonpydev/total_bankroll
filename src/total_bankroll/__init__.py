@@ -38,7 +38,6 @@ from .routes.goals import goals_bp
 from .routes.help import help_bp
 from .routes.achievements import achievements_bp
 from .routes.hand_eval import load_plo_hand_rankings_data
-from flask_dance.consumer import OAuth
 
 logger = logging.getLogger(__name__)
 
@@ -80,15 +79,13 @@ def create_app(config_name=None):
     mail.init_app(app)
     migrate = Migrate(app, db)
 
-    from .models import User, OAuth
+    from . import oauth
+    oauth.init_oauth(app)  # Move this before Security
+
+    from .models import User, OAuth as OAuthModel
     from .currency import init_currency_command
     app.cli.add_command(init_currency_command)
     commands.register_commands(app)
-
-    @app.after_request
-    def add_security_headers(response):
-        response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        return response
 
     user_datastore = SQLAlchemyUserDatastore(db, User, None)
     security = Security(app, user_datastore, register_blueprint=False)
