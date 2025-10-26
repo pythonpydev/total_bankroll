@@ -1,11 +1,12 @@
 from flask_security import UserMixin
-from .extensions import db
-from datetime import datetime, UTC
+from flask_sqlalchemy import SQLAlchemy
 from flask_security.utils import hash_password
 import markdown
 import bleach
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, UTC
 from sqlalchemy.orm import relationship
+
+db = SQLAlchemy()  # Define db here
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -34,6 +35,11 @@ class User(db.Model, UserMixin):
     @password.setter
     def password(self, password):
         self.password_hash = hash_password(password)
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    description = db.Column(db.String(255))
 
 class OAuth(db.Model):
     __tablename__ = 'oauth'
