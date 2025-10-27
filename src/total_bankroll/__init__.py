@@ -10,18 +10,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def create_app(config_name='development'):
+def create_app():
     app = Flask(__name__)
+    
+    # Determine config_name based on FLASK_ENV
+    config_name = os.getenv('FLASK_ENV', 'development').lower()
+    logger.debug(f"FLASK_ENV={config_name}")
     
     # Load configuration
     available_configs = {
         'development': DevelopmentConfig,
         'production': ProductionConfig
     }
-    logger.debug(f"Available configs={list(available_configs.keys())}")
     config = available_configs.get(config_name, DevelopmentConfig)
     logger.debug(f"Selected config={config.__name__}")
     app.config.from_object(config)
+    logger.debug(f"SQLALCHEMY_DATABASE_URI={app.config.get('SQLALCHEMY_DATABASE_URI')}")
     
     # Initialize extensions
     db.init_app(app)
