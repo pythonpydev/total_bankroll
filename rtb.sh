@@ -1,44 +1,70 @@
 #!/bin/bash
 
 # make it executable:
-# chmod +x /path/to/run_total_bankroll.sh
+# chmod +x /path/to/rtb.sh
 
-# Example usage:
-# ./run_total_bankroll.sh dev run
-# ./run_total_bankroll.sh prod seed
+# --- Environment Selection ---
+echo "Select environment:"
+echo "1. Development (dev)"
+echo "2. Production (prod)"
+read -p "Enter choice (1 or 2): " env_choice
 
-# Check if environment argument is provided
-if [ -z "$1" ]; then
-    echo "Error: Environment argument (dev or prod) is required."
-    echo "Usage: $0 {dev|prod} {run|run-dev|seed|purge-articles|convert-articles|migrate|upgrade}"
-    exit 1
-fi
-
-# Set environment-specific configurations
-case "$1" in
-    "dev")
+case "$env_choice" in
+    1)
+        ENV="dev"
         BASE_DIR="/home/ed/MEGA/total_bankroll"
         VENV_DIR="$BASE_DIR/.venv"
         FLASK_ENV="development"
         ;;
-    "prod")
+    2)
+        ENV="prod"
         BASE_DIR="/home/pythonpydev/total_bankroll"
         VENV_DIR="/home/pythonpydev/.virtualenvs/bankroll_venv"
         FLASK_ENV="production"
         ;;
     *)
-        echo "Error: Invalid environment. Use 'dev' or 'prod'."
-        echo "Usage: $0 {dev|prod} {run|run-dev|seed|purge-articles|convert-articles|migrate|upgrade}"
+        echo "Invalid environment choice. Exiting."
         exit 1
         ;;
 esac
 
-# Shift arguments to process the command
-shift
+# --- Command Selection ---
+echo ""
+echo "Select command for $ENV environment:"
+echo "1. Run Flask app (run)"
+echo "2. Run Flask app in development mode (run-dev) - Dev only"
+echo "3. Seed articles (seed)"
+echo "4. Purge articles (purge-articles)"
+echo "5. Convert articles (convert-articles)"
+echo "6. Generate database migration (migrate)"
+echo "7. Apply database migrations (upgrade)"
+read -p "Enter choice (1-7): " cmd_choice
 
+COMMAND=""
+case "$cmd_choice" in
+    1) COMMAND="run" ;;
+    2) COMMAND="run-dev" ;;
+    3) COMMAND="seed" ;;
+    4) COMMAND="purge-articles" ;;
+    5) COMMAND="convert-articles" ;;
+    6) COMMAND="migrate" ;;
+    7) COMMAND="upgrade" ;;
+    *)
+        echo "Invalid command choice. Exiting."
+        exit 1
+        ;;
+esac
+
+# Check if run-dev is selected in production
+if [ "$COMMAND" = "run-dev" ] && [ "$ENV" = "prod" ]; then
+    echo "Error: 'run-dev' is only available in development environment. Exiting."
+    exit 1
+fi
+
+# --- Common Setup ---
 # Check if base directory exists
 if [ ! -d "$BASE_DIR" ]; then
-    echo "Error: Directory $BASE_DIR does not exist."
+    echo "Error: Directory $BASE_DIR does not exist. Exiting."
     exit 1
 fi
 
@@ -49,14 +75,14 @@ export PYTHONPATH="$BASE_DIR/src:$PYTHONPATH"
 
 # Activate virtual environment
 if [ ! -f "$VENV_DIR/bin/activate" ]; then
-    echo "Error: Virtual environment not found at $VENV_DIR/bin/activate."
+    echo "Error: Virtual environment not found at $VENV_DIR/bin/activate. Exiting."
     exit 1
 fi
 source "$VENV_DIR/bin/activate"
 
 # Change to project directory
 cd "$BASE_DIR" || {
-    echo "Error: Could not change to directory $BASE_DIR."
+    echo "Error: Could not change to directory $BASE_DIR. Exiting."
     exit 1
 }
 
@@ -69,8 +95,8 @@ python --version
 echo "Flask version:"
 pip show flask
 
-# Check command-line argument
-case "$1" in
+# --- Execute Command ---
+case "$COMMAND" in
     "run")
         if [ "$FLASK_ENV" = "production" ]; then
             echo "Running Flask app with Gunicorn (production mode)..."
@@ -81,12 +107,7 @@ case "$1" in
         fi
         ;;
     "run-dev")
-        if [ "$FLASK_ENV" = "production" ]; then
-            echo "Error: 'run-dev' is only available in development environment."
-            exit 1
-        fi
         echo "Running Flask app in development mode..."
-        export FLASK_ENV=development
         flask run
         ;;
     "seed")
@@ -110,14 +131,7 @@ case "$1" in
         flask db upgrade
         ;;
     *)
-        echo "Usage: $0 {dev|prod} {run|run-dev|seed|purge-articles|convert-articles|migrate|upgrade}"
-        echo "  run: Start the Flask app (Gunicorn for prod, flask run for dev)"
-        echo "  run-dev: Start the Flask app in development mode (dev only)"
-        echo "  seed: Run seed_articles.py"
-        echo "  purge-articles: Delete all articles from the database"
-        echo "  convert-articles: Convert article markdown to HTML"
-        echo "  migrate: Generate database migration"
-        echo "  upgrade: Apply database migrations"
+        echo "Unknown command. This should not happen. Exiting."
         exit 1
         ;;
 esac

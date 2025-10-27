@@ -1,4 +1,4 @@
-### Understanding PLO Equity Calculations in 6-Max Pot Limit Omaha
+# Understanding PLO Equity Calculations in 6-Max Pot Limit Omaha
 
 **Equity** in Pot Limit Omaha (PLO) refers to a hand’s expected share of the pot against an opponent’s hand or range, expressed as a percentage. It quantifies how often a hand will win (or tie) at showdown, factoring in all possible community card combinations. In PLO, equity calculations are more complex than in Texas Hold’em due to four hole cards, increasing hand combinations (270,725 unique starting hands vs. 1,326 in Hold’em), leading to closer equities (rarely >60% heads-up preflop) and higher variance. This explanation covers how equity is calculated, key factors affecting it, tools used, and practical applications in a 6-max cash game context (100BB stacks, mid-stakes). I’ll include examples, avoid speculative data, and provide a clear narrative for applying equity calculations strategically.
 

@@ -1,3 +1,5 @@
+# HUD stats (PLO-specific)
+
 Here’s a comprehensive **Pot Limit Omaha HUD statistics cheat sheet** table that summarizes **typical stat ranges** for each major player type (based on the detailed archetypes in your file):
 
 | **Stat / Player Type**                | **Loose-Passive / Fish / Station** | **Limp-Heavy Weak** | **Loose-Aggressive (LAG / Aggro Fish)** | **TAG (Solid Reg)** | **Tight-Passive / NIT / Rock** | **Maniac / Ultra-Aggro** |

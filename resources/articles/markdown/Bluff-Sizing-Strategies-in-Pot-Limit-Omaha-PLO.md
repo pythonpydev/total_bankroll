@@ -28,4 +28,4 @@ In cash games, bluff sizing exploits dynamics: Use smaller sizes (~1/3-1/2 pot) 
 
 In tournaments, sizing is conservative: Favor smaller bluffs (~1/2-pot) on dry boards to minimize variance, and pot only with strong semi-bluffs (e.g., nut flush draws) vs. short stacks to avoid risking tournament life. Mid-late stages tighten further—avoid overbets unless deep-stacked early; focus on survival near bubbles. Multiway, bluff size conservatively or abstain due to low fold equity.
 
-**General Tips**: Use equity tools (e.g., ProPokerTools) to verify ~40%+ equity for semi-bluffs; solvers (MonkerSolver) recommend ~50% bluff frequency on wet boards with pot sizing IP. In low-stakes, size small vs. passives for confusion; in high-stakes, balance to avoid patterns. For specific bluff spots (e.g., board + hands), provide details for analysis!
+**General Tips**: Use equity tools (e.g., ProPokerTools) to verify ~40%+ equity for semi-bluffs; solvers (MonkerSolver) recommend ~50% bluff frequency on wet boards with pot sizing IP. In low-stakes, size small vs. passives for confusion; in high-stakes, balance to avoid patterns.

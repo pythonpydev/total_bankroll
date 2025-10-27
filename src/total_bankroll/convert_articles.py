@@ -40,5 +40,5 @@ def convert_articles_to_html(app):
 
 if __name__ == '__main__':
     config_name = os.getenv('FLASK_ENV', 'development')
-    app = create_app(config_name=config_name)
+    app = create_app() # create_app determines config from FLASK_ENV
     convert_articles_to_html(app)

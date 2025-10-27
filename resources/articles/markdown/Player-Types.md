@@ -1,3 +1,5 @@
+# Player Types
+
 Below is a detailed taxonomy of poker‑player archetypes (fish, TAG, LAG, NIT, station, aggro / passive, limp‑preflop, etc.), how they tend to play (especially in **Pot Limit Omaha**), illustrative examples, and a ranking of how “easy” or “difficult” they are to exploit. (Of course, in practice many players are hybrids or evolve over time, so these are idealized types.)
 
 ---

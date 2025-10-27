@@ -1,14 +1,26 @@
 import os
 import sys
 import logging
+import inspect # Added for debugging
 import markdown
-import frontmatter
+import frontmatter as fm
 from dotenv import load_dotenv
 from sqlalchemy.exc import OperationalError
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# --- Debugging frontmatter import ---
+try:
+    logger.debug(f"frontmatter module loaded from: {fm.__file__}")
+    # Get members of the module that are functions and start with 'load' or 'read'
+    relevant_functions = [
+        name for name, obj in inspect.getmembers(fm, inspect.isfunction)
+        if name.startswith('load') or name.startswith('read') or name.startswith('dump')
+    ]
+    logger.debug(f"Relevant functions in frontmatter module: {relevant_functions}")
+except AttributeError:
+    logger.error("Could not inspect 'fm' (frontmatter) module. It might not be a module or is corrupted.")
 # Add project directory to sys.path
 basedir = os.path.abspath(os.path.dirname(__file__))  # /home/pythonpydev/total_bankroll/src/total_bankroll
 project_home = os.path.join(basedir, '..')  # /home/pythonpydev/total_bankroll/src
@@ -49,7 +61,7 @@ def seed_articles(app, md_directory):
         for filename in os.listdir(md_directory):
             if filename.endswith(('.md', '.html')):
                 with open(os.path.join(md_directory, filename), 'r', encoding='utf-8') as f:
-                    post = frontmatter.load(f)
+                    post = fm.load(f)
                     raw_content = post.content
                     new_content_html = None
                     content_md = None
@@ -110,8 +122,8 @@ def seed_articles(app, md_directory):
 
 if __name__ == '__main__':
     config_name = 'development' if os.getenv('FLASK_ENV') == 'development' else 'production'
-    logger.debug(f"Creating app with config: {config_name}")
-    app = create_app(config_name=config_name)
+    logger.debug(f"Creating app. FLASK_ENV is: {os.getenv('FLASK_ENV')}")
+    app = create_app() # create_app determines config from FLASK_ENV
     md_dir = os.path.join(basedir, '../../resources/articles/markdown')  # /home/pythonpydev/total_bankroll/resources/articles/markdown
     logger.debug(f"Seeding articles from: {md_dir}")
     seed_articles(app, md_dir)

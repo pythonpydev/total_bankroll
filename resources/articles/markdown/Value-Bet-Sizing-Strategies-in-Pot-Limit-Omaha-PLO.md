@@ -28,4 +28,4 @@ In cash games, value bet sizing is exploitative and dynamic: Use smaller sizes (
 
 In tournaments, sizing is conservative due to ICM and shorter stacks: Favor smaller bets (~1/2-pot) on dry boards to minimize variance, and pot only with nuts (e.g., nut flush) vs. short stacks to avoid risking tournament life on thin value. Mid-late stages tighten further—avoid overbets unless deep-stacked early; focus on survival near bubbles. Multiway, size conservatively or check to pot control.
 
-**General Tips**: Use equity calculators (e.g., ProPokerTools) to verify ~50%+ equity before betting; solvers (MonkerSolver) recommend ~50% bet frequency on paired boards with 1/3-pot sizing IP. In low-stakes, size larger vs. passives for max value; in high-stakes, balance to avoid exploitation. For specific spots (e.g., exact board/hands), provide details for tailored analysis!
+**General Tips**: Use equity calculators (e.g., ProPokerTools) to verify ~50%+ equity before betting; solvers (MonkerSolver) recommend ~50% bet frequency on paired boards with 1/3-pot sizing IP. In low-stakes, size larger vs. passives for max value; in high-stakes, balance to avoid exploitation.

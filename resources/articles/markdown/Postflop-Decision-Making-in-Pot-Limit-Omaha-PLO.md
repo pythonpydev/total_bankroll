@@ -1,4 +1,4 @@
-### Postflop Decision Making in Pot Limit Omaha (PLO)
+# Postflop Decision Making in Pot Limit Omaha (PLO)
 
 In Pot Limit Omaha (PLO), postflop play is where the majority of edges are built or lost, as preflop equities are often close (typically 50-60% heads-up), and pots frequently go multiway in 6-max games. Unlike Hold'em, PLO's four hole cards create more draws, wraps, and redraws, making decisions highly dependent on board texture, position, stack-to-pot ratio (SPR), equity realization, and opponent ranges. Effective postflop strategy involves balancing value bets, bluffs, and checks while adapting to dynamics like wet/dry boards and multiway scenarios. This guide draws from solver-based insights and expert analyses, focusing on cash games (100BB stacks) but applicable to tournaments with adjustments for shallower stacks.
 
@@ -52,5 +52,3 @@ Rivers are equity-driven—bluffs rare due to polarized ranges. Overfold vs. bet
 #### Narrative for Practical Application
 
 Start by analyzing preflop ranges—they dictate postflop (e.g., tight EP ranges c-bet 76% on A-high flops vs. wide BTN at 52%). On flop, categorize your hand: nuts/redraws = aggressive; marginal = pot control; trash = fold. Use position to exploit—IP semi-bluff wet boards; OOP check-fold weak. On turn/river, refine based on actions: missed draws = bluff if blockers; completed = value bet nuts. In low stakes, nut-peddle vs. passives; balance vs. thinkers. Study with solvers (e.g., Monker) for GTO, but exploit deviations (e.g., overfold rivers). Track gray areas with software to improve. For specific spots like aces, align with texture—e.g., pot 3-bet OOP to deny equity. Always consider SPR for commitment.
-
-For tailored examples (e.g., specific board/hand), provide details!

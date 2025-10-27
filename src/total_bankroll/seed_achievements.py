@@ -59,6 +59,6 @@ def seed_achievements(app):
 
 if __name__ == '__main__':
     config_name = os.getenv('FLASK_ENV', 'development')
-    logger.debug(f"Creating app with config: {config_name}")
-    app = create_app(config_name=config_name)
+    logger.debug(f"Creating app. FLASK_ENV is: {os.getenv('FLASK_ENV')}")
+    app = create_app() # create_app determines config from FLASK_ENV
     seed_achievements(app)

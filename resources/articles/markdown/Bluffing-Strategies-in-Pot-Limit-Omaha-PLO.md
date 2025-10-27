@@ -1,4 +1,4 @@
-### Bluffing Strategies in Pot Limit Omaha (PLO)
+# Bluffing Strategies in Pot Limit Omaha (PLO)
 
 Bluffing in PLO is a nuanced art due to the game's high variance, close preflop equities (often 50-60% heads-up), and frequent multiway pots, which dilute fold equity and emphasize nut potential over pure aggression. Unlike No-Limit Hold'em, PLO bluffs rely heavily on blockers (e.g., holding an Ace to reduce opponent's nut flush odds), board texture (e.g., scare cards like turn/river broadways or flush completers), position (in position [IP] for better realization), and stack-to-pot ratio (SPR). Successful bluffs are often semi-bluffs with redraws (e.g., flush/wrap draws) rather than pure air, as opponents call wider with speculative hands. Key strategies include:
 

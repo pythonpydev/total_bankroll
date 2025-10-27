@@ -47,4 +47,4 @@ To make this more explicit, here are examples of specific hands within these ran
 - **SB Additions**: Similar to CO but add speculative ss hands like 9876ss, A765ss if BB folds often.
 - **BB Defending (vs. Open)**: Call with connected ds/ss hands (e.g., 80% of 0g-1g), 3-bet premiums (top 5-10%: AAKK, JT98ds). Fold rainbow low cards.
 
-These ranges represent ~16-48% of hands depending on position, aligning with GTO solvers. For BB, since opening isn't applicable, the focus is on defense (call/3-bet ~30% vs. BTN open). Always adjust based on table dynamics—e.g., open wider on BTN vs. tight blinds. If you need visualizations or equity calculations for specific hands, provide more details!
+These ranges represent ~16-48% of hands depending on position, aligning with GTO solvers. For BB, since opening isn't applicable, the focus is on defense (call/3-bet ~30% vs. BTN open). Always adjust based on table dynamics—e.g., open wider on BTN vs. tight blinds.

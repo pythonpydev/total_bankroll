@@ -65,4 +65,4 @@ To be explicit, here are specific hand examples within these ranges, focusing on
 - **Facing a 5-Bet**: Call ~5-10% (AAxx ds, AKQJds), often all-in with 100BB stacks. Fold most hands due to pot commitment and dominated equity.
 - **Board Coverage**: Prioritize ds for nut flushes, connected cards for straights, AA for sets. Bluffs need A-high blockers and postflop playability.
 
-These ranges align with GTO solvers like MonkerSolver, but adjust dynamically based on 4-bettor’s range and table tendencies. For specific matchups (e.g., BB vs. BTN 4-bet), provide details for tailored ranges!
+These ranges align with GTO solvers like MonkerSolver, but adjust dynamically based on 4-bettor’s range and table tendencies.

@@ -1,10 +1,10 @@
+# PLO Starting Hand Rankings by Classification
+
 The sources emphasize that providing a definitive, exhaustive ranking of all PLO starting hands is challenging because hand strength is highly dependent on post-flop play, Stack-to-Pot Ratio (SPR), and position. However, the sources classify hands into distinct quality groups based on their **Big Play Potential**—the ability to flop the nuts, strong redraws, or multi-way hands.
 
 Below is a table summarizing PLO starting hand classifications, generally ranked from best to worst categories, using the standard notation found in the sources (e.g., **ds** = double-suited, **ss** = single-suited):
 
 ---
-
-## PLO Starting Hand Rankings by Classification
 
 | Ranking Class                       | Hand Examples & Notation                                                                                                                        | Key Characteristics & Context                                                                                                                                                                                                                                                                                                                                     |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

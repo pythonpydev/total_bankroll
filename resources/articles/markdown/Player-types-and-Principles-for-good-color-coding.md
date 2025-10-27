@@ -104,8 +104,6 @@ You might map yours + additions like this:
 
 - **Dynamic change**: Be ready to update the tag as you get more hands. If someone labeled “fish” suddenly shows strong, change to “good reg,” etc.
 
----
-
 ## Final answer: Is your current scheme good?
 
 Yes, it’s good — you have a decent set of colors, they are distinct, and the labels map well to your needs. You are just missing:
@@ -117,7 +115,3 @@ Yes, it’s good — you have a decent set of colors, they are distinct, and the
 - maybe a distinction between “station / calling station” vs “fish / loose passive” if you want finer granularity
 
 If you integrate those, you’ll cover the spectrum well for PLO, cash & tournaments.
-
----
-
-If you like, I can mock up a visual palette for you (showing swatches) with your current + proposed additions so you can pick which exact shades you prefer (especially so that the colors are readable in your client). Do you want me to do that?

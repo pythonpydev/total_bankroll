@@ -46,4 +46,4 @@ To make this as explicit as possible, here are examples of specific hands within
 - **SB Additions (vs. Late Open, e.g., BTN)**: Widest OOP; ds rundowns T987ds, ds one-gappers J987ds, ds broadways AKQTds, ds pairs 8877ds, A-high ds AT98ds/AT76ds, ss premiums QQATss/KKA4ss/AA AKQTss. Bluffs: Axx x ds with blockers.
 - **BB Additions (vs. Any)**: Tightest; focus value like AAxx, high ds. Add bluffs if opener weak: A-wheel ds, low ds rundowns if connected.
 
-These represent ~5-12% total hands, polarized (60-70% value, 30-40% bluffs IP; more value OOP). Use merged ranges vs. callers, polarized vs. folders. For exact solvers (e.g., Monker), ranges tighten at higher stakes. If facing a 3-bet, defend ~20-30% (call premiums, 4-bet AAxx). Provide more details for specific matchups!
+These represent ~5-12% total hands, polarized (60-70% value, 30-40% bluffs IP; more value OOP). Use merged ranges vs. callers, polarized vs. folders. For exact solvers (e.g., Monker), ranges tighten at higher stakes. If facing a 3-bet, defend ~20-30% (call premiums, 4-bet AAxx).

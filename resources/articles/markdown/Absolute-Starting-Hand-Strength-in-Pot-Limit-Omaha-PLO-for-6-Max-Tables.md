@@ -1,4 +1,4 @@
-### Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables
+# Absolute Starting Hand Strength in Pot Limit Omaha (PLO) for 6-Max Tables
 
 In Pot Limit Omaha, "absolute" starting hand strength refers to the inherent value of a hand based on its raw equity against a random range (typically ~40-70% vs. random hands), nut potential (ability to make the best possible straights, flushes, sets, or full houses), suitedness (ds = double-suited for two flush draws, ss = single-suited, r = rainbow), connectedness (for straights, e.g., 0g = no gaps like JT98), pair strength (for sets), and overall playability (redraws and blockers). Unlike Hold'em, PLO hands run closer in equity (rarely >60% preflop heads-up), so strength is more about multi-way pot viability and postflop dominance rather than pure domination. There are 270,725 unique starting hands, making exhaustive listing impossible, but hands can be ranked into tiers based on solver-derived data and expert charts.
 

@@ -85,5 +85,3 @@ Here’s how you might interpret / adjust your strategy vs each tag in PLO (with
 - **Balance tags with notes / HUD stats**: The color is shorthand; the real meat is your HUD stats, reads, and notes. The tag should guide your biases but not override data.
 
 - **Keep consistency across formats**: Use the same color scheme for PLO cash, No‑Limit cash, tournaments, so your brain doesn’t have to remap tags when you switch.
-
-If you like, I can generate a **visual color palette mockup** (swatches you can preview) using your scheme (with these additions) so you can see how they contrast, and even suggest hex/RGB values for good visibility. Do you want me to send that?
