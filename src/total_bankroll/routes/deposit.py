@@ -7,6 +7,7 @@ from ..utils import get_user_bankroll_data, get_sorted_currencies
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, SubmitField, DateField
 from wtforms.validators import DataRequired, NumberRange
+from ..models import db, Deposits, Currency
 
 deposit_bp = Blueprint("deposit", __name__)
 
