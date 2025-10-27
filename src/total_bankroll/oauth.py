@@ -4,8 +4,7 @@ from flask import flash, redirect, url_for, current_app
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask_dance.consumer import oauth_authorized
 from flask_security import login_user, current_user
-from .models import User, OAuth
-from .extensions import db
+from .models import User, OAuth, db
 from datetime import datetime, UTC
 import logging
 
@@ -106,7 +105,7 @@ def init_oauth(app):
     except NameError:
         logger.warning("Google OAuth blueprint not defined. Skipping Google callback.")
 
-    # Add Facebook OAuth callback if needed
+    # Facebook OAuth callback
     try:
         @oauth_authorized.connect_via(facebook_bp)
         def facebook_logged_in(blueprint, token):
