@@ -1,16 +1,12 @@
 #!/bin/bash
 
 # make it executable:
-# chmod +x /home/ed/MEGA/total_bankroll/run_total_bankroll.sh
-
-# run_total_bankroll.sh in /home/ed/MEGA/total_bankroll/
+# chmod +x /home/ed/MEGA/total_bankroll/run_dev_total_bankroll.sh
 
 # Example:
-# cd ~/MEGA/total_bankroll
-# ./run_total_bankroll.sh seed
+# cd /home/ed/MEGA/total_bankroll
+# ./run_dev_total_bankroll.sh seed
 
-# Run the app in development:
-# ./run_total_bankroll.sh run
 
 # Set base directory
 BASE_DIR="/home/ed/MEGA/total_bankroll"
@@ -52,12 +48,10 @@ pip show flask
 case "$1" in
     "run")
         echo "Running Flask app..."
-        flask run
-        ;;
-    "run-dev"
-        echo "Running Flask app in development mode..."
+        # Explicitly set host and port to ensure Werkzeug is used
         export FLASK_ENV=development
-        flask run
+        export FLASK_RUN_HOST=127.0.0.1
+        flask run --port=5000
         ;;
     "seed")
         echo "Running seed_articles.py..."
@@ -80,9 +74,8 @@ case "$1" in
         flask db upgrade
         ;;
     *)
-        echo "Usage: $0 {run|run-dev|seed|purge-articles|convert-articles|migrate|upgrade}"
-        echo "  run: Start the Flask app"
-        echo "  run-dev: Start the Flask app in development mode"
+        echo "Usage: $0 {run|seed|purge-articles|convert-articles|migrate|upgrade}"
+        echo "  run: Start the Flask app in development mode"
         echo "  seed: Run seed_articles.py"
         echo "  purge-articles: Delete all articles from the database"
         echo "  convert-articles: Convert article markdown to HTML"

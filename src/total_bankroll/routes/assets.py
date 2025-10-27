@@ -7,8 +7,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length
 
-from ..extensions import db
-from ..models import Assets, AssetHistory, Currency
+from ..models import db, Assets, AssetHistory, Currency
 from ..achievements import update_user_streak
 from datetime import datetime
 

@@ -6,8 +6,7 @@ from wtforms.fields import DateField
 from wtforms.validators import DataRequired, NumberRange, ValidationError
 from datetime import datetime, date, UTC
 
-from ..extensions import db
-from ..models import Goal
+from ..models import db, Goal
 from ..utils import get_user_bankroll_data
 from ..achievements import check_and_award_achievements
 

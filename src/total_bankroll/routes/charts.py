@@ -1,9 +1,8 @@
 from flask import Blueprint, render_template, jsonify, current_app, abort
 from flask_security import current_user, login_required
-from ..extensions import db
 from datetime import datetime, timedelta
 from decimal import Decimal
-from ..models import Currency, SiteHistory, Sites, AssetHistory, Assets, Deposits, Drawings
+from ..models import db, Currency, SiteHistory, Sites, AssetHistory, Assets, Deposits, Drawings
 
 charts_bp = Blueprint("charts", __name__)
 

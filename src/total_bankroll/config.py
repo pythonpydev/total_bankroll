@@ -1,8 +1,10 @@
+# src/total_bankroll/config.py
 import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-dotenv_path = os.getenv('DOTENV_PATH', os.path.join(basedir, '../.env'))
+dotenv_path = os.getenv('DOTENV_PATH', os.path.join(basedir, '../../.env'))  # Changed to ../../.env for project root
+
 print(f"Attempting to load .env from: {dotenv_path}")
 if os.path.exists(dotenv_path):
     print(f".env file exists at {dotenv_path}")

@@ -5,8 +5,8 @@ from flask_security.utils import hash_password, verify_password
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, ValidationError
 from wtforms.validators import DataRequired, Email, EqualTo
-from ..extensions import db, mail
-from ..models import User
+from ..extensions import mail
+from ..models import db, User
 from flask_mail import Message
 import os
 from sqlalchemy.exc import IntegrityError

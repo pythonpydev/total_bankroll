@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_security import current_user
 from ..utils import get_user_bankroll_data
-from ..models import Goal
-from ..extensions import db
+from ..models import db, Goal
 from datetime import datetime, UTC
 
 home_bp = Blueprint("home", __name__)

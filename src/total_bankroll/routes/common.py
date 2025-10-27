@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, send_file, jsonify, flash
 from flask_security import current_user, login_required
-from ..extensions import db
+from ..models import db
 from ..models import Sites, Assets, Drawings, Deposits, SiteHistory, AssetHistory, Currency
 import csv
 import io

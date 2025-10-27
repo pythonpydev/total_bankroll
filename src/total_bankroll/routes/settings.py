@@ -4,8 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
 from flask_wtf.file import FileRequired, FileAllowed
-from ..extensions import db, mail, csrf
-from ..models import User, OAuth, Sites, Assets, Deposits, Drawings, SiteHistory, AssetHistory
+from ..extensions import mail, csrf
+from ..models import db, User, OAuth, Sites, Assets, Deposits, Drawings, SiteHistory, AssetHistory
 from flask_security.utils import hash_password
 from flask_mail import Message 
 from datetime import datetime, UTC

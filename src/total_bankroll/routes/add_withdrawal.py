@@ -4,8 +4,7 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from ..achievements import update_user_streak
-from ..extensions import db
-from ..models import Drawings  # Add this import
+from ..models import db, Drawings
 
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 

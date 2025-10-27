@@ -4,7 +4,7 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from ..utils import get_user_bankroll_data, get_sorted_currencies
-from ..extensions import db
+from ..models import db
 from ..models import Drawings, Currency, User
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, SubmitField, DateField

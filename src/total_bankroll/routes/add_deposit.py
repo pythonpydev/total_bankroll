@@ -4,8 +4,7 @@ from decimal import Decimal
 from sqlalchemy import func
 from flask_security import login_required, current_user
 from ..achievements import update_user_streak
-from ..extensions import db
-from ..models import Deposits, Currency
+from ..models import db, Deposits, Currency
 
 add_deposit_bp = Blueprint("add_deposit", __name__)
 

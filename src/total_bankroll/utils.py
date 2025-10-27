@@ -1,4 +1,4 @@
-from .extensions import db
+from .models import db
 from .models import SiteHistory, AssetHistory, Deposits, Drawings, Currency, User
 from sqlalchemy import func, case, literal_column
 from decimal import Decimal

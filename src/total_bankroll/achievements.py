@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from flask import flash
-from .extensions import db
-from .models import User, Achievement, UserAchievement
+from .models import db, User, Achievement, UserAchievement
+from .utils import get_user_bankroll_data
 
 # Define all achievements in a central dictionary for easy management.
 ACHIEVEMENT_DEFINITIONS = {

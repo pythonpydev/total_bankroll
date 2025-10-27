@@ -49,10 +49,6 @@ case "$1" in
         echo "Running seed_articles.py..."
         python src/total_bankroll/seed_articles.py
         ;;
-    "seed-achievements")  # Add this case
-        echo "Running seed_achievements.py..."
-        python src/total_bankroll/seed_achievements.py
-        ;;
     "purge-articles")
         echo "Purging all articles from the database..."
         python src/total_bankroll/purge_articles.py
@@ -70,10 +66,9 @@ case "$1" in
         flask db upgrade
         ;;
     *)
-        echo "Usage: $0 {run|seed|seed-achievements|purge-articles|convert-articles|migrate|upgrade}"
+        echo "Usage: $0 {run|seed|purge-articles|convert-articles|migrate|upgrade}"
         echo "  run: Start the Flask app with Gunicorn"
         echo "  seed: Run seed_articles.py"
-        echo "  seed-achievements: Run seed_achievements.py"
         echo "  purge-articles: Delete all articles from the database"
         echo "  convert-articles: Convert article markdown to HTML"
         echo "  migrate: Generate database migration"

@@ -3,8 +3,6 @@ __version__ = "0.1.0"
 
 # Core application routes
 from .home import home_bp
-from .articles import articles_bp  # If applicable
-from .auth import auth_bp  # If applicable
 from .about import about_bp
 from .help import help_bp
 from .legal import legal_bp
@@ -28,3 +26,5 @@ from .achievements import achievements_bp
 from .articles import articles_bp
 from .tools import tools_bp
 from .hand_eval import hand_eval_bp
+from .common import common_bp
+from .reset_db import reset_db_bp

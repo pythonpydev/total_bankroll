@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash, jsonify
 from flask_security import login_required, current_user
-from ..extensions import db
 from ..models import Sites, Assets, SiteHistory, AssetHistory, Deposits, Drawings
 
 reset_db_bp = Blueprint("reset_db", __name__, url_prefix="/settings")
