@@ -65,6 +65,7 @@ def seed_articles(app, md_directory):
                     raw_content = post.content
                     new_content_html = None
                     content_md = None
+                    content_html = None # Initialize content_html to None
                     
                     if filename.endswith('.html'):
                         content_html = raw_content
