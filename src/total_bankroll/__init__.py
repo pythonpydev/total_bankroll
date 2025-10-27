@@ -61,7 +61,7 @@ def create_app(config_name='development'):
     app.register_blueprint(withdrawal_bp)
     app.register_blueprint(add_deposit_bp)
     app.register_blueprint(add_withdrawal_bp)
-    app.register_blueprint(charts_bp)
+    app.register_blueprint(charts_bp, url_prefix='/charts')
     app.register_blueprint(goals_bp)
     app.register_blueprint(achievements_bp)
     app.register_blueprint(articles_bp)
