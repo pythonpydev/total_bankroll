@@ -35,6 +35,6 @@ def purge_articles(app):
             db.session.rollback()
 
 if __name__ == '__main__':
-    config_name = os.getenv('FLASK_ENV', 'development')
-    app = create_app(config_name=config_name)
+    # create_app determines the config from the FLASK_ENV environment variable
+    app = create_app()
     purge_articles(app)
