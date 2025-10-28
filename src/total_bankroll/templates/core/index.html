@@ -1,0 +1,256 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Dashboard', 'Here is a quick summary of your financial standing.') }}
+
+<section class="page-section bg-light" id="portfolio">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mt-0">Your Financial Summary</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5 justify-content-center g-4 text-center">
+
+            <!-- Main Bankroll Card -->
+            <div class="col-lg-8">
+                <div class="card bg-primary text-white shadow-lg">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-uppercase text-white-75">Total Bankroll</h3>
+                        <p class="display-4 fw-bolder mb-0">${{ "%.2f" | format(total_bankroll) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Profit Card -->
+            <div class="col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        {% set profit_text_class = 'text-success' if total_profit > 0 else 'text-danger' if total_profit < 0 else '' %}
+                        <h5 class="card-title text-muted text-uppercase">Profit / Loss</h5>
+                        <p class="card-text display-6 fw-bold {{ profit_text_class }}">${{ "%.2f" | format(total_profit) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="col-lg-12">
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-center mb-3">Quick Actions</h4>
+                        <div class="d-flex justify-content-center flex-wrap gap-2">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_deposit.add_deposit') }}"><i class="bi-plus-circle-fill me-2"></i>Add Deposit</button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('add_withdrawal.add_withdrawal') }}"><i class="bi-dash-circle-fill me-2"></i>Add Withdrawal</button>
+                            <a href="{{ url_for('poker_sites.poker_sites_page') }}" class="btn btn-primary"><i class="bi-stack me-2"></i>Manage Sites</a>
+                            <a href="{{ url_for('assets.assets_page') }}" class="btn btn-secondary"><i class="bi-gem me-2"></i>Manage Assets</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Goal Card -->
+            {% if active_goal %}
+            <div class="col-lg-12">
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="card-title mb-0">
+                                <a href="{{ url_for('goals.index') }}" class="text-decoration-none">{{ active_goal.name }}</a>
+                            </h4>
+                            <span class="text-muted small">Target Date: {{ active_goal.end_date.strftime('%b %d, %Y') }}</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ goal_progress|round }}%;" aria-valuenow="{{ goal_progress|round }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ goal_progress|round }}%
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            {% if active_goal.goal_type == 'profit_target' %}
+                                <span class="text-muted small">Current Profit: ${{ "%.2f" | format(total_profit) }}</span>
+                                <span class="text-muted small">Target Profit: ${{ "%.2f" | format(active_goal.target_value) }}</span>
+                            {% else %}
+                                <span class="text-muted small">Current Bankroll: ${{ "%.2f" | format(total_bankroll) }}</span>
+                                <span class="text-muted small">Target Bankroll: ${{ "%.2f" | format(active_goal.target_value) }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Breakdown Section -->
+            <div class="col-lg-12 mt-5">
+                <h3 class="text-center">Breakdown</h3>
+                <hr class="divider" />
+            </div>
+
+            <!-- Poker Sites Card -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('poker_sites.poker_sites_page') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm border-warning" style="border-width: 2px;">
+                        <div class="card-body d-flex flex-column justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <i class="fa-solid fa-layer-group fa-2x text-warning me-3"></i>
+                                <h5 class="card-title text-muted text-uppercase mb-0">Poker Sites</h5>
+                            </div>
+                            <p class="card-text fs-4 fw-bold mt-2">${{ "%.2f" | format(current_poker_total) }}</p>
+                            {% set poker_change = current_poker_total - previous_poker_total %}
+                            {% set poker_change_class = 'text-success' if poker_change > 0 else 'text-danger' if poker_change < 0 else 'text-muted' %}
+                            <p class="card-text small {{ poker_change_class }}">Change: ${{ "%.2f" | format(poker_change) }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Assets Card -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('assets.assets_page') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm border-secondary" style="border-width: 2px;">
+                        <div class="card-body d-flex flex-column justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <i class="fa-solid fa-gem fa-2x text-secondary me-3"></i>
+                                <h5 class="card-title text-muted text-uppercase mb-0">Other Assets</h5>
+                            </div>
+                            <p class="card-text fs-4 fw-bold mt-2">${{ "%.2f" | format(current_asset_total) }}</p>
+                            {% set asset_change = current_asset_total - previous_asset_total %}
+                            {% set asset_change_class = 'text-success' if asset_change > 0 else 'text-danger' if asset_change < 0 else 'text-muted' %}
+                            <p class="card-text small {{ asset_change_class }}">Change: ${{ "%.2f" | format(asset_change) }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Total Deposits Card -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('deposit.deposit') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm border-success" style="border-width: 2px;">
+                        <div class="card-body d-flex flex-column justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <i class="fa-solid fa-circle-plus fa-2x text-success me-3"></i>
+                                <h5 class="card-title text-muted text-uppercase mb-0">Total Deposits</h5>
+                            </div>
+                            <p class="card-text fs-4 fw-bold mt-2">${{ "%.2f" | format(total_deposits) }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Total Withdrawals Card -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('withdrawal.withdrawal') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm border-danger" style="border-width: 2px;">
+                        <div class="card-body d-flex flex-column justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <i class="fa-solid fa-circle-minus fa-2x text-danger me-3"></i>
+                                <h5 class="card-title text-muted text-uppercase mb-0">Total Withdrawals</h5>
+                            </div>
+                            <p class="card-text fs-4 fw-bold mt-2">${{ "%.2f" | format(total_withdrawals) }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bankroll Chart -->
+    <div class="row gx-4 gx-lg-5 justify-content-center mt-5">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <a href="{{ url_for('charts.charts_page') }}" class="text-decoration-none">
+                        <h4 class="card-title text-center mb-3">Bankroll Over Time</h4>
+                    </a>
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="toggleBankroll" checked>
+                            <label class="form-check-label" for="toggleBankroll">Total Bankroll</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="toggleProfit">
+                            <label class="form-check-label" for="toggleProfit">Profit / Loss</label>
+                        </div>
+                    </div>
+                    <canvas id="dashboardBankrollChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/charts/bankroll/data')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.datasets || data.datasets.length === 0) {
+                    console.error('No datasets found in fetched data.');
+                    return;
+                }
+
+                const bankrollDataset = data.datasets[0];
+                bankrollDataset.label = 'Total Bankroll';
+                bankrollDataset.borderColor = 'rgba(13, 110, 253, 0.8)'; // Bootstrap Primary Blue
+                bankrollDataset.backgroundColor = 'rgba(13, 110, 253, 0.1)';
+                bankrollDataset.hidden = false; // Initially visible
+
+                // Calculate profit data
+                const initialInvestment = {{ total_deposits - total_withdrawals }};
+                const profitData = bankrollDataset.data.map(point => ({
+                    x: point.x,
+                    y: point.y - initialInvestment
+                }));
+
+                const finalProfit = profitData.length > 0 ? profitData[profitData.length - 1].y : 0;
+                const profitColor = finalProfit >= 0 ? 'rgba(25, 135, 84, 0.8)' : 'rgba(220, 53, 69, 0.8)'; // Bootstrap Success/Danger
+
+                const profitDataset = {
+                    label: 'Profit / Loss',
+                    data: profitData,
+                    borderColor: profitColor,
+                    backgroundColor: profitColor.replace('0.8', '0.1'),
+                    hidden: true // Initially hidden
+                };
+
+                const ctx = document.getElementById('dashboardBankrollChart').getContext('2d');
+
+                const chartOptions = {
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MMM d, yyyy' }, title: { display: true, text: 'Date' } },
+                        y: { beginAtZero: false, title: { display: true, text: 'Amount (USD)' } }
+                    }
+                };
+
+                const chart = createChart(ctx, 'line', { datasets: [bankrollDataset, profitDataset] }, chartOptions);
+
+                // Add event listeners for the toggles
+                const toggleBankroll = document.getElementById('toggleBankroll');
+                const toggleProfit = document.getElementById('toggleProfit');
+
+                toggleBankroll.addEventListener('change', function() {
+                    chart.setDatasetVisibility(0, this.checked);
+                    chart.update();
+                });
+
+                toggleProfit.addEventListener('change', function() {
+                    chart.setDatasetVisibility(1, this.checked);
+                    chart.update();
+                });
+
+                // Set initial visibility based on default checkbox state
+                chart.setDatasetVisibility(0, toggleBankroll.checked);
+                chart.setDatasetVisibility(1, toggleProfit.checked);
+                chart.update();
+            })
+            .catch(error => console.error('Error fetching bankroll data for dashboard:', error));
+    });
+</script>
+{% endblock %}

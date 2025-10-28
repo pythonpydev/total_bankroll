@@ -27,6 +27,6 @@ def index():
             if ach.target > 0:
                 ach.progress_percent = min(100, (ach.current_progress / ach.target) * 100)
 
-    return render_template('achievements.html',
+    return render_template('info/achievements.html',
                            achievements=all_achievements,
                            title="Your Achievements")

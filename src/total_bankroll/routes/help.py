@@ -4,4 +4,4 @@ help_bp = Blueprint('help', __name__)
 
 @help_bp.route('/help')
 def help_page():
-    return render_template('help.html')
+    return render_template('core/help.html')

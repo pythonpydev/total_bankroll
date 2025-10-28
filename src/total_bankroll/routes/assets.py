@@ -146,7 +146,7 @@ def rename_asset(asset_id):
         db.session.commit()
         flash('Asset renamed successfully!', 'success')
         return redirect(url_for('assets.assets_page'))
-    return render_template("_modal_form.html", form=form, title=f"Rename {asset.name}")
+    return render_template("partials/_modal_form.html", form=form, title=f"Rename {asset.name}")
 
 @assets_bp.route("/asset_history/<int:asset_id>")
 @login_required
@@ -224,4 +224,4 @@ def edit_asset_history(history_id):
         return redirect(url_for('assets.asset_history', asset_id=history_record.asset_id))
 
     currencies = get_sorted_currencies()
-    return render_template('edit_asset_history.html', history_record=history_record, currencies=currencies)
+    return render_template('forms/edit_asset_history.html', history_record=history_record, currencies=currencies)

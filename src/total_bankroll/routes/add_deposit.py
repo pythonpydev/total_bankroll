@@ -26,17 +26,17 @@ def add_deposit():
 
         if not date_str or not amount_str:
             flash("Date and amount are required", "danger")
-            return render_template("add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
+            return render_template("forms/add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
 
         try:
             date = datetime.strptime(date_str, "%Y-%m-%d")
             amount = round(Decimal(amount_str), 2)
             if amount <= 0:
                 flash("Amount must be positive", "danger")
-                return render_template("add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
+                return render_template("forms/add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
         except ValueError as e:
             flash(f"Invalid date or amount format: {e}", "danger")
-            return render_template("add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
+            return render_template("forms/add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
 
         new_deposit = Deposits(
             date=date,
@@ -52,4 +52,4 @@ def add_deposit():
         return redirect(url_for("deposit.deposit"))
     else:
         # GET request
-        return render_template("add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)
+        return render_template("forms/add_deposit.html", today=today, currencies=currencies, default_currency=default_currency)

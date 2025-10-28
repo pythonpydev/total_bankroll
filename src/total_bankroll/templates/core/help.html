@@ -1,0 +1,65 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Help & FAQs', 'Find answers to common questions and learn how to use StakeEasy.net effectively.') }}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="text-center"><i class="bi bi-person-workspace"></i> The Scenario</h2>
+                    <hr>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item lead">When you first join a <span class="text-poker-site">poker site</span>, you will initially <span class="text-deposit">deposit</span> cash, for example, $50.</li>
+                        <li class="list-group-item lead">At this point your <span class="text-bankroll">total bankroll</span> is $50 and your <span class="text-profit">profit</span> is $0.</li>
+                        <li class="list-group-item lead">After playing for a while, your latest <span class="text-poker-site">poker site</span> balance is $200.</li>
+                        <li class="list-group-item lead">Now, your <span class="text-bankroll">total bankroll</span> is $200 and your net <span class="text-profit">profit</span> is now $150.</li>
+                        <li class="list-group-item lead">At this point you decide to move $50 from the <span class="text-poker-site">poker site</span> and invest it in Bitcoin.</li>
+                        <li class="list-group-item lead">Now, your cash on <span class="text-poker-site">poker sites</span> is $150, your <span class="text-asset">assets</span> are $50, your net <span class="text-profit">profit</span> is still $150, and your total <span class="text-deposit">deposits</span> are $50.</li>
+                        <li class="list-group-item lead">You play a while longer, and now have $350 on the <span class="text-poker-site">poker site</span> (you are now <span class="text-profit">profiting</span> $350).</li>
+                        <li class="list-group-item lead">You then decide to <span class="text-withdrawal">withdraw</span> $100 to buy some groceries.</li>
+                        <li class="list-group-item lead">At this point you have $250 on the <span class="text-poker-site">poker site</span>, $50 in <span class="text-asset">assets</span> (Bitcoin), after making an initial <span class="text-deposit">deposit</span> of $50 and <span class="text-withdrawal">withdrawing</span> $100. Your <span class="text-bankroll">total bankroll</span> is $300, and your <span class="text-profit">profit</span> is $350.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="text-center"><i class="bi bi-calculator"></i> The Calculation</h2>
+                    <hr>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item lead">Using the previous scenario, the formula used on StakeEasy.net to calculate your <span class="text-bankroll">bankroll</span> is as follows:</li>
+                        <li class="list-group-item lead"><span class="text-bankroll">Total Bankroll</span> = Amount on Poker Sites + <span class="text-asset">Assets</span></li>
+                        <li class="list-group-item lead"><span class="text-profit">Profit</span> = <span class="text-poker-site">Amount on Poker Sites</span> + <span class="text-asset">Assets</span> - <span class="text-deposit">Deposits</span> + <span class="text-withdrawal">Withdrawals</span></li>
+                        <li class="list-group-item lead"><span class="text-bankroll">Total Bankroll</span> = $250 + $50 = $300</li>
+                        <li class="list-group-item lead"><span class="text-profit">Profit</span> = $250 + $50 - $50 + $100 = $350</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-center"><i class="bi bi-joystick"></i> How you use StakeEasy.net</h2>
+                    <hr>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item lead">When you begin on your poker journey using a <span class="text-bankroll">bankroll</span> management strategy, you will likely set aside a sum of money that you can afford to lose.</li>
+                        <li class="list-group-item lead">To represent this on StakeEasy.net, go to the <span class="text-deposit">deposits</span> page, and add a <span class="text-deposit">deposit</span> for the amount you have set aside.</li>
+                        <li class="list-group-item lead">Then, when you choose which <span class="text-poker-site">site</span> or <span class="text-poker-site">sites</span> you want to play on, go to the <span class="text-poker-site">poker sites</span> page, and add the <span class="text-poker-site">site(s)</span>, set their name, currency and the amount you have bought in for. Now you're ready to play!</li>
+                        <li class="list-group-item lead">After every session, or at regular intervals, update the amount on each <span class="text-poker-site">poker site</span>.</li>
+                        <li class="list-group-item lead">If for whatever reason you go bust, go through the same process again, e.g. add a <span class="text-deposit">deposit</span> and either add a new <span class="text-poker-site">poker site</span> or update the amount on the existing <span class="text-poker-site">site</span> you play on.</li>
+                        <li class="list-group-item lead">Eventually, you may wish to <span class="text-withdrawal">withdraw</span> money from your poker <span class="text-bankroll">bankroll</span> to spend on other things, leisure, family etc. or you may wish to set aside part of the <span class="text-bankroll">bankroll</span> into other investments we call <span class="text-asset">assets</span>.</li>
+                        <li class="list-group-item lead">For example, you may decide that you don't use all of the money on your <span class="text-poker-site">poker sites</span>, or you just want to set some aside but keep it in your overall poker <span class="text-bankroll">bankroll</span>, for you to use at a later date if you decide.</li>
+                        <li class="list-group-item lead"><span class="text-asset">Assets</span> could include cash (useful for live cash games and tournaments), crypto-currency (e.g. Bitcoin, Ethereum), stocks and shares, gold, silver etc.</li>
+                        <li class="list-group-item lead">To do this, simply update the amount on the <span class="text-poker-site">poker site(s)</span>, then go to the <span class="text-asset">assets</span> page and add a new <span class="text-asset">asset</span>, for example Bitcoin and the amount you are investing.</li>
+                        <li class="list-group-item lead">StakeEasy.net will calculate your <span class="text-bankroll">total bankroll</span> (or net worth), your <span class="text-profit">profit</span> / loss and convert everything in to US dollars ($) to make comparisons easier as some of the <span class="text-poker-site">sites</span> and <span class="text-asset">assets</span> may be invested in different currencies.</li>
+                        <li class="list-group-item lead">StakeEasy.net automatically updates with the latest currency exchange rates so your $ values should be accurate.</li>
+                        <li class="list-group-item lead">Finally, from the StakeEasy.net team, we wish you good luck at the tables!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

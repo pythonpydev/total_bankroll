@@ -382,7 +382,7 @@ def tables():
     """Renders the PLO Preflop Ranges article from a Markdown file."""
     try:
         # current_app.instance_path is <project_root>/instance, so '..' gets to the project root
-        md_path = os.path.join(current_app.instance_path, '..', 'resources', 'articles', 'markdown', 'Pot Limit Omaha (PLO) Preflop Ranges in a 6-Max Table.md')
+        md_path = os.path.join(current_app.root_path, '..', 'resources', 'articles', 'markdown', 'Pot Limit Omaha (PLO) Preflop Ranges in a 6-Max Table.md')
         
         with open(md_path, 'r', encoding='utf-8') as f:
             content_md = f.read()
@@ -395,7 +395,7 @@ def tables():
         content_html = "<p>Sorry, the article content is currently unavailable.</p>"
         title, subtitle = "Article Not Found", ""
     
-    return render_template('plo_hand_strength_article.html', title=title, subtitle=subtitle, content=content_html)
+    return render_template('articles/plo_hand_strength_article.html', title=title, subtitle=subtitle, content=content_html)
 
 @hand_eval_bp.route('/plo_hand_form')
 def plo_hand_form():
@@ -403,7 +403,7 @@ def plo_hand_form():
     button_form = ButtonPositionForm()
     hand_form = HandForm()
     button_position = session.get('button_position', 1)  # Default to 1
-    return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
+    return render_template('forms/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
 @hand_eval_bp.route('/switch_button_position', methods=['POST'])
 def switch_button_position():
@@ -422,7 +422,7 @@ def submit_form():
 
     # If it's a GET request and we have data, show the details page.
     if request.method == 'GET' and 'form_data' in session:
-        return render_template('hand_details.html', form_data=session['form_data'])
+        return render_template('info/hand_details.html', form_data=session['form_data'])
 
     # If it's a POST request (form submission), validate and process.
     if hand_form.validate_on_submit():
@@ -431,7 +431,7 @@ def submit_form():
         session['form_data'] = form_data
         return redirect(url_for('hand_eval.submit_form'))  # Redirect to GET to show details
 
-    return render_template('plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
+    return render_template('forms/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
 @hand_eval_bp.route('/hand_evaluation')
 def hand_evaluation():
@@ -440,7 +440,7 @@ def hand_evaluation():
         flash("No hand data available to evaluate. Please set up a new hand.", "warning")
         return redirect(url_for('hand_eval.plo_hand_form'))
     
-    return render_template('hand_evaluation.html', form_data=session['form_data'])
+    return render_template('info/hand_evaluation.html', form_data=session['form_data'])
 
 def load_plo_hand_rankings_data(app):
     """Preloads the large CSV into a Pandas DataFrame at app startup."""
@@ -460,8 +460,10 @@ def load_plo_hand_rankings_data(app):
             df = df.set_index('Hand')
         app.config['PLO_HAND_DF'] = df
         app.logger.info(f"Successfully loaded optimized PLO hand data from {feather_path} ({len(df)} rows)")
+        if df.empty:
+            app.logger.warning(f"Loaded PLO hand data is empty from {feather_path}.")
     except Exception as e:
-        app.logger.error(f"Failed to load or generate PLO hand data: {e}")
+        app.logger.error(f"Failed to load or generate PLO hand data from {feather_path}: {e}")
 
 def _pretty_print_hand(hand_str):
     """Formats a hand string (e.g., 'AsKsQhJh') with HTML for suit symbols and colors."""
@@ -556,7 +558,7 @@ def plo_hand_rankings():
             return jsonify({'error': 'Internal server error'}), 500
 
     # GET: Render the template
-    return render_template('plo_hand_rankings.html', title='PLO Hand Rankings')
+    return render_template('info/plo_hand_rankings.html', title='PLO Hand Rankings')
 
 @hand_eval_bp.route('/plo-range-data', methods=['GET'])
 def plo_range_data():
@@ -688,7 +690,7 @@ def plo_hand_strength_quiz():
         return redirect(url_for('hand_eval.quiz'))
     
     # If it's a GET request or validation fails, render the form page
-    return render_template('plo_hand_strength_quiz.html', title='PLO Hand Strength Quiz', form=form)
+    return render_template('quiz/plo_hand_strength_quiz.html', title='PLO Hand Strength Quiz', form=form)
 
 
 class HudStatsQuizForm(FlaskForm):
@@ -755,7 +757,7 @@ def hud_stats_quiz():
         return redirect(url_for('hand_eval.quiz'))
     
     # If it's a GET request or validation fails, render the form page
-    return render_template('hud_stats_quiz.html', title='HUD Stats Quiz', form=form)
+    return render_template('quiz/hud_stats_quiz.html', title='HUD Stats Quiz', form=form)
 
 
 
@@ -828,7 +830,7 @@ def quiz():
     question_display = _pretty_print_hand(question['question']) if question.get('is_hand_strength_quiz') else question['question']
 
     return render_template(
-        'quiz.html',
+        'quiz/quiz.html',
         title='HUD Stats Quiz',
         question=question,
         form=form,
@@ -897,7 +899,7 @@ def quiz_results():
             item['correct_answer_display'] = item['correct_answer']
 
     return render_template(
-        'quiz_results.html',
+        'quiz/quiz_results.html',
         title='Quiz Results',
         score=score,
         total_questions=total_questions,
@@ -932,12 +934,12 @@ def hud_player_type_guide():
         current_app.logger.error(f"Unexpected error loading HUD data: {e}")
         flash('Error loading HUD data.', 'danger')
         data = {"player_types": [], "stats": []}
-    return render_template('hud_player_type.html', data=data)
+    return render_template('info/hud_player_type.html', data=data)
 
 @hand_eval_bp.route('/spr-strategy')
 def spr_strategy():
     """Renders the SPR strategy guide page."""
-    return render_template('spr_strategy.html', title='SPR Strategy Guide')
+    return render_template('articles/spr_strategy.html', title='SPR Strategy Guide')
 
 @hand_eval_bp.route('/plo-hand-strength-article')
 def plo_hand_strength_article():
@@ -945,7 +947,7 @@ def plo_hand_strength_article():
     try:
         # The path is relative to the project root, so we construct it carefully.
         # current_app.instance_path is <project_root>/instance, so '..' gets to the project root
-        md_path = os.path.join(current_app.instance_path, '..', 'resources', 'articles', 'markdown', 'PLO Starting Hand Rankings by Classification.md')
+        md_path = os.path.join(current_app.root_path, '..', 'resources', 'articles', 'markdown', 'PLO Starting Hand Rankings by Classification.md')
         
         with open(md_path, 'r', encoding='utf-8') as f:
             content_md = f.read()
@@ -955,8 +957,9 @@ def plo_hand_strength_article():
         flash("The article file could not be found.", "danger")
         content_html = "<p>Sorry, the article content is currently unavailable.</p>"
     
-    return render_template('plo_hand_strength_article.html', title='PLO Starting Hand Strength', content=content_html)
+    current_app.logger.debug(f"Attempting to render: articles/plo_hand_strength_article.html with content length {len(content_html)}")
+    return render_template('articles/plo_hand_strength_article.html', title='PLO Starting Hand Strength', content=content_html)
 @hand_eval_bp.route('/player-color-scheme-guide')
 def player_color_scheme_guide():
     """Renders the player color scheme guide page."""
-    return render_template('player_color_scheme.html', title='Player Color Scheme Guide')
+    return render_template('info/player_color_scheme.html', title='Player Color Scheme Guide')

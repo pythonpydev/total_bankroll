@@ -227,7 +227,7 @@ def forgot_password():
             msg = Message(
                 'Reset Your Password',
                 recipients=[user.email],
-                html=render_template('reset_password_email.html', reset_url=reset_url)
+                html=render_template('security/reset_password_email.html', reset_url=reset_url)
             )
             try:
                 mail.send(msg)

@@ -15,4 +15,4 @@ def privacy_policy():
 @legal_bp.route('/terms-of-service')
 def terms_of_service():
     """Renders the Terms of Service page."""
-    return render_template('terms_of_service.html')
+    return render_template('core/terms_of_service.html')

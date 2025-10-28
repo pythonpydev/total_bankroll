@@ -35,7 +35,7 @@ def home():
             flash(f'Congratulations! You automatically completed the goal: "{active_goal.name}".', 'success')
             return redirect(url_for('home.home'))
 
-    return render_template("index.html",
+    return render_template("core/index.html",
                            current_poker_total=bankroll_data['current_poker_total'],
                            previous_poker_total=bankroll_data['previous_poker_total'],
                            current_asset_total=bankroll_data['current_asset_total'],

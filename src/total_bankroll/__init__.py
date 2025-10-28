@@ -73,6 +73,10 @@ def create_app():
     app.register_blueprint(hand_eval_bp)
     app.register_blueprint(common_bp)
 
+    from .routes.hand_eval import load_plo_hand_rankings_data
+    with app.app_context():
+        load_plo_hand_rankings_data(app)
+
     # Add a context processor to make current_year available in all templates
     @app.context_processor
     def inject_current_year():

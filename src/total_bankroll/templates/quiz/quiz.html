@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ page_header(title, 'Question ' ~ question_number ~ ' of ' ~ total_questions) }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form method="POST" action="{{ url_for('hand_eval.quiz') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="text-center mb-4">
+                        {% if question.is_hand_strength_quiz %}
+                            <p class="lead">Rate the following PLO hand's strength:</p>
+                        {% endif %}
+                        <p class="lead">{{ question_display|safe }}</p>
+                    </div>
+                    <div class="list-group">
+                        {% for subfield in form.answer %}
+                            <label class="list-group-item list-group-item-action text-center">
+                                {{ subfield }} {{ subfield.label.text }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

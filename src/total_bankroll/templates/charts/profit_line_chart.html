@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Profit Over Time (Line Chart)', 'Line graph showing total profit in USD over time.') }}
+
+<section class="page-section" id="charts-content">
+    <div class="container">
+        <div class="mb-4">
+            <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
+        </div>
+        <canvas id="profitChart"></canvas>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/charts/profit_data')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('profitChart').getContext('2d');
+                const chartData = { datasets: data.datasets };
+                const chartOptions = {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Profit Over Time (Line Chart)',
+                            font: { size: 18 }
+                        }
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Date' } },
+                        y: { title: { display: true, text: 'Profit (USD)' } }
+                    }
+                };
+                createChart(ctx, 'line', chartData, chartOptions);
+            })
+            .catch(error => console.error('Error fetching profit data:', error));
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Player Color Scheme Guide', 'A guide to color-coding player types for quick identification.') }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <h2 class="mb-4">Player Tag Color Scheme For Online Poker Sites</h2>
+
+                <div class="table-responsive shadow-sm rounded mb-5">
+                    <table class="table table-bordered table-hover mb-0 table-player-types">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Player Type / Behavior</th>
+                                <th>Proposed Color</th>
+                                <th>Description / When to Use</th>
+                                <th>Marker Notes & Tips</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="player-red">
+                                <td><strong>Maniac / Ultra-Aggressive / Spewy Aggro</strong></td>
+                                <td><strong>Red</strong></td>
+                                <td>Very aggressive, plays many hands, bluffs frequently, wild lines</td>
+                                <td>The most dangerous; mark early so you tread carefully.</td>
+                            </tr>
+                            <tr class="player-orange">
+                                <td><strong>Loose-Aggressive (LAG)</strong></td>
+                                <td><strong>Orange</strong></td>
+                                <td>Aggressive but more selective than maniac; mixes bluffs & value</td>
+                                <td>The classic pressure opponent; isolate when strong.</td>
+                            </tr>
+                            <tr class="player-light-green">
+                                <td><strong>Good Regular / Solid / Crusher</strong></td>
+                                <td><strong>Light Green</strong></td>
+                                <td>Strong, well-balanced, adjusts, tough to exploit</td>
+                                <td>Respect them; treat as high hurdle.</td>
+                            </tr>
+                            <tr class="player-purple">
+                                <td><strong>TAG / Balanced Aggressive-Tight</strong></td>
+                                <td><strong>Purple</strong></td>
+                                <td>Selective entry, good aggression when in hands</td>
+                                <td>Often your peer in decision complexity.</td>
+                            </tr>
+                            <tr class="player-yellow">
+                                <td><strong>ABC / Value-only, Rare Bluffer</strong></td>
+                                <td><strong>Yellow</strong></td>
+                                <td>Bets only with strong hands, rarely bluffs; straightforward style</td>
+                                <td>Useful to tag because their lines are easier to interpret.</td>
+                            </tr>
+                            <tr class="player-white">
+                                <td><strong>Nit / Tight-Passive / Rock</strong></td>
+                                <td><strong>White</strong> or very pale / light grey</td>
+                                <td>Very tight, passive, rarely bluffs, only enters with premium hands</td>
+                                <td>Less visible but stable; good “safe” tag.</td>
+                            </tr>
+                            <tr class="player-light-blue">
+                                <td><strong>Fish / Loose-Passive / Calling Station</strong></td>
+                                <td><strong>Light Blue</strong></td>
+                                <td>Plays many hands, calls often, rarely bluffs</td>
+                                <td>Classic exploitable type.</td>
+                            </tr>
+                            <tr class="player-teal">
+                                <td><strong>Station (Extreme Calling Station / Very Passive)</strong></td>
+                                <td><strong>Teal / Cyan</strong></td>
+                                <td>More passive than standard fish, especially in postflop calling</td>
+                                <td>Optional subtype if you want extra granularity.</td>
+                            </tr>
+                            <tr class="player-gold">
+                                <td><strong>Unknown / Low Sample / New / Not Enough Info</strong></td>
+                                <td><strong>Gold / Yellow-Gold</strong></td>
+                                <td>A “placeholder” tag until you gather reads</td>
+                                <td>Helps you remember you don’t have a strong read yet.</td>
+                            </tr>
+                            <tr class="player-pink">
+                                <td><strong>Wildcard / Flipper / Mixed Style / Weird</strong></td>
+                                <td><strong>Pink / Magenta</strong></td>
+                                <td>Someone whose style shifts, is inconsistent, or hard to classify</td>
+                                <td>Use sparingly; reclassify if they settle on a pattern.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="divider-light" />
+
+                <h2 class="mt-5 mb-4">How to Use the Tags in PLO</h2>
+                <p>Here’s how you might interpret and adjust your strategy against each tag in Pot Limit Omaha.</p>
+
+                <div class="table-responsive shadow-sm rounded mb-5">
+                    <table class="table table-bordered table-hover mb-0 table-player-types">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Tag</th>
+                                <th>PLO Implications / Adjustments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="player-red">
+                                <td><strong>Red (Maniac / ultra-aggro)</strong></td>
+                                <td>Tighten a lot. Let them build big pots. Trap when possible. Avoid bluff wars unless you have strong announcements or blockers.</td>
+                            </tr>
+                            <tr class="player-orange">
+                                <td><strong>Orange (LAG)</strong></td>
+                                <td>Isolate when strong; allow them to bluff; don’t be over-aggressive unless you have the nuts.</td>
+                            </tr>
+                            <tr class="player-light-green">
+                                <td><strong>Light Green (Good Reg / Crusher)</strong></td>
+                                <td>Treat them as a tough opponent. Use position, read lines, bluff sparingly, mix up your ranges.</td>
+                            </tr>
+                            <tr class="player-purple">
+                                <td><strong>Purple (TAG)</strong></td>
+                                <td>Similar to good reg, but maybe less dynamic. Again, position and selective aggression are key.</td>
+                            </tr>
+                            <tr class="player-yellow">
+                                <td><strong>Yellow (ABC)</strong></td>
+                                <td>Expect few bluffs; when they bet, expect strength. It’s safe to call them down with good but non-nut holdings. You can apply pressure since they fold more often when they miss.</td>
+                            </tr>
+                            <tr class="player-white">
+                                <td><strong>White / Light Grey (Nit / Rock)</strong></td>
+                                <td>Extract value, steal blinds more often, don’t give them credit when they check/raise (unless stack depths or board texture strongly support).</td>
+                            </tr>
+                            <tr class="player-light-blue">
+                                <td><strong>Light Blue (Fish / Calling Station)</strong></td>
+                                <td>Value bet heavily, rarely bluff, avoid fancy lines that rely on folds, simplify decisions.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-5">
+                    <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary">Back to Tools</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

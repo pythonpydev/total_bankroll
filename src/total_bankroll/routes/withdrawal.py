@@ -118,4 +118,4 @@ def update_withdrawal(withdrawal_id):
     if request.method == 'GET':
         form.currency.data = withdrawal_item.currency
 
-    return render_template("_modal_form.html", form=form, title="Edit Withdrawal")
+    return render_template("partials/_modal_form.html", form=form, title="Edit Withdrawal")

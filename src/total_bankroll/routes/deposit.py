@@ -117,7 +117,7 @@ def update_deposit(deposit_id):
     if request.method == 'GET':
         form.currency.data = deposit_item.currency
 
-    return render_template("_modal_form.html", form=form, title="Edit Deposit")
+    return render_template("partials/_modal_form.html", form=form, title="Edit Deposit")
 
 @deposit_bp.route("/delete_deposit/<int:deposit_id>", methods=["POST"])
 @login_required

@@ -403,7 +403,7 @@ def update_account_details():
     if current_user.is_authenticated and hasattr(current_user, 'default_currency_code'):
         currency_form.currency.data = current_user.default_currency_code
 
-    return render_template("update_account_details.html", email_form=email_form, password_form=password_form, currency_form=currency_form, reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form)
+    return render_template("forms/update_account_details.html", email_form=email_form, password_form=password_form, currency_form=currency_form, reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form)
 
 @settings_bp.route("/update_email", methods=['POST'])
 @login_required

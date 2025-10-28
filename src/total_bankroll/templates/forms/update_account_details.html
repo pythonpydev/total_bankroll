@@ -1,0 +1,154 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="update_account_details">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Update Account Details</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Update your email address or password below.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="portfolio">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8">
+                <!-- Update Email Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Email Address</h4>
+                        <p class="text-center text-muted">Current Email: {{ current_user.email }}</p>
+                        <form method="POST" action="{{ url_for('settings.update_email') }}">
+                            {{ email_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ email_form.email(class="form-control", id="email", placeholder="New Email Address") }}
+                                {{ email_form.email.label(for="email") }}
+                                {% for error in email_form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ email_form.submit_email(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Update Password Card -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Password</h4>
+                        <form method="POST" action="{{ url_for('settings.update_password') }}">
+                            {{ password_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ password_form.password(class="form-control", id="password", placeholder="New Password") }}
+                                {{ password_form.password.label(for="password") }}
+                                {% for error in password_form.password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="form-floating mb-3">
+                                {{ password_form.confirm_password(class="form-control", id="confirm_password", placeholder="Confirm New Password") }}
+                                {{ password_form.confirm_password.label(for="confirm_password") }}
+                                {% for error in password_form.confirm_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ password_form.submit_password(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Update Default Currency Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Default Currency</h4>
+                        <p class="text-center text-muted">Set the default currency for new transactions.</p>
+                        <form method="POST" action="{{ url_for('settings.update_default_currency') }}">
+                            {{ currency_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ currency_form.currency(class="form-select", id="currency") }}
+                                <label for="currency">Default Currency</label>
+                                {% for error in currency_form.currency.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ currency_form.submit_currency(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Change Default Currency</h4>
+                        <p class="text-center text-muted">Set the default currency for new transactions.</p>
+                        <form method="POST" action="{{ url_for('settings.update_default_currency') }}">
+                            {{ currency_form.hidden_tag() }}
+                            <div class="form-floating mb-3">
+                                {{ currency_form.currency(class="form-select", id="currency") }}
+                                <label for="currency">Default Currency</label>
+                                {% for error in currency_form.currency.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ currency_form.submit_currency(class="btn btn-primary btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Reset Database Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Reset All My Data</h4>
+                        <p class="text-center text-muted">This will permanently delete all your bankroll data (sites, assets, deposits, withdrawals, history). Your account will remain active.</p>
+                        <form method="POST" action="{{ url_for('settings.reset_database') }}" onsubmit="return confirm('Are you sure you want to reset all your data? This action cannot be undone.');">
+                            {{ reset_database_form.hidden_tag() }}
+                            <div class="d-grid">
+                                {{ reset_database_form.submit(class="btn btn-warning btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Export Data Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Export My Data</h4>
+                        <p class="text-center text-muted">Download all your bankroll data as a JSON file.</p>
+                        <form method="GET" action="{{ url_for('settings.export_data') }}">
+                            {{ export_data_form.hidden_tag() }}
+                            <div class="d-grid">
+                                {{ export_data_form.submit(class="btn btn-info btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Import Data Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center">Import My Data</h4>
+                        <p class="text-center text-muted">Upload a JSON file to import your bankroll data. This will overwrite your existing data.</p>
+                        <form method="POST" action="{{ url_for('settings.import_data') }}" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to import data? This will overwrite all your existing bankroll data.');">
+                            {{ import_data_form.hidden_tag() }}
+                            <div class="mb-3">
+                                <label for="data_file" class="form-label">Select JSON File</label>
+                                {{ import_data_form.data_file(class="form-control", id="data_file") }}
+                                {% for error in import_data_form.data_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="d-grid">
+                                {{ import_data_form.submit(class="btn btn-success btn-xl") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('settings.settings_page') }}" class="btn btn-secondary btn-xl">Back to Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

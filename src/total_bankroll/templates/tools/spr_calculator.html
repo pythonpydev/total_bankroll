@@ -1,0 +1,95 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block title %}SPR Calculator{% endblock %}
+
+{% block content %}
+{{ page_header('SPR Calculator', 'Compute the Stack-to-Pot Ratio for a given spot.') }}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h1 class="h4 mb-0">Stack-to-Pot Ratio (SPR) Calculator</h1>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Enter the effective stack size and the current pot size to calculate the Stack-to-Pot Ratio (SPR).</p>
+                    
+                    <form method="POST" action="{{ url_for('tools.spr_calculator_page') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.effective_stack.label(class="form-label") }}
+                            {{ form.effective_stack(class="form-control" + (" is-invalid" if form.effective_stack.errors else ""), placeholder="e.g., 100") }}
+                            {% if form.effective_stack.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.effective_stack.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.pot_size.label(class="form-label") }}
+                            {{ form.pot_size(class="form-control" + (" is-invalid" if form.pot_size.errors else ""), placeholder="e.g., 10") }}
+                            {% if form.pot_size.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.pot_size.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {{ form.submit(class="btn btn-primary w-100") }}
+                    </form>
+
+                    {% if spr is not none %}
+                    <div class="alert alert-success mt-4" role="alert">
+                        <h4 class="alert-heading">Calculated SPR: {{ "%.2f"|format(spr) }}</h4>
+                        <p>With an effective stack of ${{ form.effective_stack.data }} and a pot of ${{ form.pot_size.data }}, your Stack-to-Pot Ratio is {{ "%.2f"|format(spr) }}.</p>
+                    </div>
+
+                    {% if spr_decision_category and spr_decision_territory %}
+                    <div class="mt-4">
+                        <h5>SPR Decision Category: <span class="text-primary">{{ spr_decision_category }}</span></h5>
+                        <p><strong>Territory:</strong> {{ spr_decision_territory }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if spr_detailed_decisions %}
+                    <div class="mt-4">
+                        <h5>Detailed Decisions for {{ spr_detailed_category_header }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Hand Type</th>
+                                        <th>Decision</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in spr_detailed_decisions %}
+                                    <tr>
+                                        <td>{{ item.hand_type }}</td>
+                                        <td class="{{ item.decision_class }}">{{ item.decision }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <p class="text-center mt-3">
+                        <a href="{{ url_for('hand_eval.spr_strategy') }}" class="btn btn-info">View Full SPR Strategy Guide</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

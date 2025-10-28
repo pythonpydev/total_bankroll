@@ -199,7 +199,7 @@ def site_history(site_id):
         record_dict['currency_name'] = currency_obj.name if currency_obj else record.currency
         history_data.append(record_dict)
 
-    return render_template("site_history.html", site=site, history=history_data, start_date=start_date_str, end_date=end_date_str)
+    return render_template("info/site_history.html", site=site, history=history_data, start_date=start_date_str, end_date=end_date_str)
 
 @poker_sites_bp.route('/move_site/<int:site_id>/<direction>')
 @login_required
@@ -258,4 +258,4 @@ def edit_site_history(history_id):
     if request.method == 'GET':
         form.currency.data = history_record.currency
 
-    return render_template('_modal_form.html', form=form, title="Edit Site History Record")
+    return render_template('partials/_modal_form.html', form=form, title="Edit Site History Record")
