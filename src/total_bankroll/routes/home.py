@@ -59,4 +59,4 @@ class DummyLoginForm(FlaskForm):
 @home_bp.route("/debug_login")
 def debug_login():
     dummy_form = DummyLoginForm()
-    return render_template("security/login_user.html", form=dummy_form)
+    return render_template("auth/login_user.html", form=dummy_form)

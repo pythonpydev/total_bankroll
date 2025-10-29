@@ -108,13 +108,27 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │       ├── static/
 │       │   ├── assets/
 │       │   ├── css/
+│       │   │   └── _styles.css
 │       │   ├── images/
 │       │   └── js/
+│       │       ├── app.js
+│       │       ├── card_utils.js
+│       │       ├── chart_utils.js
+│       │       └── scripts.js
 │       └── templates/
-│           ├── security/
-│           │   └── ... (Flask-Security-Too templates)
 │           ├── __init__.py
-│           ├── ... (numerous Jinja2 template files)
+│           ├── articles/
+│           ├── auth/
+│           ├── bankroll/
+│           ├── charts/
+│           ├── confirmations/
+│           ├── core/
+│           ├── info/
+│           ├── legal/
+│           ├── partials/
+│           ├── quiz/
+│           ├── settings/
+│           └── tools/
 └── tests/
     └── ... (Pytest test files)
 ```

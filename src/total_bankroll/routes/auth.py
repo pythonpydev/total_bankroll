@@ -138,7 +138,6 @@ def verify_2fa():
         else:
             flash('Invalid 2FA token.', 'danger')
             return redirect(url_for('auth.verify_2fa'))
-
     return render_template('security/verify_2fa.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])

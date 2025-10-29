@@ -79,7 +79,7 @@ def assets_page():
             'previous_amount_usd': previous_amount_usd
         })
 
-    return render_template("assets.html", assets=assets_with_data, total_current=total_current, total_previous=total_previous)
+    return render_template("bankroll/assets.html", assets=assets_with_data, total_current=total_current, total_previous=total_previous)
 
 @assets_bp.route("/add_asset", methods=['GET', 'POST'])
 @login_required
@@ -105,7 +105,7 @@ def add_asset():
         db.session.commit()
         flash('Asset added successfully!', 'success')
         return redirect(url_for('assets.assets_page'))
-    return render_template("_modal_form.html", form=form, title="Add New Asset")
+    return render_template("partials/_modal_form.html", form=form, title="Add New Asset", action_url=url_for('assets.add_asset'))
 
 @assets_bp.route("/update_asset/<int:asset_id>", methods=['GET', 'POST'])
 @login_required
@@ -130,7 +130,7 @@ def update_asset(asset_id):
     if last_history:
         form.amount.data = last_history.amount
 
-    return render_template("_modal_form.html", form=form, title=f"Update {asset.name}")
+    return render_template("partials/_modal_form.html", form=form, title=f"Update {asset.name}", action_url=url_for('assets.update_asset', asset_id=asset_id))
 
 @assets_bp.route("/rename_asset/<int:asset_id>", methods=['GET', 'POST'])
 @login_required
@@ -146,7 +146,7 @@ def rename_asset(asset_id):
         db.session.commit()
         flash('Asset renamed successfully!', 'success')
         return redirect(url_for('assets.assets_page'))
-    return render_template("partials/_modal_form.html", form=form, title=f"Rename {asset.name}")
+    return render_template("partials/_modal_form.html", form=form, title=f"Rename {asset.name}", action_url=url_for('assets.rename_asset', asset_id=asset_id))
 
 @assets_bp.route("/asset_history/<int:asset_id>")
 @login_required
@@ -180,7 +180,7 @@ def asset_history(asset_id):
         record_dict['currency_name'] = currency_obj.name if currency_obj else record.currency
         history_data.append(record_dict)
 
-    return render_template("asset_history.html", asset=asset, history=history_data, start_date=start_date_str, end_date=end_date_str)
+    return render_template("info/asset_history.html", asset=asset, history=history_data, start_date=start_date_str, end_date=end_date_str)
 
 @assets_bp.route('/move_asset/<int:asset_id>/<direction>')
 @login_required
@@ -224,4 +224,4 @@ def edit_asset_history(history_id):
         return redirect(url_for('assets.asset_history', asset_id=history_record.asset_id))
 
     currencies = get_sorted_currencies()
-    return render_template('forms/edit_asset_history.html', history_record=history_record, currencies=currencies)
+    return render_template('partials/_edit_asset_history_form.html', history_record=history_record, currencies=currencies)

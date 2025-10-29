@@ -77,7 +77,7 @@ def settings_page():
     if current_user.is_authenticated and hasattr(current_user, 'default_currency_code'):
         currency_form.currency.data = current_user.default_currency_code
 
-    return render_template("settings.html", reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form, currency_form=currency_form, currencies=currencies)
+    return render_template("core/settings.html", reset_database_form=reset_database_form, export_data_form=export_data_form, import_data_form=import_data_form, currency_form=currency_form, currencies=currencies)
 
 @settings_bp.route('/settings/2fa/setup', methods=['GET', 'POST'])
 @login_required
@@ -101,7 +101,7 @@ def setup_2fa():
         buf.seek(0)
         qr_code_data = base64.b64encode(buf.getvalue()).decode('ascii')
 
-        return render_template('setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
+        return render_template('security/setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
 
     # Handle POST request for verification
     token = request.form.get('token')
@@ -123,7 +123,7 @@ def setup_2fa():
         img.save(buf)
         buf.seek(0)
         qr_code_data = base64.b64encode(buf.getvalue()).decode('ascii')
-        return render_template('setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
+        return render_template('security/setup_2fa.html', secret=session['otp_secret'], qr_code_data=qr_code_data)
 
 @settings_bp.route('/settings/2fa/disable', methods=['GET'])
 @login_required
@@ -143,7 +143,7 @@ def disable_2fa():
 def delete_user_account():
     """Show confirmation dialog for deleting user account."""
     form = DeleteUserForm()
-    return render_template("confirm_delete_user_account.html", form=form)
+    return render_template("confirmations/confirm_delete_user_account.html", form=form)
 
 @settings_bp.route("/delete_user_account_confirmed", methods=["POST"])
 @login_required

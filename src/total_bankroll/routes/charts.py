@@ -10,7 +10,7 @@ charts_bp = Blueprint("charts", __name__)
 @login_required
 def charts_page():
     """Charts page."""
-    return render_template("charts.html")
+    return render_template("charts/charts.html")
 
 @charts_bp.route("/<string:entity>/<string:chart_type>")
 @login_required
