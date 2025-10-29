@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
 from .models import db, User, Role, OAuth as OAuthModel
+from .vite_asset_helper import init_vite_asset_helper
 from .extensions import bcrypt, limiter, mail, principal, csrf
 from .config import DevelopmentConfig, ProductionConfig
 import os
@@ -10,11 +11,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def create_app():
+def create_app(config_name=None):
     app = Flask(__name__)
     
     # Determine config_name based on FLASK_ENV
-    config_name = os.getenv('FLASK_ENV', 'development').lower()
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'development').lower()
     logger.debug(f"FLASK_ENV={config_name}")
     
     # Load configuration
@@ -72,6 +74,9 @@ def create_app():
     app.register_blueprint(tools_bp)
     app.register_blueprint(hand_eval_bp)
     app.register_blueprint(common_bp)
+
+    # Initialize Vite asset helper
+    init_vite_asset_helper(app)
 
     from .routes.hand_eval import load_plo_hand_rankings_data
     with app.app_context():

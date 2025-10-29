@@ -9,6 +9,7 @@ from wtforms.validators import DataRequired, Length, Optional
 
 from ..models import db, Sites, SiteHistory, Currency
 from ..achievements import update_user_streak
+from ..utils import get_sorted_currencies
 from datetime import datetime, UTC
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
@@ -85,7 +86,7 @@ def poker_sites_page():
             'previous_amount_usd': previous_amount_usd
         })
 
-    return render_template("bankroll/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous)
+    return render_template("info/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous)
 
 @poker_sites_bp.route("/add_site", methods=['GET', 'POST'])
 @login_required
@@ -111,9 +112,7 @@ def add_site():
         db.session.commit()
         flash('Site added successfully!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
-    elif request.method == 'POST':
-        # If validation fails, return errors as JSON
-        return jsonify({'success': False, 'errors': form.errors}), 400
+    # For GET request or if validation fails on POST, render the modal form
     return render_template("partials/_modal_form.html", form=form, title="Add New Site", action_url=url_for('poker_sites.add_site'))
 
 @poker_sites_bp.route("/update_site/<int:site_id>", methods=['GET', 'POST'])

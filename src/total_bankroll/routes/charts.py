@@ -172,11 +172,11 @@ def get_poker_sites_historical_data():
         # but generate it more robustly.
 
         date_range = []
-        current_day = min_day
-        while current_day <= max_day:
-            date_range.append(current_day)
-            current_day += timedelta(days=1)
-
+        if min_day and max_day:
+            current_day = min_day
+            while current_day <= max_day:
+                date_range.append(current_day)
+                current_day += timedelta(days=1)
         labels = [d.isoformat() for d in date_range]
         # Create datasets for each site
         datasets = []
@@ -193,24 +193,20 @@ def get_poker_sites_historical_data():
         for site_name, points in site_data_points.items():
             # points are already sorted by recorded_at from the query
             data = []
-            point_index = 0
             last_known_value = Decimal('0.0')
+            points_iter = iter(points)
+            next_point = next(points_iter, None)
 
             for day in date_range:
-                # Find the last update for this site on or before the current day
-                todays_points = [p for p in points if p['date'].date() == day]
-
-                if todays_points:
-                    # If there are updates today, use the last one
-                    last_known_value = todays_points[-1]['amount_usd']
-                elif not data:
-                    # If it's the first day and no data, check for previous data
-                    previous_points = [p for p in points if p['date'].date() < day]
-                    if previous_points:
-                        last_known_value = previous_points[-1]['amount_usd']
-
-                # Append the value for the day (either new or carried over)
+                # Process all points for the current day, updating last_known_value
+                while next_point and next_point['date'].date() <= day:
+                    last_known_value = next_point['amount_usd']
+                    next_point = next(points_iter, None)
+                
                 data.append(float(round(last_known_value, 2)))
+            
+            if not data and points: # Handle case where all data is before the chart range
+                data = [float(round(points[-1]['amount_usd'], 2))] * len(labels)
 
             datasets.append({
                 'label': site_name,
@@ -247,9 +243,10 @@ def get_assets_historical_data():
 
         asset_data_points = {}
         dates = set()
+        all_dates = set()
         for row in assets_data:
             asset_name = row.name
-            date = row.recorded_at.date()
+            date = row.recorded_at
             amount_usd = Decimal(str(row.amount)) / currency_rates.get(row.currency, Decimal('1.0'))
             if asset_name not in asset_data_points:
                 asset_data_points[asset_name] = []
@@ -257,30 +254,39 @@ def get_assets_historical_data():
                 'date': date,
                 'amount_usd': amount_usd
             })
-            dates.add(date)
+            all_dates.add(date.date())
 
-        sorted_dates = sorted(list(dates))
-        labels = [d.isoformat() for d in sorted_dates]
+        if not all_dates:
+            return jsonify({'labels': [], 'datasets': []})
+
+        min_day = min(all_dates)
+        max_day = max(all_dates)
+        date_range = []
+        if min_day and max_day:
+            current_day = min_day
+            while current_day <= max_day:
+                date_range.append(current_day)
+                current_day += timedelta(days=1)
+        labels = [d.isoformat() for d in date_range]
+
         datasets = []
         colors = [
             'rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)',
             'rgb(255, 206, 86)', 'rgb(153, 102, 255)', 'rgb(255, 159, 64)'
         ]
         color_index = 0
-
+        
         for asset_name, points in asset_data_points.items():
-            points_sorted = sorted(points, key=lambda x: x['date'])
             data = []
-            point_index = 0
-            for date in sorted_dates:
-                if point_index < len(points_sorted) and points_sorted[point_index]['date'] == date:
-                    data.append(float(round(points_sorted[point_index]['amount_usd'], 2)))
-                    point_index += 1
-                else:
-                    if point_index > 0:
-                        data.append(float(round(points_sorted[point_index - 1]['amount_usd'], 2)))
-                    else:
-                        data.append(0.0)
+            last_known_value = Decimal('0.0')
+            points_iter = iter(points)
+            next_point = next(points_iter, None)
+
+            for day in date_range:
+                while next_point and next_point['date'].date() <= day:
+                    last_known_value = next_point['amount_usd']
+                    next_point = next(points_iter, None)
+                data.append(float(round(last_known_value, 2)))
 
             datasets.append({
                 'label': asset_name,
@@ -291,12 +297,7 @@ def get_assets_historical_data():
             })
             color_index += 1
 
-        return jsonify({
-            'labels': labels,
-            'datasets': datasets,
-            'min_date': labels[0] if labels else None,
-            'max_date': labels[-1] if labels else None
-        })
+        return jsonify({'labels': labels, 'datasets': datasets})
     except Exception as e:
         current_app.logger.error(f"Error in get_assets_historical_data: {e}")
         return jsonify({'error': str(e)}), 500
@@ -489,16 +490,27 @@ def get_withdrawals_data():
             if date not in withdrawals_by_date:
                 withdrawals_by_date[date] = Decimal('0')
             withdrawals_by_date[date] += amount_usd
-            dates.add(date)
 
-        labels = sorted([date.isoformat() for date in dates])
-        data = [float(round(withdrawals_by_date.get(datetime.fromisoformat(label).date(), Decimal('0')), 2)) for label in labels]
+        min_day = min(withdrawals_by_date.keys())
+        max_day = max(withdrawals_by_date.keys())
+
+        date_range = []
+        current_day = min_day
+        while current_day <= max_day:
+            date_range.append(current_day)
+            current_day += timedelta(days=1)
+
+        labels = [d.isoformat() for d in date_range]
+        data = [float(round(withdrawals_by_date.get(d, Decimal('0')), 2)) for d in date_range]
+
+        cumulative_data = [sum(data[:i+1]) for i in range(len(data))]
 
         datasets = [{
-            'label': 'Total Withdrawals (USD)',
-            'data': data,
+            'label': 'Daily Withdrawals (USD)',
+            'data': data, 'yAxisID': 'y',
             'fill': False,
             'borderColor': 'rgb(255, 99, 132)', # Red color for withdrawals
+            'type': 'bar',
             'tension': 0.1
         }]
 
@@ -532,16 +544,27 @@ def get_deposits_data():
             if date not in deposits_by_date:
                 deposits_by_date[date] = Decimal('0')
             deposits_by_date[date] += amount_usd
-            dates.add(date)
 
-        labels = sorted([date.isoformat() for date in dates])
-        data = [float(round(deposits_by_date.get(datetime.fromisoformat(label).date(), Decimal('0')), 2)) for label in labels]
+        min_day = min(deposits_by_date.keys())
+        max_day = max(deposits_by_date.keys())
+
+        date_range = []
+        current_day = min_day
+        while current_day <= max_day:
+            date_range.append(current_day)
+            current_day += timedelta(days=1)
+
+        labels = [d.isoformat() for d in date_range]
+        data = [float(round(deposits_by_date.get(d, Decimal('0')), 2)) for d in date_range]
+
+        cumulative_data = [sum(data[:i+1]) for i in range(len(data))]
 
         datasets = [{
-            'label': 'Total Deposits (USD)',
-            'data': data,
+            'label': 'Daily Deposits (USD)',
+            'data': data, 'yAxisID': 'y',
             'fill': False,
-            'borderColor': 'rgb(75, 192, 192)', # Green color for deposits
+            'backgroundColor': 'rgba(75, 192, 192, 0.5)',
+            'type': 'bar',
             'tension': 0.1
         }]
 

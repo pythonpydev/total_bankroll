@@ -52,10 +52,12 @@ The application uses SQLAlchemy to define the database models. The key models ar
 ├── .flake8
 ├── .gitignore
 ├── GEMINI.md
+├── package.json
 ├── LICENSE
 ├── README.md
 ├── requirements.in
 ├── requirements.txt
+├── vite.config.js
 ├── wsgi.py
 ├── .github/
 │   └── workflows/
@@ -73,6 +75,7 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │       ├── data_utils.py
 │       ├── extensions.py
 │       ├── models.py
+│       ├── vite_asset_helper.py
 │       ├── oauth.py
 │       ├── recommendations.py
 │       ├── seed_articles.py
@@ -80,6 +83,8 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │       ├── data/
 │       │   └── recommendation_logic.json
 │       ├── routes/
+│       │   ├── ... (numerous route files)
+│       ├── frontend/
 │       │   ├── __init__.py
 │       │   ├── about.py
 │       │   ├── add_deposit.py
@@ -111,7 +116,6 @@ The application uses SQLAlchemy to define the database models. The key models ar
 │       │   │   └── _styles.css
 │       │   ├── images/
 │       │   └── js/
-│       │       ├── app.js
 │       │       ├── card_utils.js
 │       │       ├── chart_utils.js
 │       │       └── scripts.js

@@ -2,22 +2,25 @@
 {% from "partials/_macros.html" import page_header %}
 
 {% block content %}
-{{ page_header('Assets Value (Radar Chart)', 'Radar chart of asset values in USD.') }}
+{{ page_header('Assets Value (Radar)', 'Radar chart comparing current asset values in USD.') }}
 
 <section class="page-section" id="charts-content">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            <div class="col-lg-12">
-                <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary mb-4"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
-                <canvas id="assetsChart"></canvas>
-            </div>
+    <div class="container">
+        <div class="mb-4">
+            <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
         </div>
+        <canvas id="assetsChart"></canvas>
     </div>
 </section>
 
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/chart_utils.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        fetch('/charts/assets_historical_data')
+        fetch("{{ url_for('charts.get_assets_pie_data') }}")
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('assetsChart').getContext('2d');
@@ -29,17 +32,10 @@
 
                 const chartOptions = {
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Assets Value (Radar Chart)',
-                            font: { size: 18 }
-                        }
+                        title: { display: true, text: 'Current Asset Values', font: { size: 18 } },
+                        legend: { display: false }
                     },
-                    scales: {
-                        r: {
-                            beginAtZero: true
-                        }
-                    }
+                    scales: { r: { beginAtZero: true } }
                 };
 
                 createChart(ctx, 'radar', chartData, chartOptions);
@@ -47,4 +43,5 @@
             .catch(error => console.error('Error fetching assets data:', error));
     });
 </script>
+{% endblock %}
 {% endblock %}

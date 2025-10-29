@@ -13,73 +13,65 @@ def inject_current_year():
     """Injects the current year into all templates."""
     return {'current_year': datetime.now(UTC).year}
 
-@common_bp.route('/confirm_delete/<item_type>/<int:item_id>')
+@common_bp.route('/confirm_delete/<item_type>/<int:item_id>', methods=['GET', 'POST'])
 @login_required
 def confirm_delete(item_type, item_id):
+    """
+    Handles both displaying the confirmation page (GET) and performing the deletion (POST).
+    """
+    if request.method == 'POST':
+        try:
+            if item_type == 'site':
+                SiteHistory.query.filter_by(site_id=item_id, user_id=current_user.id).delete()
+                Sites.query.filter_by(id=item_id, user_id=current_user.id).delete()
+                db.session.commit()
+                flash("Site deleted successfully!", "success")
+                return redirect(url_for('poker_sites.poker_sites_page'))
+            elif item_type == 'asset':
+                AssetHistory.query.filter_by(asset_id=item_id, user_id=current_user.id).delete()
+                Assets.query.filter_by(id=item_id, user_id=current_user.id).delete()
+                db.session.commit()
+                flash("Asset deleted successfully!", "success")
+                return redirect(url_for('assets.assets_page'))
+            elif item_type == 'withdrawal':
+                Drawings.query.filter_by(id=item_id, user_id=current_user.id).delete()
+                db.session.commit()
+                flash("Withdrawal deleted successfully!", "success")
+                return redirect(url_for('withdrawal.withdrawal'))
+            elif item_type == 'deposit':
+                Deposits.query.filter_by(id=item_id, user_id=current_user.id).delete()
+                db.session.commit()
+                flash("Deposit deleted successfully!", "success")
+                return redirect(url_for('deposit.deposit'))
+            elif item_type == 'site_history':
+                history_record = SiteHistory.query.filter_by(id=item_id, user_id=current_user.id).first()
+                if history_record:
+                    site_id = history_record.site_id
+                    # Prevent deleting the last history record
+                    if SiteHistory.query.filter_by(site_id=site_id, user_id=current_user.id).count() <= 1:
+                        flash("Cannot delete the last history record for a site. Please delete the site itself.", "danger")
+                        return redirect(url_for('poker_sites.site_history', site_id=site_id))
+                    db.session.delete(history_record)
+                    db.session.commit()
+                    flash("History record deleted successfully!", "success")
+                    return redirect(url_for('poker_sites.site_history', site_id=site_id))
+            # Add other item types here if needed
+            else:
+                flash("Invalid item type for deletion.", "danger")
+                return redirect(request.referrer or url_for('home.home'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting record: {e}", "danger")
+            return redirect(request.referrer or url_for('home.home'))
+
+    # For a GET request, just show the confirmation page.
+    # The form in the template will POST back to this same URL.
     return render_template('confirmations/confirm_delete.html', item_type=item_type, item_id=item_id)
 
 @common_bp.route('/confirm_export_database')
 @login_required
 def confirm_export_database():
     return render_template('confirmations/confirm_export_database.html')
-
-@common_bp.route('/perform_delete/<item_type>/<int:item_id>', methods=['POST'])
-@login_required
-def perform_delete(item_type, item_id):
-    try:
-        if item_type == 'site':
-            SiteHistory.query.filter_by(site_id=item_id, user_id=current_user.id).delete()
-            Sites.query.filter_by(id=item_id, user_id=current_user.id).delete()
-            db.session.commit()
-            flash("Site deleted successfully!", "success")
-            return redirect(url_for('poker_sites.poker_sites_page'))
-        elif item_type == 'asset':
-            AssetHistory.query.filter_by(asset_id=item_id, user_id=current_user.id).delete()
-            Assets.query.filter_by(id=item_id, user_id=current_user.id).delete()
-            db.session.commit()
-            flash("Asset deleted successfully!", "success")
-            return redirect(url_for('assets.assets_page'))
-        elif item_type == 'withdrawal':
-            Drawings.query.filter_by(id=item_id, user_id=current_user.id).delete()
-            db.session.commit()
-            flash("Withdrawal deleted successfully!", "success")
-            return redirect(url_for('withdrawal.withdrawal'))
-        elif item_type == 'deposit':
-            Deposits.query.filter_by(id=item_id, user_id=current_user.id).delete()
-            db.session.commit()
-            flash("Deposit deleted successfully!", "success")
-            return redirect(url_for('deposit.deposit'))
-        elif item_type == 'site_history':
-            history_record = SiteHistory.query.filter_by(id=item_id, user_id=current_user.id).first()
-            if history_record:
-                site_id = history_record.site_id
-                count = SiteHistory.query.filter_by(site_id=site_id, user_id=current_user.id).count()
-                if count <= 1:
-                    flash("Cannot delete the last history record for a site. Please delete the site itself.", "danger")
-                    return redirect(url_for('poker_sites.site_history', site_id=site_id))
-                db.session.delete(history_record)
-                db.session.commit()
-                flash("History record deleted successfully!", "success")
-                return redirect(url_for('poker_sites.site_history', site_id=site_id))
-        elif item_type == 'asset_history':
-            history_record = AssetHistory.query.filter_by(id=item_id, user_id=current_user.id).first()
-            if history_record:
-                asset_id = history_record.asset_id
-                count = AssetHistory.query.filter_by(asset_id=asset_id, user_id=current_user.id).count()
-                if count <= 1:
-                    flash("Cannot delete the last history record for an asset. Please delete the asset itself.", "danger")
-                    return redirect(url_for('assets.asset_history', asset_id=asset_id))
-                db.session.delete(history_record)
-                db.session.commit()
-                flash("History record deleted successfully!", "success")
-                return redirect(url_for('assets.asset_history', asset_id=asset_id))
-        else:
-            flash("Invalid item type", "danger")
-            return "Invalid item type", 400
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error deleting record: {e}", "danger")
-        return f"Error deleting record: {e}", 500
 
 @common_bp.route('/perform_export_database', methods=['POST'])
 @login_required

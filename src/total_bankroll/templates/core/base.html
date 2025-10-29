@@ -76,6 +76,8 @@
         <!-- Core theme JS-->
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
         
+        <!-- Vite Main Application Script -->
+        <script type="module" src="{{ vite_asset('main.js') }}"></script>
 
     <!-- General Modal -->
     <div class="modal fade" id="generalModal" tabindex="-1" aria-labelledby="generalModalLabel" aria-hidden="true">
@@ -86,14 +88,140 @@
         </div>
     </div>
 
-    <!-- Custom Chart Utility -->
-    <script src="{{ url_for('static', filename='js/chart_utils.js') }}"></script>
+    <!-- Theme Toggler Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const themeIcon = themeToggle.querySelector('i');
 
-    <!-- Custom Card Display Utility -->
-    <script src="{{ url_for('static', filename='js/card_utils.js') }}"></script>
+            function setDarkTheme(isDark) {
+                body.classList.toggle('dark-mode', isDark);
+                themeIcon.classList.toggle('bi-sun-fill', !isDark);
+                themeIcon.classList.toggle('bi-moon-fill', isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
 
-    <!-- Main Application Script -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+                // Dispatch a custom event after the theme is set
+                const event = new Event('theme-changed');
+                document.dispatchEvent(event);
+            }
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setDarkTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+                themeToggle.addEventListener('click', () => {
+                setDarkTheme(!body.classList.contains('dark-mode'));
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var generalModal = document.getElementById('generalModal');
+            generalModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Button that triggered the modal
+                var url = button.getAttribute('data-url'); // Extract info from data-url attribute
+                var modalContent = generalModal.querySelector('.modal-content');
+
+                // Load content from the URL into the modal body
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        modalContent.innerHTML = html;
+                        // After loading content, find the form and set its action
+                        const form = modalContent.querySelector('form');
+                        if (form) {
+                            form.action = url;
+                        }
+                    })
+                    .catch(error => {
+                        modalContent.innerHTML = '<div class="modal-body"><p>Error loading content.</p></div>';
+                        console.error('Error loading modal content:', error);
+                    });
+            });
+        });
+    </script>
+    <!-- Back to Top Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const backToTopButton = document.getElementById("backToTopBtn");
+
+            // When the user scrolls down 100px from the top of the document, show the button
+            window.onscroll = function() {
+                if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                    backToTopButton.style.display = "block";
+                } else {
+                    backToTopButton.style.display = "none";
+                }
+            };
+
+            // When the user clicks on the button, scroll to the top of the document
+            backToTopButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>    
+    <!-- Toast Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            const toastList = toastElList.map(function (toastEl) {
+                // Create a new toast instance and show it
+                const toast = new bootstrap.Toast(toastEl, { delay: 5000 }); // 5 second delay
+                toast.show();
+                return toast;
+            });
+        });
+    </script>
+    {% if g.is_in_eu %}
+    <!-- Cookie Consent Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const banner = document.getElementById('cookieConsentBanner');
+            const acceptBtn = document.getElementById('acceptCookie');
+            const declineBtn = document.getElementById('declineCookie');
+
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for(let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            if (!getCookie('cookie_consent')) {
+                banner.style.display = 'block';
+            }
+
+            acceptBtn.addEventListener('click', function () {
+                setCookie('cookie_consent', 'true', 365);
+                banner.style.display = 'none';
+            });
+
+            declineBtn.addEventListener('click', function () {
+                setCookie('cookie_consent', 'false', null); // Session cookie
+                banner.style.display = 'none';
+            });
+        });
+    </script>
+    {% endif %}
 
     {% block scripts %}{% endblock %}
 </body>

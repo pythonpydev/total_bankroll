@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# --- Cleanup Function ---
+# This function will be called when the script exits to ensure background processes are stopped.
+VITE_PID=""
+cleanup() {
+    echo "" # Newline for cleaner exit
+    if [ -n "$VITE_PID" ]; then
+        echo "Stopping Vite dev server (PID: $VITE_PID)..."
+        kill $VITE_PID
+    fi
+}
+
+# Trap the EXIT signal to run the cleanup function when the script is terminated (e.g., by Ctrl+C)
+trap cleanup EXIT
+
 # make it executable:
 # chmod +x /path/to/rtb.sh
 
@@ -165,8 +179,20 @@ case "$COMMAND" in
             echo "Running Flask app with Gunicorn (production mode)..."
             gunicorn -w 2 -b 0.0.0.0:8000 "total_bankroll:create_app()"
         else
+            # --- Vite Dev Server Check ---
+            VITE_PORT=5173
+            if ! lsof -i:$VITE_PORT > /dev/null; then
+                echo "Vite dev server not running. Starting it now..."
+                # Start Vite in the background and capture its Process ID (PID)
+                npm run dev &
+                VITE_PID=$!
+                echo "Vite dev server started with PID: $VITE_PID. Waiting for it to initialize..."
+                sleep 5 # Give Vite a moment to start up
+            else
+                echo "Vite dev server is already running on port $VITE_PORT."
+            fi
             echo "Running Flask app (development mode)..."
-            flask run
+            flask run --debug --port=5000
         fi
         ;;
     "run-dev")

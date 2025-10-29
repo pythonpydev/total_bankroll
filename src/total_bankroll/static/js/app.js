@@ -38,8 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(html => {
                     modalContent.innerHTML = html;
                     const form = modalContent.querySelector('form');
-                    if (form) {
-                        form.action = url;
+                    // Only set the form action if it's not already set by the template
+                    if (form && !form.getAttribute('action')) {
+                        form.setAttribute('action', url);
                     }
                 })
                 .catch(error => {

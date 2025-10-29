@@ -1,0 +1,29 @@
+{
+  "name": "total_bankroll",
+  "version": "1.0.0",
+  "description": "Keeps a track of total poker bankroll, including funds on each site, cash and other assets.",
+  "main": "vite.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "postinstall": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pythonpydev/total_bankroll.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pythonpydev/total_bankroll/issues"
+  },
+  "homepage": "https://github.com/pythonpydev/total_bankroll#readme",
+  "devDependencies": {
+    "vite": "^7.1.12"
+  }
+}

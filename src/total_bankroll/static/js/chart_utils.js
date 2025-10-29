@@ -150,3 +150,6 @@ function createChart(ctx, chartType, chartData, customOptions = {}) {
         options: finalOptions,
     });
 }
+
+// Make the function globally available for inline scripts in templates
+window.createChart = createChart;

@@ -77,7 +77,7 @@ def withdrawal():
     currencies = get_sorted_currencies()
 
     current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
-    return render_template("bankroll/withdrawal.html", 
+    return render_template("info/withdrawal.html", 
                            drawings=withdrawal_data, 
                            today=today, 
                            total_net_worth=total_net_worth, 

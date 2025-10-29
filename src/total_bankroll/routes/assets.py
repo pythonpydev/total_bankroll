@@ -9,6 +9,7 @@ from wtforms.validators import DataRequired, Length
 
 from ..models import db, Assets, AssetHistory, Currency
 from ..achievements import update_user_streak
+from ..utils import get_sorted_currencies
 from datetime import datetime
 
 assets_bp = Blueprint("assets", __name__)
@@ -79,7 +80,7 @@ def assets_page():
             'previous_amount_usd': previous_amount_usd
         })
 
-    return render_template("bankroll/assets.html", assets=assets_with_data, total_current=total_current, total_previous=total_previous)
+    return render_template("info/assets.html", assets=assets_with_data, total_current=total_current, total_previous=total_previous)
 
 @assets_bp.route("/add_asset", methods=['GET', 'POST'])
 @login_required
