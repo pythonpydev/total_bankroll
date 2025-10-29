@@ -1,0 +1,334 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Pot Limit Omaha Tools', 'Analyze hand strength and calculate Stack-to-Pot Ratio.') }}
+
+<section class="page-section" id="portfolio">
+    <div class="container px-4 px-lg-5">
+      <div class="plo-form-container">
+        <div class="image-container text-center">
+          <img src="{{ url_for('static', filename='images/tables/poker_table_pot_btn_chips' ~ button_position ~ '.png') }}" alt="Poker Table" class="poker-table" id="pokerTable">
+          <div id="seat-1" class="seat">
+            <div class="seat-label">Seat 1</div>
+            <div class="position-label"></div>
+          </div>
+          <div id="seat-2" class="seat">
+            <div class="seat-label">Seat 2</div>
+            <div class="position-label"></div>
+          </div>
+          <div id="seat-3" class="seat">
+            <div class="seat-label">Seat 3</div>
+            <div class="position-label"></div>
+          </div>
+          <div id="seat-4" class="seat">
+            <div class="seat-label">Seat 4</div>
+            <div class="position-label"></div>
+          </div>
+          <div id="seat-5" class="seat">
+            <div class="seat-label">Seat 5</div>
+            <div class="position-label"></div>
+          </div>
+          <div id="seat-6" class="seat">
+            <div class="seat-label">Seat 6</div>
+            <div class="position-label"></div>
+          </div>
+        </div>
+        <form action="{{ url_for('hand_eval.switch_button_position') }}" method="post" class="button-group mt-4">
+          {{ button_form.hidden_tag() }}
+          <label>Choose button position:</label>
+            <button type="submit" name="button_position" value="1" class="btn {% if button_position == 1 %}btn-success{% else %}btn-primary{% endif %} btn-md">1</button>
+          <button type="submit" name="button_position" value="2" class="btn {% if button_position == 2 %}btn-success{% else %}btn-primary{% endif %} btn-md">2</button>
+          <button type="submit" name="button_position" value="3" class="btn {% if button_position == 3 %}btn-success{% else %}btn-primary{% endif %} btn-md">3</button>
+          <button type="submit" name="button_position" value="4" class="btn {% if button_position == 4 %}btn-success{% else %}btn-primary{% endif %} btn-md">4</button>
+          <button type="submit" name="button_position" value="5" class="btn {% if button_position == 5 %}btn-success{% else %}btn-primary{% endif %} btn-md">5</button>
+            <button type="submit" name="button_position" value="6" class="btn {% if button_position == 6 %}btn-success{% else %}btn-primary{% endif %} btn-md">6</button>
+        </form>
+
+        <form id="ploForm" action="{{ url_for('hand_eval.submit_form') }}" method="post" class="poker-form mt-4" novalidate>
+          {{ hand_form.hidden_tag() }}
+          <div class="row g-3">
+            <!-- Blinds -->
+            <div class="col-md-6">
+              {{ hand_form.small_blind.label(class="form-label") }}
+              {{ hand_form.small_blind(class="form-control" + (" is-invalid" if hand_form.small_blind.errors else ""), placeholder="e.g., 1") }}
+              {% for error in hand_form.small_blind.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6">
+              {{ hand_form.big_blind.label(class="form-label") }}
+              {{ hand_form.big_blind(class="form-control" + (" is-invalid" if hand_form.big_blind.errors else ""), placeholder="e.g., 2") }}
+              {% for error in hand_form.big_blind.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Hero Info -->
+            <div class="col-md-4">
+              {{ hand_form.hero_stack.label(class="form-label") }}
+              {{ hand_form.hero_stack(class="form-control" + (" is-invalid" if hand_form.hero_stack.errors else ""), placeholder="e.g., 200") }}
+              {% for error in hand_form.hero_stack.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ hand_form.hero_position.label(class="form-label") }}
+              {{ hand_form.hero_position(class="form-select" + (" is-invalid" if hand_form.hero_position.errors else "")) }}
+              {% for error in hand_form.hero_position.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ hand_form.hero_hand.label(class="form-label") }}
+              <div class="input-group">
+                {{ hand_form.hero_hand(class="form-control" + (" is-invalid" if hand_form.hero_hand.errors else ""), placeholder="e.g., AsKsQhJh", onfocus="this.blur();", style="cursor: pointer;") }}
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="hero_hand" data-limit-min="4" data-limit-max="4" data-title="Select 4 Cards for Hero's Hand">Select</button>
+              </div>
+              {% for error in hand_form.hero_hand.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Opponent Info -->
+            <div class="col-md-4">
+              {{ hand_form.opponent_stack.label(class="form-label") }}
+              {{ hand_form.opponent_stack(class="form-control" + (" is-invalid" if hand_form.opponent_stack.errors else ""), placeholder="e.g., 200") }}
+              {% for error in hand_form.opponent_stack.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ hand_form.opponent_position.label(class="form-label") }}
+              {{ hand_form.opponent_position(class="form-select" + (" is-invalid" if hand_form.opponent_position.errors else "")) }}
+              {% for error in hand_form.opponent_position.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ hand_form.opponent_hand.label(class="form-label") }}
+              <div class="input-group">
+                {{ hand_form.opponent_hand(class="form-control" + (" is-invalid" if hand_form.opponent_hand.errors else ""), placeholder="e.g., 2s2h3d4c", onfocus="this.blur();", style="cursor: pointer;") }}
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="opponent_hand" data-limit-min="4" data-limit-max="4" data-title="Select 4 Cards for Opponent's Hand">Select</button>
+              </div>
+              {% for error in hand_form.opponent_hand.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Game State -->
+            <div class="col-md-4">
+              {{ hand_form.board.label(class="form-label") }}
+              <div class="input-group">
+                {{ hand_form.board(class="form-control" + (" is-invalid" if hand_form.board.errors else ""), placeholder="e.g., AcKcTc", onfocus="this.blur();", style="cursor: pointer;") }}
+                <button class="btn btn-secondary card-select-btn" type="button" data-bs-toggle="modal" data-bs-target="#cardSelectorModal" data-target-input="board" data-limit-min="3" data-limit-max="3" data-title="Select 3 Board Cards">Select</button>
+              </div>
+              {% for error in hand_form.board.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              {{ hand_form.pot_size.label(class="form-label") }}
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ hand_form.pot_size(class="form-control" + (" is-invalid" if hand_form.pot_size.errors else ""), placeholder="e.g., 6") }}
+              </div>
+              {% for error in hand_form.pot_size.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label for="bet_size" class="form-label">Bet Size to Call <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="The amount you must call to continue."></i></label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ hand_form.bet_size(class="form-control" + (" is-invalid" if hand_form.bet_size.errors else ""), placeholder="e.g., 6") }}
+                <span class="input-group-text" id="pot-odds-display" data-bs-toggle="tooltip" title="Pot Odds (Ratio of pot to call amount)">-- : 1</span>
+              </div>
+              {% for error in hand_form.bet_size.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="d-flex justify-content-center gap-2 mt-4">
+            {{ hand_form.submit(class="btn btn-primary") }}
+            <button type="button" id="random-button" class="btn btn-secondary">Random</button>
+          </div>
+        </form>
+      </div>
+  </section>
+  {% include 'partials/_card_selector_modal.html' %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        /**
+         * CardSelector Module
+         * Encapsulates all logic for the card selector modal to keep the code clean and maintainable.
+         */
+        const CardSelector = {
+            // DOM elements
+            modal: null,
+            cardImages: null,
+            confirmButton: null,
+            modalTitle: null,
+
+            // State
+            selectedCards: [],
+            usedCards: new Set(),
+            currentTargetInput: null,
+            minLimit: 0,
+            maxLimit: 0,
+
+            init: function() {
+                this.modal = document.getElementById('cardSelectorModal');
+                if (!this.modal) return; // Don't run if modal isn't on the page
+
+                this.cardImages = this.modal.querySelectorAll('.card-item img');
+                this.confirmButton = this.modal.querySelector('#confirm-selection');
+                this.modalTitle = this.modal.querySelector('#cardSelectorModalLabel');
+
+                this.addEventListeners();
+            },
+
+            addEventListeners: function() {
+                this.modal.addEventListener('show.bs.modal', this.handleModalShow.bind(this));
+                this.confirmButton.addEventListener('click', this.handleConfirmClick.bind(this));
+                this.cardImages.forEach(card => {
+                    card.addEventListener('click', this.handleCardClick.bind(this));
+                });
+            },
+
+            handleModalShow: function(event) {
+                const button = event.relatedTarget;
+                const targetInputId = button.getAttribute('data-target-input');
+
+                // 1. Set modal state from the button that triggered it
+                this.currentTargetInput = document.getElementById(targetInputId);
+                this.minLimit = parseInt(button.getAttribute('data-limit-min'), 10);
+                this.maxLimit = parseInt(button.getAttribute('data-limit-max'), 10);
+                this.modalTitle.textContent = button.getAttribute('data-title');
+
+                // 2. Reset internal state for a clean slate
+                this.selectedCards = [];
+                this.usedCards.clear();
+
+                // 3. Collect cards used in other fields to disable them
+                const fieldsToCheck = ['hero_hand', 'opponent_hand', 'board'].filter(id => id !== targetInputId);
+                fieldsToCheck.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input && input.value) {
+                        for (let i = 0; i + 1 < input.value.length; i += 2) {
+                            this.usedCards.add(input.value.substring(i, i + 2));
+                        }
+                    }
+                });
+
+                // 4. Pre-select cards if the target input already has a value
+                if (this.currentTargetInput && this.currentTargetInput.value) {
+                    for (let i = 0; i + 1 < this.currentTargetInput.value.length; i += 2) {
+                        this.selectedCards.push(this.currentTargetInput.value.substring(i, i + 2));
+                    }
+                }
+
+                // 5. Update the visual state of all cards in the modal
+                this.updateCardVisuals();
+            },
+
+            handleCardClick: function(event) {
+                const card = event.target;
+                const cardId = card.id;
+
+                if (this.usedCards.has(cardId)) return; // Card is disabled
+
+                const index = this.selectedCards.indexOf(cardId);
+                if (index > -1) {
+                    this.selectedCards.splice(index, 1); // Deselect
+                } else if (this.selectedCards.length < this.maxLimit) {
+                    this.selectedCards.push(cardId); // Select
+                } else {
+                    alert(`You can only select up to ${this.maxLimit} cards.`);
+                }
+                this.updateCardVisuals();
+            },
+
+            handleConfirmClick: function() {
+                if (this.selectedCards.length < this.minLimit || this.selectedCards.length > this.maxLimit) {
+                    const message = this.minLimit === this.maxLimit ?
+                        `Please select exactly ${this.minLimit} cards.` :
+                        `Please select between ${this.minLimit} and ${this.maxLimit} cards.`;
+                    alert(message);
+                    return;
+                }
+
+                if (this.currentTargetInput) {
+                    this.currentTargetInput.value = this.selectedCards.join('');
+                }
+
+                bootstrap.Modal.getInstance(this.modal).hide();
+            },
+
+            updateCardVisuals: function() {
+                this.cardImages.forEach(card => {
+                    card.classList.remove('selected', 'disabled');
+                    if (this.usedCards.has(card.id)) {
+                        card.classList.add('disabled');
+                    }
+                    if (this.selectedCards.includes(card.id)) {
+                        card.classList.add('selected');
+                    }
+                });
+            }
+        };
+
+        // Initialize the module on page load
+        CardSelector.init();
+
+        /**
+         * PotOddsCalculator Module
+         * Handles real-time calculation of pot odds.
+         */
+        const PotOddsCalculator = {
+            potSizeInput: null,
+            betSizeInput: null,
+            display: null,
+
+            init: function() {
+                this.potSizeInput = document.getElementById('pot_size');
+                this.betSizeInput = document.getElementById('bet_size');
+                this.display = document.getElementById('pot-odds-display');
+
+                if (!this.potSizeInput || !this.betSizeInput || !this.display) return;
+
+                this.potSizeInput.addEventListener('input', this.calculate.bind(this));
+                this.betSizeInput.addEventListener('input', this.calculate.bind(this));
+                this.calculate(); // Initial calculation on page load
+            },
+
+            calculate: function() {
+                const potSize = parseFloat(this.potSizeInput.value);
+                const betSize = parseFloat(this.betSizeInput.value);
+
+                if (isNaN(potSize) || isNaN(betSize) || betSize <= 0) {
+                    this.display.textContent = '-- : 1';
+                    return;
+                }
+
+                const totalPot = potSize + betSize;
+                const odds = totalPot / betSize;
+
+                this.display.textContent = `${odds.toFixed(2)} : 1`;
+            }
+        };
+
+        PotOddsCalculator.init();
+
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+{% endblock %}

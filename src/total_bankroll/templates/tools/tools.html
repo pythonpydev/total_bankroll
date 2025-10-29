@@ -1,0 +1,190 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Tools', 'Various tools to help analyse and improve your poker game.') }}
+
+<section class="page-section" id="tools">
+    <div class="container">
+
+    <div class="row">
+        <!-- Poker Stakes Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Cash Game Stakes Calculator</h5>
+                    <p class="card-text">Determine appropriate cash game stakes based on your bankroll and playing style.</p>
+                    <a href="{{ url_for('tools.poker_stakes_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tournament Stakes Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Tournament Stakes Calculator</h5>
+                    <p class="card-text">Find suitable tournament buy-ins for your bankroll and risk profile.</p>
+                    <a href="{{ url_for('tools.tournament_stakes_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPR Calculator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">SPR Calculator</h5>
+                    <p class="card-text">Calculate the Stack-to-Pot Ratio for any given poker scenario.</p>
+                    <a href="{{ url_for('tools.spr_calculator_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Scenario Analyzer Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Scenario Analyzer</h5>
+                    <p class="card-text">Analyze a full PLO hand scenario, including stacks, board, and equities.</p>
+                    <a href="{{ url_for('hand_eval.plo_hand_form') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Strength Evaluator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Strength Evaluator</h5>
+                    <p class="card-text">Get a pre-flop strength tier and detailed breakdown for any 4-card PLO hand.</p>
+                    <a href="{{ url_for('tools.plo_hand_strength_evaluator_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Decisions Table Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Decisions Table</h5>
+                    <p class="card-text">Reference a table of recommended actions for various PLO scenarios.</p>
+                    <a href="{{ url_for('hand_eval.tables') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO SPR Strategy Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO SPR Strategy</h5>
+                    <p class="card-text">Read the guide on optimal strategies based on Stack-to-Pot Ratio in PLO.</p>
+                    <a href="{{ url_for('hand_eval.spr_strategy') }}" class="btn btn-primary">Read Guide</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bankroll Goals Calculator Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Bankroll Goals Calculator</h5>
+                    <p class="card-text">Plan your path to higher stakes by calculating the time or win-rate needed to reach your goals.</p>
+                    <a href="{{ url_for('tools.bankroll_goals_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD Stats Quiz Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">HUD Stats Quiz</h5>
+                    <p class="card-text">Test your knowledge of player statistics.</p>
+                    <a href="{{ url_for('hand_eval.hud_stats_quiz') }}" class="btn btn-primary">Go to Quiz</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Starting Hand Strength Article Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Starting Hand Strength</h5>
+                    <p class="card-text">An article on starting hand classifications in Pot Limit Omaha.</p>
+                    <a href="{{ url_for('hand_eval.plo_hand_strength_article') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Strength Quiz Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Strength Quiz</h5>
+                    <p class="card-text">Test your knowledge of Pot Limit Omaha starting hand strength tiers.</p>
+                    <a href="{{ url_for('hand_eval.plo_hand_strength_quiz') }}" class="btn btn-primary">Go to Quiz</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Rankings Table Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Rankings Table</h5>
+                    <p class="card-text">View all 270,725 PLO hands in a searchable and sortable table.</p>
+                    <a href="{{ url_for('hand_eval.plo_hand_rankings') }}" class="btn btn-primary">View Table</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLO Hand Range Visualizer Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PLO Hand Ranges</h5>
+                    <p class="card-text">Visualize PLO starting hand ranges by pre-flop equity percentage.</p>
+                    <a href="{{ url_for('tools.plo_hand_range_page') }}" class="btn btn-primary">Go to Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Archetypes Article Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Poker Player Archetypes</h5>
+                    <p class="card-text">A guide to identifying and exploiting different player types in PLO.</p>
+                    <a href="{{ url_for('hand_eval.hud_player_type_guide') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Color Scheme Guide Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Player Color Scheme Guide</h5>
+                    <p class="card-text">A guide to color-coding player types for quick identification.</p>
+                    <a href="{{ url_for('hand_eval.player_color_scheme_guide') }}" class="btn btn-primary">Read Article</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD Player Type Guide Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">HUD Player Type Guide</h5>
+                    <p class="card-text">Typical HUD stat ranges for common player archetypes.</p>
+                    <a href="{{ url_for('hand_eval.hud_player_type_guide') }}" class="btn btn-primary">Read Guide</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</section>
+{% endblock %}

@@ -40,7 +40,7 @@ def index():
         page=page, per_page=per_page, error_out=False
     )
     articles = pagination.items
-    return render_template('articles.html', articles=articles, pagination=pagination, search_query=search_query, sort_by=sort_by, page_title="Strategy Articles")
+    return render_template('articles/articles.html', articles=articles, pagination=pagination, search_query=search_query, sort_by=sort_by, page_title="Strategy Articles")
 
 @articles_bp.route('/tag/<string:tag_name>')
 @login_required
@@ -54,7 +54,7 @@ def by_tag(tag_name):
         page=page, per_page=per_page, error_out=False
     )
     articles = pagination.items
-    return render_template('articles.html', articles=articles, pagination=pagination, page_title=f"Articles tagged with '{tag.name}'")
+    return render_template('articles/articles.html', articles=articles, pagination=pagination, page_title=f"Articles tagged with '{tag.name}'")
 
 @articles_bp.route('/<int:id>')
 @login_required
@@ -62,7 +62,7 @@ def view(id):
     """Display a single article."""
     article = Article.query.get_or_404(id)
     has_read = UserReadArticle.query.filter_by(user_id=current_user.id, article_id=article.id).first() is not None
-    return render_template('article.html', article=article, has_read=has_read)
+    return render_template('articles/article.html', article=article, has_read=has_read)
 
 @articles_bp.route('/<int:article_id>/mark-as-read', methods=['POST'])
 @login_required

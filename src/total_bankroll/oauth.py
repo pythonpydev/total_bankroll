@@ -25,7 +25,9 @@ def init_oauth(app):
                     "https://www.googleapis.com/auth/userinfo.email",
                     "https://www.googleapis.com/auth/userinfo.profile",
                 ],
-                storage=SQLAlchemyStorage(OAuth, db.session)
+                storage=SQLAlchemyStorage(OAuth, db.session),
+                login_url="/",
+                authorized_url="/authorized"
             )
             app.register_blueprint(google_bp, url_prefix='/login/google')
         else:
@@ -42,7 +44,9 @@ def init_oauth(app):
             facebook_bp = make_facebook_blueprint(
                 client_id=facebook_client_id,
                 client_secret=facebook_client_secret,
-                storage=SQLAlchemyStorage(OAuth, db.session)
+                storage=SQLAlchemyStorage(OAuth, db.session),
+                login_url="/",
+                authorized_url="/authorized"
             )
             app.register_blueprint(facebook_bp, url_prefix='/login/facebook')
         else:

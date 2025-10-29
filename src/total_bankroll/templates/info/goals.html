@@ -1,0 +1,143 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import render_field, page_header %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    {{ page_header("Your Goals") }}
+
+    <!-- Section to Create a New Goal -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Set a New Bankroll Goal</h5>
+        </div>
+        <div class="card-body">
+            <p>Your current bankroll is <strong>${{ "%.2f" | format(current_bankroll) }}</strong> and your total profit is <strong>${{ "%.2f" | format(current_profit) }}</strong>.</p>
+            <form method="POST" action="{{ url_for('goals.index') }}" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ render_field(form.goal_type, attrs={'class': 'form-control'}) }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ render_field(form.name, attrs={'class': 'form-control', 'placeholder': 'e.g., Q3 Profit Goal'}) }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ render_field(form.target_value, attrs={'class': 'form-control', 'placeholder': 'e.g., 5000'}) }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ render_field(form.end_date, attrs={'class': 'form-control', 'type': 'date'}) }}
+                    </div>
+                </div>
+                {{ form.submit(class="btn btn-primary mt-3") }}
+            </form>
+        </div>
+    </div>
+
+    <!-- Section for Active Goals -->
+    <h4 class="mt-5">Active Goals</h4>
+    {% if active_goals %}
+        {% for goal in active_goals %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ goal.name }}</h5>
+                    <div class="btn-group">
+                        <form action="{{ url_for('goals.complete_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                        </form>
+                        <form action="{{ url_for('goals.archive_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-sm btn-secondary">Archive</button>
+                        </form>
+                    </div>
+                </div>
+                {% if goal.goal_type == 'profit_target' %}
+                    <p class="card-text text-muted">Profit Target: ${{ "%.2f" | format(goal.target_value) }}</p>
+                {% else %}
+                    <p class="card-text text-muted">Bankroll Target: ${{ "%.2f" | format(goal.target_value) }}</p>
+                {% endif %}
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress|round }}%;" aria-valuenow="{{ goal.progress|round }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ goal.progress|round }}%
+                    </div>
+                </div>
+                {% if goal.goal_type == 'profit_target' %}
+                    <p class="mt-2">Current Profit: ${{ "%.2f" | format(goal.current_value) }} of ${{ "%.2f" | format(goal.target_value) }}</p>
+                {% else %}
+                    <p class="mt-2">Current Bankroll: ${{ "%.2f" | format(goal.current_value) }} of ${{ "%.2f" | format(goal.target_value) }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>You have no active goals. Set one above to get started!</p>
+    {% endif %}
+
+    <!-- Section for Completed Goals -->
+    <h4 class="mt-5">Completed Goals</h4>
+    {% if completed_goals %}
+        <ul class="list-group">
+        {% for goal in completed_goals %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">{{ goal.name }}</h6>
+                    <small class="text-muted">Target: ${{ goal.target_value|round(2) }}</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success rounded-pill me-2">Completed on {{ goal.completed_at.strftime('%b %d, %Y') }}</span>
+                    <form action="{{ url_for('goals.archive_goal', goal_id=goal.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-sm btn-secondary">Archive</button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not completed any goals yet.</p>
+    {% endif %}
+
+    <!-- Section for Archived Goals -->
+    <h4 class="mt-5">Archived Goals</h4>
+    {% if archived_goals %}
+        <ul class="list-group">
+        {% for goal in archived_goals %}
+            <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-secondary">
+                <div>
+                    <h6 class="mb-0 text-muted">{{ goal.name }}</h6>
+                    <small class="text-muted">Target: ${{ goal.target_value|round(2) }} | End Date: {{ goal.end_date.strftime('%b %d, %Y') }}</small>
+                </div>
+                <span class="badge bg-secondary rounded-pill">Archived</span>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no archived goals.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const goalTypeSelect = document.getElementById('goal_type');
+    const nameInput = document.getElementById('name');
+
+    function updateNamePlaceholder() {
+        if (goalTypeSelect.value === 'profit_target') {
+            nameInput.placeholder = 'e.g., Q3 Profit Goal';
+            if (nameInput.value === 'Reach Target Bankroll') nameInput.value = 'Reach Profit Target';
+        } else {
+            nameInput.placeholder = 'e.g., My First $10k';
+            if (nameInput.value === 'Reach Profit Target') nameInput.value = 'Reach Target Bankroll';
+        }
+    }
+    goalTypeSelect.addEventListener('change', updateNamePlaceholder);
+    updateNamePlaceholder(); // Run on page load
+});
+</script>
+{% endblock %}

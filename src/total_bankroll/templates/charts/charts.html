@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Bankroll Charts', 'Visualizations of your financial data.') }}
+
+<section class="page-section" id="charts-content">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mt-0">Select a Chart</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5 justify-content-center g-4">
+
+            <!-- Bankroll & Profit Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-graph-up fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Bankroll & Profit</h4>
+                        <p class="card-text text-muted">Track your overall bankroll and profit over time.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Bankroll:</strong> <a href="/charts/bankroll/line">Line</a> | <a href="/charts/bankroll/bar">Bar</a></li>
+                                <li class="list-group-item"><strong>Profit:</strong> <a href="/charts/profit/line">Line</a> | <a href="/charts/profit/bar">Bar</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Poker Sites Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-stack fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Poker Sites</h4>
+                        <p class="card-text text-muted">Analyze your funds across different poker sites.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Historical:</strong> <a href="/charts/poker_sites/line">Line</a> | <a href="/charts/poker_sites/bar">Bar</a> | <a href="/charts/poker_sites/scatter">Scatter</a> | <a href="/charts/poker_sites/radar">Radar</a></li>
+                                <li class="list-group-item"><strong>Current:</strong> <a href="/charts/poker_sites/pie">Pie</a> | <a href="/charts/poker_sites/polar_area">Polar Area</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assets Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-gem fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Assets</h4>
+                        <p class="card-text text-muted">Visualize the value of your non-poker assets.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Historical:</strong> <a href="/charts/assets/line">Line</a> | <a href="/charts/assets/bar">Bar</a> | <a href="/charts/assets/scatter">Scatter</a> | <a href="/charts/assets/radar">Radar</a></li>
+                                <li class="list-group-item"><strong>Current:</strong> <a href="/charts/assets/pie">Pie</a> | <a href="/charts/assets/polar_area">Polar Area</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposits & Withdrawals Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center d-flex flex-column">
+                        <div class="mb-2"><i class="bi-arrow-down-up fs-1 text-primary"></i></div>
+                        <h4 class="card-title">Transactions</h4>
+                        <p class="card-text text-muted">View your history of deposits and withdrawals.</p>
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Deposits:</strong> <a href="/charts/deposits/line">Line</a> | <a href="/charts/deposits/bar">Bar</a></li>
+                                <li class="list-group-item"><strong>Withdrawals:</strong> <a href="/charts/withdrawals/line">Line</a> | <a href="/charts/withdrawals/bar">Bar</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

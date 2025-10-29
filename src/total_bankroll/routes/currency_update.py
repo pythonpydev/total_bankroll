@@ -12,7 +12,7 @@ currency_update_bp = Blueprint("currency_update", __name__)
 def currencies_page():
     """Currencies page."""
     currencies = db.session.query(Currency).order_by(Currency.name).all()
-    return render_template("currencies.html", currencies=currencies)
+    return render_template("info/currencies.html", currencies=currencies)
 
 @currency_update_bp.route("/update_exchange_rates", methods=["POST"])
 @login_required

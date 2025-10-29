@@ -74,7 +74,7 @@ def deposit():
     currencies = get_sorted_currencies()
     default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'
 
-    return render_template("deposit.html", 
+    return render_template("bankroll/deposit.html", 
                            deposits=deposit_data, 
                            today=today, 
                            total_net_worth=total_net_worth, 
@@ -117,7 +117,7 @@ def update_deposit(deposit_id):
     if request.method == 'GET':
         form.currency.data = deposit_item.currency
 
-    return render_template("_modal_form.html", form=form, title="Edit Deposit")
+    return render_template("partials/_modal_form.html", form=form, title="Edit Deposit", action_url=url_for('deposit.update_deposit', deposit_id=deposit_id))
 
 @deposit_bp.route("/delete_deposit/<int:deposit_id>", methods=["POST"])
 @login_required

@@ -77,7 +77,7 @@ def withdrawal():
     currencies = get_sorted_currencies()
 
     current_app.logger.debug(f"withdrawal_data: {withdrawal_data}")
-    return render_template("withdrawal.html", 
+    return render_template("bankroll/withdrawal.html", 
                            drawings=withdrawal_data, 
                            today=today, 
                            total_net_worth=total_net_worth, 
@@ -118,4 +118,4 @@ def update_withdrawal(withdrawal_id):
     if request.method == 'GET':
         form.currency.data = withdrawal_item.currency
 
-    return render_template("_modal_form.html", form=form, title="Edit Withdrawal")
+    return render_template("partials/_modal_form.html", form=form, title="Edit Withdrawal", action_url=url_for('withdrawal.update_withdrawal', withdrawal_id=withdrawal_id))

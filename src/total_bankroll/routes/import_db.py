@@ -24,7 +24,7 @@ def parse_datetime(value):
 @login_required
 def confirm_import_database():
     """Show confirmation dialog for database import."""
-    return render_template("confirm_import_database.html")
+    return render_template("confirmations/confirm_import_database.html")
 
 @import_db_bp.route("/import_database", methods=["POST"])
 @login_required

@@ -10,7 +10,7 @@ charts_bp = Blueprint("charts", __name__)
 @login_required
 def charts_page():
     """Charts page."""
-    return render_template("charts.html")
+    return render_template("charts/charts.html")
 
 @charts_bp.route("/<string:entity>/<string:chart_type>")
 @login_required
@@ -22,7 +22,7 @@ def generic_chart_page(entity, chart_type):
     if entity not in allowed_entities or chart_type not in allowed_chart_types:
         abort(404)
 
-    template_name = f"{entity}_{chart_type}_chart.html"
+    template_name = f"charts/{entity}_{chart_type}_chart.html"
     try:
         return render_template(template_name)
     except Exception:

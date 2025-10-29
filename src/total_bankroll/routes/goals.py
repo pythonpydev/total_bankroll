@@ -80,7 +80,7 @@ def index():
             db.session.commit()
             return redirect(url_for('goals.index'))
 
-    return render_template('goals.html',
+    return render_template('info/goals.html',
                            form=form,
                            active_goals=active_goals,
                            completed_goals=completed_goals,

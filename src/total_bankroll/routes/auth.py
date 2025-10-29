@@ -138,7 +138,6 @@ def verify_2fa():
         else:
             flash('Invalid 2FA token.', 'danger')
             return redirect(url_for('auth.verify_2fa'))
-
     return render_template('security/verify_2fa.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -227,7 +226,7 @@ def forgot_password():
             msg = Message(
                 'Reset Your Password',
                 recipients=[user.email],
-                html=render_template('reset_password_email.html', reset_url=reset_url)
+                html=render_template('security/reset_password_email.html', reset_url=reset_url)
             )
             try:
                 mail.send(msg)

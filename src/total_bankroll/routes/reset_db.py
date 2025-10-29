@@ -8,7 +8,7 @@ reset_db_bp = Blueprint("reset_db", __name__, url_prefix="/settings")
 @login_required
 def confirm_reset_database():
     """Show confirmation dialog for database reset."""
-    return render_template("confirm_reset_database.html")
+    return render_template("confirmations/confirm_reset_database.html")
 
 @reset_db_bp.route("/reset_database", methods=["POST"])
 @login_required

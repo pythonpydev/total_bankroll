@@ -16,12 +16,12 @@ def inject_current_year():
 @common_bp.route('/confirm_delete/<item_type>/<int:item_id>')
 @login_required
 def confirm_delete(item_type, item_id):
-    return render_template('confirm_delete.html', item_type=item_type, item_id=item_id)
+    return render_template('confirmations/confirm_delete.html', item_type=item_type, item_id=item_id)
 
 @common_bp.route('/confirm_export_database')
 @login_required
 def confirm_export_database():
-    return render_template('confirm_export_database.html')
+    return render_template('confirmations/confirm_export_database.html')
 
 @common_bp.route('/perform_delete/<item_type>/<int:item_id>', methods=['POST'])
 @login_required

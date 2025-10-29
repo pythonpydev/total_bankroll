@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Poker Player Archetypes', 'A guide to identifying and exploiting different player types in PLO.') }}
+
+<section class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <p class="lead text-center mb-5">This is a detailed taxonomy of poker-player archetypes (fish, TAG, LAG, NIT, station, etc.), how they tend to play (especially in Pot Limit Omaha), and how to exploit them. In practice, many players are hybrids or evolve over time, so these are idealized types.</p>
+
+                <h2 class="mb-3">Basic Classification Axes</h2>
+                <p>Most poker "types" can be described along two axes: how selective they are about entering pots (Tight vs. Loose) and how often they bet/raise vs. check/call (Aggressive vs. Passive).</p>
+
+                <div class="table-responsive shadow-sm rounded mb-5">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Style</th>
+                                <th>Aggressive</th>
+                                <th>Passive</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th class="table-light">Tight</th>
+                                <td><strong>Tight-Aggressive (TAG) / NIT</strong></td>
+                                <td><strong>Tight-Passive (Rock)</strong></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Loose</th>
+                                <td><strong>Loose-Aggressive (LAG) / Maniac</strong></td>
+                                <td><strong>Loose-Passive (Calling Station / Fish)</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="divider-light" />
+
+                <h2 class="mt-5 mb-4">Archetypes and Their Behaviors</h2>
+
+                <!-- Loose-Passive -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header"><h4 class="player-light-blue">1. Loose-Passive ("Fish", "Calling Station")</h4></div>
+                    <div class="card-body">
+                        <p>Plays many hands, rarely raises, and doesn’t fold easily. They are called "fish" because they are easier prey, often chasing draws and paying off big bets with second-best hands.</p>
+                        <h5>In PLO:</h5>
+                        <p>These players create variance by calling down with weak hands. Your strategy should be simple: <strong>do not bluff them</strong>. Instead, bet relentlessly for value when you have a strong hand or a good draw. They will often overcommit post-flop, so extract as much value as possible.</p>
+                    </div>
+                </div>
+
+                <!-- Loose-Aggressive -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header"><h4 class="player-orange">2. Loose-Aggressive (LAG, "Maniac")</h4></div>
+                    <div class="card-body">
+                        <p>Plays many hands and does so aggressively, frequently betting and raising. They apply constant pressure, and bluffing is a large part of their game. A "Maniac" is the most extreme version.</p>
+                        <h5>In PLO:</h5>
+                        <p>LAGs will open many pots and 3-bet with a wide range. Against them, you should tighten up, wait for strong hands, and let them bluff into you. Use their aggression to your advantage by trapping or re-raising with your premium holdings to isolate them.</p>
+                    </div>
+                </div>
+
+                <!-- Tight-Aggressive -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header"><h4 class="player-purple">3. Tight-Aggressive (TAG, "Reg")</h4></div>
+                    <div class="card-body">
+                        <p>Plays a selective range of hands but plays them aggressively. This is a balanced, strong style, making them difficult opponents. They are often the "regulars" at a given stake.</p>
+                        <h5>In PLO:</h5>
+                        <p>A TAG's starting range will be strong, favoring hands with "nut potential" (double-suited, connected, high cards). They will bet their strong hands and good draws but can also find folds when pressured. Be cautious against them; their aggression often signals real strength. Use position and blockers to your advantage.</p>
+                    </div>
+                </div>
+
+                <!-- Tight-Passive -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header"><h4 class="player-white">4. Tight-Passive ("Rock", "NIT")</h4></div>
+                    <div class="card-body">
+                        <p>Extremely selective and rarely bluffs. When a "Rock" or "NIT" enters a pot and shows aggression, they almost always have a premium hand. They are predictable but hard to extract value from.</p>
+                        <h5>In PLO:</h5>
+                        <p>Their starting hands are the absolute strongest. You can exploit them by stealing their blinds frequently. However, when they do fight back, you must give their actions a great deal of respect and be prepared to fold all but your very best hands.</p>
+                    </div>
+                </div>
+
+                <hr class="divider-light" />
+
+                <h2 class="mt-5 mb-4">Ranking "Ease to Exploit"</h2>
+                <p>From easiest to hardest in a typical PLO game:</p>
+                <ol class="list-group list-group-numbered mb-5 shadow-sm">
+                    <li class="list-group-item"><strong class="player-light-blue">Loose-Passive / Calling Station:</strong> Easiest. Just value bet your strong hands.</li>
+                    <li class="list-group-item"><strong class="player-light-blue">Weak Limper:</strong> Easy. Isolate them with raises to play heads-up pots.</li>
+                    <li class="list-group-item"><strong class="player-orange">Loose-Aggressive (Aggro-Fish):</strong> Tricky. They apply pressure, but you can trap them and call down lighter.</li>
+                    <li class="list-group-item"><strong class="player-purple">Tight-Aggressive (TAG):</strong> Hard. They are balanced and make few fundamental mistakes.</li>
+                    <li class="list-group-item"><strong class="player-white">Tight-Passive (NIT):</strong> Very Hard. You win small pots by stealing blinds, but it's difficult to win a big pot without the nuts.</li>
+                    <li class="list-group-item"><strong class="player-red">Skilled Maniac / LAG:</strong> Hardest. A skilled, hyper-aggressive player can put you in very tough spots.</li>
+                </ol>
+
+                <hr class="divider-light" />
+
+                <h2 class="mt-5 mb-4">Summary Cheat Sheet</h2>
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-bordered table-hover mb-0 table-player-types">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Archetype</th>
+                                <th>Style</th>
+                                <th>Key Traits</th>
+                                <th>How to Exploit in PLO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="player-light-blue">
+                                <td><strong>Station / Fish</strong></td>
+                                <td>Loose-Passive</td>
+                                <td>Calls a lot, rarely folds</td>
+                                <td>Value-bet heavily, avoid bluffing.</td>
+                            </tr>
+                            <tr class="player-light-blue">
+                                <td><strong>Weak Limper</strong></td>
+                                <td>Loose-Passive</td>
+                                <td>Limp many hands preflop</td>
+                                <td>Raise to isolate them with good holdings.</td>
+                            </tr>
+                            <tr class="player-orange">
+                                <td><strong>LAG / Aggro Fish</strong></td>
+                                <td>Loose-Aggressive</td>
+                                <td>Raises a lot, applies pressure</td>
+                                <td>Tighten up, trap, and call down selectively.</td>
+                            </tr>
+                            <tr class="player-purple">
+                                <td><strong>TAG (Reg)</strong></td>
+                                <td>Tight-Aggressive</td>
+                                <td>Selective, balanced aggression</td>
+                                <td>Use position, bet/polarize carefully.</td>
+                            </tr>
+                            <tr class="player-white">
+                                <td><strong>NIT / Rock</strong></td>
+                                <td>Tight-Passive</td>
+                                <td>Enters few hands, rarely bluffs</td>
+                                <td>Steal blinds, but respect their aggression.</td>
+                            </tr>
+                            <tr class="player-red">
+                                <td><strong>Maniac</strong></td>
+                                <td>Loose-Aggressive</td>
+                                <td>Always bets/raises, high variance</td>
+                                <td>Tighten up, let them build the pot, and trap.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-5">
+                    <a href="{{ url_for('tools.tools_page') }}" class="btn btn-primary">Back to Tools</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

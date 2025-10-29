@@ -1,0 +1,99 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import render_item_table, page_header %}
+
+{% block content %}
+{{ page_header('Poker Sites', 'Manage your funds on different poker sites.') }}
+
+<section class="page-section" id="portfolio">
+    <div class="container">
+        <h2 class="text-center mt-0">Your Poker Sites</h2>
+        <hr class="divider" />
+        <div class="row gx-4 gx-lg-5">
+            <div class="col-lg-12 text-end mb-3">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.add_site') }}">Add New Site</button>
+            </div>
+            <div class="col-lg-12">{{ render_item_table(poker_sites, 'site') }}</div>
+
+            <div class="col-lg-6 offset-lg-3">
+                <div class="table-responsive mt-5">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2" class="text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Current:</td>
+                                <td>${{ "%.2f" | format(total_current) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Previous:</td>
+                                <td>${{ "%.2f" | format(total_previous) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Change:</td>
+                                <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+        </div>
+
+        <!-- Poker Sites History Chart -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title text-center mb-3">Poker Sites Value Over Time</h4>
+                        <canvas id="pokerSitesHistoryChart" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch historical data for the poker sites line chart
+        fetch("{{ url_for('charts.get_poker_sites_historical_data') }}")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok for chart data.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const ctx = document.getElementById('pokerSitesHistoryChart').getContext('2d');
+                
+                const chartData = {
+                    labels: data.labels,
+                    datasets: data.datasets
+                };
+
+                const chartOptions = {
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: false } // Title is already in the card header
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MMM d, yyyy' }, title: { display: true, text: 'Date' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Amount (USD)' } }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                };
+
+                // Use the global createChart function from chart_utils.js
+                createChart(ctx, 'line', chartData, chartOptions);
+            })
+            .catch(error => console.error('Error fetching poker sites historical data:', error));
+    });
+    </script>
+{% endblock %}

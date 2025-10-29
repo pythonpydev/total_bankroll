@@ -1,0 +1,74 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<section class="page-section bg-primary" id="confirm_reset_database">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="text-white mt-0">Confirm Data Reset</h2>
+                <hr class="divider divider-light" />
+                <p class="text-white-75 mb-4">Are you sure you want to reset your data? All your sites, assets, deposits, and withdrawals will be deleted. This cannot be undone.</p>
+                <form id="resetForm" action="{{ url_for('reset_db.reset_database') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="button" id="resetButton" class="btn btn-light btn-xl">Yes, Reset Database</button>
+                    <a href="{{ url_for('settings.settings_page') }}" class="btn btn-danger btn-xl">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reset Complete Modal -->
+<div class="modal fade" id="resetCompleteModal" tabindex="-1" aria-labelledby="resetCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resetCompleteModalLabel">Reset Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Message will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="okButton">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('resetButton').addEventListener('click', function() {
+    const form = document.getElementById('resetForm');
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrf_token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const modal = new bootstrap.Modal(document.getElementById('resetCompleteModal'));
+        const modalBody = document.getElementById('resetCompleteModal').querySelector('.modal-body');
+        modalBody.textContent = data.message;
+        modal.show();
+
+        if (data.success) {
+            document.getElementById('okButton').addEventListener('click', function() {
+                window.location.href = "{{ url_for('settings.settings_page') }}";
+            });
+        } else {
+            document.getElementById('okButton').addEventListener('click', function() {
+                modal.hide();
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('A client-side error occurred. Please check the console for details.');
+    });
+});
+</script>
+{% endblock %}

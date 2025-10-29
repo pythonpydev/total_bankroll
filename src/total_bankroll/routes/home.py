@@ -35,7 +35,7 @@ def home():
             flash(f'Congratulations! You automatically completed the goal: "{active_goal.name}".', 'success')
             return redirect(url_for('home.home'))
 
-    return render_template("index.html",
+    return render_template("core/index.html",
                            current_poker_total=bankroll_data['current_poker_total'],
                            previous_poker_total=bankroll_data['previous_poker_total'],
                            current_asset_total=bankroll_data['current_asset_total'],
@@ -59,4 +59,4 @@ class DummyLoginForm(FlaskForm):
 @home_bp.route("/debug_login")
 def debug_login():
     dummy_form = DummyLoginForm()
-    return render_template("security/login_user.html", form=dummy_form)
+    return render_template("auth/login_user.html", form=dummy_form)

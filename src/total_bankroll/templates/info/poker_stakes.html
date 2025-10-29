@@ -1,0 +1,133 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+{{ page_header('Cash Game Stakes', 'Recommendations for cash game stakes based on your bankroll and preferences.') }}
+
+<section class="page-section" id="poker_stakes_content">
+    <div class="container px-4 px-lg-5 text-center">
+        <form method="GET" action="{{ url_for('tools.poker_stakes_page') }}">
+            <div class="row justify-content-center align-items-end g-3 mb-5">
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_type" class="form-label fw-bold">Game Type</label>
+                    <select class="form-select" id="game_type" name="game_type">
+                        <option value="na" {% if game_type == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="limit_holdem" {% if game_type == 'limit_holdem' %}selected{% endif %}>Limit Hold’Em</option>
+                        <option value="nlhe" {% if game_type == 'nlhe' %}selected{% endif %}>NLHE</option>
+                        <option value="plo" {% if game_type == 'plo' %}selected{% endif %}>PLO</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="skill_level" class="form-label fw-bold">Skill Level</label>
+                    <select class="form-select" id="skill_level" name="skill_level">
+                        <option value="na" {% if skill_level == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="soft" {% if skill_level == 'soft' %}selected{% endif %}>Soft Games</option>
+                        <option value="tough" {% if skill_level == 'tough' %}selected{% endif %}>Tough Games</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="risk_tolerance" class="form-label fw-bold">Risk Tolerance</label>
+                    <select class="form-select" id="risk_tolerance" name="risk_tolerance">
+                        <option value="na" {% if risk_tolerance == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="conservative" {% if risk_tolerance == 'conservative' %}selected{% endif %}>Conservative</option>
+                        <option value="aggressive" {% if risk_tolerance == 'aggressive' %}selected{% endif %}>Aggressive</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="game_environment" class="form-label fw-bold">Game Environment</label>
+                    <select class="form-select" id="game_environment" name="game_environment">
+                        <option value="na" {% if game_environment == 'na' %}selected{% endif %}>Not Applicable (NA)</option>
+                        <option value="live" {% if game_environment == 'live' %}selected{% endif %}>Live Poker</option>
+                        <option value="online" {% if game_environment == 'online' %}selected{% endif %}>Online Poker</option>
+                    </select>
+                </div>
+                <div class="col-sm-12 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100">Update</button>
+                </div>
+            </div>
+        </form>
+        {% if bankroll_recommendation and bankroll_recommendation != "0 to 0 big blinds" %}
+        <div class="alert alert-secondary mt-4" role="alert">
+            <h4 class="alert-heading">Recommended Bankroll Size</h4>
+            <p>Based on your selections, a bankroll of <strong>{{ bankroll_recommendation }}</strong> is recommended for your chosen cash game.</p>
+            <hr>
+            <p class="mb-0">This is a guideline. Adjust based on your personal comfort and the specific dynamics of your games.</p>
+        </div>
+        {% endif %}
+        <h2 class="mt-0">Cash Game Stakes Recommendations</h2>
+        <hr class="divider" />
+        <p class="lead fw-bold text-dark p-3 bg-light border rounded shadow-sm mb-4">Your current total bankroll is: <span class="bi-bank"> $ </span> {{ "%.2f" | format(total_bankroll) }}</p>
+        
+        {% if recommended_stake != "N/A" and recommended_stake != "Below Smallest Stakes" %}
+        <div class="text-center">
+            <h3 class="mt-5">Recommended Cash Game Stakes: {{ recommended_stake }}</h3>
+            <div class="alert alert-bankroll-safe border" role="alert">
+                {{ stake_explanation }}
+            </div>
+            {% if move_down_message %}
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-arrow-down-circle-fill"></i> {{ move_down_message }}
+            </div>
+            {% endif %}
+            {% if next_stake_message %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-arrow-up-circle-fill"></i> {{ next_stake_message }}
+            </div>
+            {% endif %}
+        </div>
+        {% elif stake_explanation %}
+            <p class="text-muted mb-4 text-center">{{ stake_explanation }}</p>
+        {% endif %}
+
+        <h3 class="mt-5">Cash Game Stakes</h3>
+        <table class="table-custom mx-auto" style="max-width: 900px;">
+            <thead>
+                <tr>
+                    {% for header in cash_stakes_table[0] %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in cash_stakes_table[1:] %}
+                {% set current_stake = "%.2f"|format(row[0]|replace('$', '')|float) + '/' + "%.2f"|format(row[1]|replace('$', '')|float) %}
+                <tr {% if current_stake == recommended_stake %}class="highlight-recommended"{% elif current_stake == next_stake_level %}class="highlight-move-up"{% elif current_stake == move_down_stake_level %}class="highlight-move-down"{% endif %}>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<style>
+    .highlight-recommended {
+        background-color: #d4edda !important; /* Light green */
+        color: #155724;
+    }
+    .highlight-move-up {
+        background-color: #f8d7da !important; /* Light red */
+        color: #721c24;
+    }
+    .highlight-move-down {
+        background-color: #cce5ff !important; /* Light blue */
+        color: #004085;
+    }
+
+    /* Dark Mode Overrides */
+    body.dark-mode .table-custom tbody tr.highlight-recommended {
+        background-color: #1c4b27 !important; /* Darker, rich green */
+        color: #d4edda;
+    }
+    body.dark-mode .table-custom tbody tr.highlight-move-up {
+        background-color: #5a1a21 !important; /* Darker, rich red */
+        color: #f8d7da;
+    }
+    body.dark-mode .table-custom tbody tr.highlight-move-down {
+        background-color: #003366 !important; /* Darker, rich blue */
+        color: #cce5ff;
+    }
+</style>
+{% endblock %}

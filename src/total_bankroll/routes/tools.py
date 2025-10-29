@@ -86,8 +86,8 @@ def parse_currency_to_decimal(currency_str):
 
 @tools_bp.route('/tools')
 @login_required
-def tools_page():
-    return render_template('tools.html')
+def tools_page(): # This function is not being used as intended. The template is rendered directly.
+    return render_template('tools/tools.html')
 
 def _get_user_selections(request_args):
     """Extracts and maps user filter selections from request arguments."""
@@ -171,7 +171,7 @@ def poker_stakes_page():
         ])
 
     return render_template(
-        'poker_stakes.html',
+        'tools/poker_stakes.html',
         total_bankroll=total_bankroll,
         cash_stakes_table=cash_stakes_table,
         **recommendations,
@@ -302,7 +302,7 @@ def tournament_stakes_page():
         selections, total_bankroll, global_buyins_map
     )
 
-    return render_template('tournament_stakes.html',
+    return render_template('tools/tournament_stakes.html',
                            total_bankroll=total_bankroll,
                            game_type=request.args.get('game_type', 'nlhe'),
                            skill_level=request.args.get('skill_level', 'tough'),
@@ -379,7 +379,7 @@ def spr_calculator_page():
 
 
     return render_template(
-        'spr_calculator.html',
+        'tools/spr_calculator.html',
         form=form,
         spr=spr,
         spr_decision_category=spr_decision_category,
@@ -458,7 +458,7 @@ def bankroll_goals_page():
                     result = (f"To grow your bankroll from ${current_bankroll:,.2f} to ${target_bankroll:,.2f} in {timeframe_months} months, "
                               f"you will need to achieve an average monthly profit of ${required_profit:,.2f}.")
 
-    return render_template('bankroll_goals.html',
+    return render_template('tools/bankroll_goals.html',
                            form=form,
                            current_bankroll=current_bankroll,
                            result=result,
@@ -492,10 +492,10 @@ def plo_hand_strength_evaluator_page():
             'action_reason': action_reason
         }
 
-    return render_template('plo_hand_strength_evaluator.html', form=form, result=evaluation_result)
+    return render_template('tools/plo_hand_strength_evaluator.html', form=form, result=evaluation_result)
 
 @tools_bp.route('/tools/plo-hand-range')
 @login_required
 def plo_hand_range_page():
     """Renders the PLO Hand Range Visualizer page."""
-    return render_template('plo_hand_range.html')
+    return render_template('tools/plo_hand_range.html')

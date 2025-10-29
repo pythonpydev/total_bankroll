@@ -85,7 +85,7 @@ def poker_sites_page():
             'previous_amount_usd': previous_amount_usd
         })
 
-    return render_template("poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous)
+    return render_template("bankroll/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous)
 
 @poker_sites_bp.route("/add_site", methods=['GET', 'POST'])
 @login_required
@@ -114,7 +114,7 @@ def add_site():
     elif request.method == 'POST':
         # If validation fails, return errors as JSON
         return jsonify({'success': False, 'errors': form.errors}), 400
-    return render_template("_modal_form.html", form=form, title="Add New Site", action_url=url_for('poker_sites.add_site'))
+    return render_template("partials/_modal_form.html", form=form, title="Add New Site", action_url=url_for('poker_sites.add_site'))
 
 @poker_sites_bp.route("/update_site/<int:site_id>", methods=['GET', 'POST'])
 @login_required
@@ -141,7 +141,7 @@ def update_site(site_id):
     if last_history:
         form.amount.data = last_history.amount
 
-    return render_template("_modal_form.html", form=form, title=f"Update {site.name}")
+    return render_template("partials/_modal_form.html", form=form, title=f"Update {site.name}", action_url=url_for('poker_sites.update_site', site_id=site_id))
 
 @poker_sites_bp.route("/rename_site/<int:site_id>", methods=['GET', 'POST'])
 @login_required
@@ -159,7 +159,7 @@ def rename_site(site_id):
         db.session.commit()
         flash('Site renamed successfully!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
-    return render_template("_modal_form.html", form=form, title=f"Rename {site.name}")
+    return render_template("partials/_modal_form.html", form=form, title=f"Rename {site.name}", action_url=url_for('poker_sites.rename_site', site_id=site_id))
 
 @poker_sites_bp.route("/site_history/<int:site_id>")
 @login_required
@@ -199,7 +199,7 @@ def site_history(site_id):
         record_dict['currency_name'] = currency_obj.name if currency_obj else record.currency
         history_data.append(record_dict)
 
-    return render_template("site_history.html", site=site, history=history_data, start_date=start_date_str, end_date=end_date_str)
+    return render_template("info/site_history.html", site=site, history=history_data, start_date=start_date_str, end_date=end_date_str)
 
 @poker_sites_bp.route('/move_site/<int:site_id>/<direction>')
 @login_required
@@ -258,4 +258,4 @@ def edit_site_history(history_id):
     if request.method == 'GET':
         form.currency.data = history_record.currency
 
-    return render_template('_modal_form.html', form=form, title="Edit Site History Record")
+    return render_template('partials/_edit_site_history_form.html', form=form, title="Edit Site History Record")

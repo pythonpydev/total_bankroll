@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+{% from "partials/_macros.html" import page_header %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            {{ page_header(article.title) }}
+            <div class="text-center text-muted mb-4">
+                <small>Published on {{ article.date_published.strftime('%B %d, %Y') if article.date_published }}</small>
+                {% if article.last_updated and article.date_published and article.last_updated.date() != article.date_published.date() %}
+                    <small class="ms-3">| Last updated on {{ article.last_updated.strftime('%B %d, %Y') }}</small>
+                {% endif %}
+                {% if article.tags %}
+                <div class="mt-2">
+                    Tags:
+                    {% for tag in article.tags %}
+                        <a href="{{ url_for('articles.by_tag', tag_name=tag.name) }}" class="badge bg-primary text-decoration-none">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="article-content">
+                {{ article.content_html|safe }}
+            </div>
+            <div class="text-center mt-4 py-3">
+                {% if not has_read %}
+                    <form action="{{ url_for('articles.mark_as_read', article_id=article.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi-check-circle me-2"></i>Mark as Read</button>
+                    </form>
+                {% else %}
+                    <p class="text-muted"><i class="bi-check-circle-fill text-success me-2"></i>You have read this article.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
