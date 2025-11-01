@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_security import current_user
 from ..utils import get_user_bankroll_data
 from ..models import db, Goal
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
+import json
 
 home_bp = Blueprint("home", __name__)
 
@@ -13,6 +14,22 @@ def home():
         return redirect(url_for('about.about'))
 
     bankroll_data = get_user_bankroll_data(current_user.id)
+
+    # prepare bankroll_history for the chart (fallback if util doesn't provide it)
+    bankroll_history = None
+    if isinstance(bankroll_data, dict):
+        bankroll_history = bankroll_data.get('bankroll_history')
+
+    if not bankroll_history:
+        today = datetime.now(UTC).date()
+        prev_total = float(bankroll_data.get('previous_total', bankroll_data.get('previous_bankroll', 0.0)))
+        curr_total = float(bankroll_data.get('total_bankroll', 0.0))
+        bankroll_history = [
+            {"date": (today - timedelta(days=7)).isoformat(), "value": prev_total},
+            {"date": today.isoformat(), "value": curr_total},
+        ]
+
+    bankroll_history_json = json.dumps(bankroll_history)
 
     # Fetch the active goal and calculate progress
     active_goal = Goal.query.filter_by(user_id=current_user.id, status='active').first()
@@ -45,7 +62,9 @@ def home():
                            total_bankroll=bankroll_data['total_bankroll'],
                            total_profit=bankroll_data['total_profit'],
                            active_goal=active_goal,
-                           goal_progress=goal_progress)
+                           goal_progress=goal_progress,
+                           bankroll_history=bankroll_history,
+                           bankroll_history_json=bankroll_history_json)
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField

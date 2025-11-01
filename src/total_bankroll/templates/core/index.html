@@ -168,7 +168,8 @@
                             <label class="form-check-label" for="toggleProfit">Profit / Loss</label>
                         </div>
                     </div>
-                    <canvas id="dashboardBankrollChart" style="max-height: 400px;"></canvas>
+                    <!-- Ensure a canvas with id="bankrollChart" exists in the template -->
+                    <canvas id="bankrollChart" width="600" height="300" style="max-height: 400px;"></canvas>
                 </div>
             </div>
         </div>
@@ -178,6 +179,8 @@
 
 {% block scripts %}
 {{ super() }}
+<!-- Add Chart.js CDN (or include your local bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/charts/bankroll/data')
@@ -193,61 +196,90 @@
                     return;
                 }
 
-                const bankrollDataset = data.datasets[0];
-                bankrollDataset.label = 'Total Bankroll';
-                bankrollDataset.borderColor = 'rgba(13, 110, 253, 0.8)'; // Bootstrap Primary Blue
-                bankrollDataset.backgroundColor = 'rgba(13, 110, 253, 0.1)';
-                bankrollDataset.hidden = false; // Initially visible
+                const rawDataset = data.datasets[0];
 
-                // Calculate profit data
-                const initialInvestment = {{ total_deposits - total_withdrawals }};
-                const profitData = bankrollDataset.data.map(point => ({
-                    x: point.x,
-                    y: point.y - initialInvestment
-                }));
+                // Handle both formats: [{x: '2025-10-01', y: 123}, ...] or an array of numbers
+                let labels = [];
+                let values = [];
 
-                const finalProfit = profitData.length > 0 ? profitData[profitData.length - 1].y : 0;
-                const profitColor = finalProfit >= 0 ? 'rgba(25, 135, 84, 0.8)' : 'rgba(220, 53, 69, 0.8)'; // Bootstrap Success/Danger
+                if (Array.isArray(rawDataset.data) && rawDataset.data.length > 0 && typeof rawDataset.data[0] === 'object' && rawDataset.data[0] !== null && 'x' in rawDataset.data[0]) {
+                    labels = rawDataset.data.map(pt => String(pt.x));
+                    values = rawDataset.data.map(pt => Number(pt.y));
+                } else if (Array.isArray(rawDataset.data)) {
+                    // If data is already an array of numbers, create simple numeric labels
+                    values = rawDataset.data.map(v => Number(v));
+                    labels = values.map((_, i) => i + 1);
+                } else {
+                    console.error('Unknown dataset format', rawDataset.data);
+                    return;
+                }
+
+                // Create bankroll dataset for Chart.js category axis
+                const bankrollDataset = {
+                    label: 'Total Bankroll',
+                    data: values,
+                    borderColor: 'rgba(13, 110, 253, 0.8)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.2,
+                };
+
+                const initialInvestment = {{ (total_deposits - total_withdrawals) | default(0) }};
+                const profitValues = values.map(v => v - initialInvestment);
+                const finalProfit = profitValues.length > 0 ? profitValues[profitValues.length - 1] : 0;
+                const profitColor = finalProfit >= 0 ? 'rgba(25, 135, 84, 0.8)' : 'rgba(220, 53, 69, 0.8)';
 
                 const profitDataset = {
                     label: 'Profit / Loss',
-                    data: profitData,
+                    data: profitValues,
                     borderColor: profitColor,
                     backgroundColor: profitColor.replace('0.8', '0.1'),
-                    hidden: true // Initially hidden
+                    hidden: true,
+                    fill: false,
+                    tension: 0.2,
                 };
 
-                const ctx = document.getElementById('dashboardBankrollChart').getContext('2d');
+                const canvas = document.getElementById('bankrollChart');
+                if (!canvas) {
+                    console.error('Canvas element with id "bankrollChart" not found.');
+                    return;
+                }
+                const ctx = canvas.getContext('2d');
 
                 const chartOptions = {
-                    plugins: {
-                        legend: { display: true }
-                    },
+                    plugins: { legend: { display: true } },
                     scales: {
-                        x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MMM d, yyyy' }, title: { display: true, text: 'Date' } },
+                        x: { display: true, title: { display: true, text: 'Date' } }, // category axis
                         y: { beginAtZero: false, title: { display: true, text: 'Amount (USD)' } }
-                    }
+                    },
+                    maintainAspectRatio: false,
+                    responsive: true
                 };
 
-                const chart = createChart(ctx, 'line', { datasets: [bankrollDataset, profitDataset] }, chartOptions);
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: labels, datasets: [bankrollDataset, profitDataset] },
+                    options: chartOptions
+                });
 
-                // Add event listeners for the toggles
                 const toggleBankroll = document.getElementById('toggleBankroll');
                 const toggleProfit = document.getElementById('toggleProfit');
 
-                toggleBankroll.addEventListener('change', function() {
-                    chart.setDatasetVisibility(0, this.checked);
-                    chart.update();
-                });
+                if (toggleBankroll) {
+                    toggleBankroll.addEventListener('change', function() {
+                        chart.setDatasetVisibility(0, this.checked);
+                        chart.update();
+                    });
+                }
+                if (toggleProfit) {
+                    toggleProfit.addEventListener('change', function() {
+                        chart.setDatasetVisibility(1, this.checked);
+                        chart.update();
+                    });
+                }
 
-                toggleProfit.addEventListener('change', function() {
-                    chart.setDatasetVisibility(1, this.checked);
-                    chart.update();
-                });
-
-                // Set initial visibility based on default checkbox state
-                chart.setDatasetVisibility(0, toggleBankroll.checked);
-                chart.setDatasetVisibility(1, toggleProfit.checked);
+                if (toggleBankroll) chart.setDatasetVisibility(0, toggleBankroll.checked);
+                if (toggleProfit) chart.setDatasetVisibility(1, toggleProfit.checked);
                 chart.update();
             })
             .catch(error => console.error('Error fetching bankroll data for dashboard:', error));

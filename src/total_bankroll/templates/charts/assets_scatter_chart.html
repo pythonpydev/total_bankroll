@@ -9,7 +9,9 @@
         <div class="mb-4">
             <a href="{{ url_for('charts.charts_page') }}" class="btn btn-secondary"><i class="bi-arrow-left"></i> Back to Chart Selection</a>
         </div>
-        <canvas id="assetsChart"></canvas>
+        <div class="chart-container" style="position:relative; width:100%; height:420px;">
+            <canvas id="assetsChart" style="width:100%; height:100%;"></canvas>
+        </div>
     </div>
 </section>
 
@@ -17,34 +19,90 @@
 {{ super() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-<script src="{{ url_for('static', filename='js/chart_utils.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        fetch("{{ url_for('charts.get_assets_historical_data') }}")
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('assetsChart').getContext('2d');
+document.addEventListener('DOMContentLoaded', async function () {
+    const url = "{{ url_for('charts.get_assets_historical_data') }}";
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Network response was not ok: ' + resp.status);
+        const data = await resp.json();
+        console.log('Fetched assets chart payload:', data);
 
-                const chartData = {
-                    labels: data.labels,
-                    datasets: data.datasets
-                };
+        const labels = Array.isArray(data.labels) ? data.labels : null;
+        const rawDatasets = Array.isArray(data.datasets) ? data.datasets : [];
 
-                const chartOptions = {
-                    plugins: {
-                        title: { display: true, text: 'Assets Value Over Time', font: { size: 18 } },
-                        legend: { position: 'top' }
-                    },
-                    scales: {
-                        x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Date' } },
-                        y: { beginAtZero: true, title: { display: true, text: 'Amount (USD)' } }
+        const datasets = rawDatasets.map(ds => {
+            const src = ds.data || [];
+            let converted = [];
+
+            if (src.length > 0 && typeof src[0] === 'object' && src[0] !== null && ('x' in src[0] || 'y' in src[0])) {
+                converted = src.map(pt => ({ x: pt.x, y: Number(pt.y) }));
+            } else if (labels && labels.length === src.length) {
+                converted = src.map((v, i) => ({ x: labels[i], y: Number(v) }));
+            } else {
+                converted = src.map((v, i) => ({ x: i + 1, y: Number(v) }));
+            }
+
+            return {
+                label: ds.label || 'Series',
+                data: converted,
+                showLine: ds.showLine ?? false,
+                borderColor: ds.borderColor || 'rgba(13,110,253,0.8)',
+                backgroundColor: ds.backgroundColor || 'rgba(13,110,253,0.4)',
+                pointRadius: ds.pointRadius ?? 2,
+                pointHoverRadius: ds.pointHoverRadius ?? 4,
+            };
+        });
+
+        const canvas = document.getElementById('assetsChart');
+        if (!canvas) {
+            console.error('assetsChart canvas not found in DOM');
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+
+        const chartOptions = {
+            plugins: {
+                title: { display: true, text: 'Assets Value Over Time', font: { size: 18 } },
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'day', tooltipFormat: 'PP' },
+                    title: { display: true, text: 'Date' },
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 12,
+                        maxRotation: 45,
+                        minRotation: 0
                     }
-                };
+                },
+                y: {
+                    beginAtZero: false,
+                    title: { display: true, text: 'Amount (USD)' },
+                    ticks: { maxTicksLimit: 8 }
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 6, right: 8, left: 6, bottom: 6 } },
+            animation: { duration: 250 }
+        };
 
-                createChart(ctx, 'scatter', chartData, chartOptions);
-            })
-            .catch(error => console.error('Error fetching assets data:', error));
-    });
+        if (window._assetsChartInstance) {
+            try { window._assetsChartInstance.destroy(); } catch(e){/*ignore*/ }
+        }
+
+        window._assetsChartInstance = new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: datasets },
+            options: chartOptions
+        });
+    } catch (err) {
+        console.error('Error fetching assets data or building chart:', err);
+    }
+});
 </script>
 {% endblock %}
 {% endblock %}
