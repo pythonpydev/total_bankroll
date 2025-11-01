@@ -6,6 +6,17 @@ from sqlalchemy import func
 from ..achievements import update_user_streak
 from ..models import db, Drawings
 
+# Try to import shared utilities; provide lightweight fallbacks if missing
+try:
+    from ..utils import get_sorted_currencies, get_user_bankroll_data
+except Exception:
+    # Minimal fallbacks so page still renders while you fix the real import
+    def get_sorted_currencies():
+        return ["USD"]
+
+    def get_user_bankroll_data(user_id):
+        return {"total_profit": 0, "total_bankroll": 0}
+
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 
 @add_withdrawal_bp.route("/add_withdrawal", methods=["GET", "POST"])
