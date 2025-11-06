@@ -55,7 +55,7 @@ workon bankroll_venv
 
 # Create timestamped backup
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-mysqldump -u pythonpydev -p pythonpydev\$bankroll > ~/backups/bankroll_${TIMESTAMP}.sql
+mysqldump -h pythonpydev.mysql.pythonanywhere-services.com -u pythonpydev -p --no-tablespaces pythonpydev\$bankroll > ~/backups/bankroll_${TIMESTAMP}.sql
 
 # Verify backup created
 ls -lh ~/backups/bankroll_${TIMESTAMP}.sql
@@ -120,17 +120,18 @@ flask db current
 - [ ] Migrations applied successfully
 - [ ] No error messages
 
-### 5. Update Static Files (if changed)
+### 5. Build Frontend Assets
 
 ```bash
-# If static assets changed, ensure they're pushed to git
-# PythonAnywhere serves static files from the repo
+# Build Vite assets (required for production)
+npm run build
 
-# Verify static files exist
-ls -la src/total_bankroll/static/
+# Verify manifest created
+ls -la src/total_bankroll/static/dist/.vite/manifest.json
 ```
 
-- [ ] Static files present and accessible
+- [ ] Vite build completed successfully
+- [ ] manifest.json exists
 
 ### 6. Reload Web Application
 

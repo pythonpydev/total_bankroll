@@ -1,0 +1,107 @@
+═══════════════════════════════════════════════════════════
+TASK-0007 ROLLBACK TEST - QUICK CHECKLIST
+═══════════════════════════════════════════════════════════
+
+PREPARATION (DONE):
+✅ Test commit created (be72357)
+✅ Pushed to GitHub
+✅ Documentation prepared
+
+═══════════════════════════════════════════════════════════
+ON PYTHONANYWHERE - EXECUTE THESE COMMANDS:
+═══════════════════════════════════════════════════════════
+
+1. SSH & SETUP
+   □ ssh pythonpydev@ssh.pythonanywhere.com
+   □ cd ~/total_bankroll
+   □ workon bankroll_venv
+
+2. PULL TEST COMMIT
+   □ git pull origin main
+   □ git log --oneline -3
+   
+   ✓ Should show be72357 at HEAD
+
+3. BACKUP DATABASE
+   □ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+   □ mysqldump -u pythonpydev -p pythonpydev\$bankroll > ~/backups/bankroll_${TIMESTAMP}.sql
+   □ ls -lh ~/backups/
+   
+   ✓ Backup file should be several MB
+
+4. RELOAD WEB APP
+   □ Go to: https://www.pythonanywhere.com/user/pythonpydev/webapps/
+   □ Click "Reload" button for stakeeasy.net
+   
+   ⏰ Record time: __________
+
+5. VERIFY TEST DEPLOYMENT
+   □ Visit: https://stakeeasy.net
+   □ Check for "Dashboard - ROLLBACK TEST"
+   □ Check for "[TEST DEPLOYMENT]"
+   □ Take screenshot
+   
+   ✓ Test text should be visible
+
+═══════════════════════════════════════════════════════════
+ROLLBACK:
+═══════════════════════════════════════════════════════════
+
+6. EXECUTE ROLLBACK
+   □ cd ~/total_bankroll
+   □ git reset --hard 1be6e19
+   □ git log --oneline -3
+   
+   ✓ HEAD should be at 1be6e19
+
+7. RELOAD WEB APP AGAIN
+   □ Go to: https://www.pythonanywhere.com/user/pythonpydev/webapps/
+   □ Click "Reload" button
+   
+   ⏰ Record time: __________
+
+8. VERIFY ROLLBACK
+   □ Refresh: https://stakeeasy.net
+   □ Check "ROLLBACK TEST" is gone
+   □ Check "[TEST DEPLOYMENT]" is gone
+   □ Take screenshot
+   
+   ✓ Site should look normal
+
+═══════════════════════════════════════════════════════════
+TIMING:
+═══════════════════════════════════════════════════════════
+Deploy start:    __________
+Deploy complete: __________
+Rollback start:  __________
+Rollback complete: __________
+TOTAL TIME:      __________  (target: < 5 min)
+
+═══════════════════════════════════════════════════════════
+BACK ON LOCAL MACHINE:
+═══════════════════════════════════════════════════════════
+
+9. OPTIONAL CLEANUP (Recommended)
+   □ cd /home/ed/MEGA/total_bankroll
+   □ git reset --hard 1be6e19
+   □ git push origin main --force
+   
+   This removes the test commit from history
+
+10. DOCUMENT RESULTS
+    □ Update .github/TASK-0007_rollback_test.md
+    □ Note any issues encountered
+    □ Record all timings
+    □ Commit documentation
+
+═══════════════════════════════════════════════════════════
+✅ TASK COMPLETE WHEN:
+═══════════════════════════════════════════════════════════
+□ Test deployed successfully
+□ Rollback executed successfully
+□ Site returned to normal
+□ Total time < 5 minutes
+□ Documentation completed
+□ TASK-0007 marked complete
+
+═══════════════════════════════════════════════════════════
