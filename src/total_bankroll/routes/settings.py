@@ -7,7 +7,7 @@ from flask_wtf.file import FileRequired, FileAllowed
 from ..extensions import mail, csrf
 from ..models import db, User, OAuth, Sites, Assets, Deposits, Drawings, SiteHistory, AssetHistory
 from flask_security.utils import hash_password
-from flask_mail import Message 
+from flask_mailman import EmailMessage as Message 
 from datetime import datetime, UTC
 from ..utils import generate_token, confirm_token, is_email_taken, get_sorted_currencies
 import re

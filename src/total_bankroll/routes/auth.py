@@ -7,7 +7,7 @@ from wtforms import StringField, PasswordField, SubmitField, ValidationError
 from wtforms.validators import DataRequired, Email, EqualTo
 from ..extensions import mail
 from ..models import db, User
-from flask_mail import Message
+from flask_mailman import EmailMessage as Message
 import os
 from sqlalchemy.exc import IntegrityError
 from flask_dance.contrib.google import google as google_blueprint
