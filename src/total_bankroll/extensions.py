@@ -1,4 +1,5 @@
 from flask_bcrypt import Bcrypt
+from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_mailman import Mail
@@ -44,6 +45,7 @@ def get_real_ip():
     return remote_addr
 
 bcrypt = Bcrypt()
+cache = Cache()
 limiter = Limiter(key_func=get_real_ip)
 mail = Mail()
 principal = Principal()

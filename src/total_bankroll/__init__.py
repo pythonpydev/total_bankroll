@@ -5,7 +5,7 @@ from flask_security import Security, SQLAlchemyUserDatastore, current_user
 from flask_talisman import Talisman
 from .models import db, User, Role, OAuth as OAuthModel
 from .vite_asset_helper import init_vite_asset_helper
-from .extensions import bcrypt, limiter, mail, principal, csrf
+from .extensions import bcrypt, cache, limiter, mail, principal, csrf
 from .config import DevelopmentConfig, ProductionConfig
 import os
 import logging
@@ -33,6 +33,7 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
+    cache.init_app(app)
     limiter.init_app(app)
     mail.init_app(app)
     principal.init_app(app)

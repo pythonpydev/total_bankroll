@@ -37,6 +37,14 @@ class Config:
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+    
+    # Cache Configuration
+    CACHE_TYPE = os.getenv('CACHE_TYPE', 'SimpleCache')
+    CACHE_DEFAULT_TIMEOUT = int(os.getenv('CACHE_DEFAULT_TIMEOUT', 300))
+    
+    # Redis Configuration (if using Redis cache)
+    CACHE_REDIS_URL = os.getenv('REDIS_URL')
+    CACHE_KEY_PREFIX = 'stakeeasy_'
 
 class DevelopmentConfig(Config):
     DEBUG = True

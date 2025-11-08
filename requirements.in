@@ -10,6 +10,8 @@ flask-limiter
 flask-mailman
 flask-principal
 flask-talisman
+flask-caching>=2.3.0
+redis>=5.0.0
 setuptools==80.9.0
 psycopg2-binary==2.9.9
 python-frontmatter

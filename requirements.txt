@@ -162,3 +162,5 @@ wsproto==1.2.0
 WTForms==3.2.1
 yarg==0.1.9
 ytest==0.1.4
+cachelib==0.13.0
+redis==7.0.1
