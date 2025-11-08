@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired, NumberRange, ValidationError
 from datetime import datetime, date, UTC
 
 from ..models import db, Goal
-from ..utils import get_user_bankroll_data
+from ..services import BankrollService
 from ..achievements import check_and_award_achievements
 
 goals_bp = Blueprint('goals', __name__, url_prefix='/goals')
@@ -29,7 +29,10 @@ class GoalForm(FlaskForm):
 def index():
     """Page to view and create goals."""
     form = GoalForm()
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    
+    # Use BankrollService to get bankroll data
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
     current_bankroll = bankroll_data.get('total_bankroll', 0.0)
     current_profit = bankroll_data.get('total_profit', 0.0)
 

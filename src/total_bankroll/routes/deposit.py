@@ -3,7 +3,8 @@ from flask_security import login_required, current_user
 from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
-from ..utils import get_user_bankroll_data, get_sorted_currencies
+from ..services import BankrollService
+from ..utils import get_sorted_currencies
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, SubmitField, DateField
 from wtforms.validators import DataRequired, NumberRange
@@ -24,8 +25,9 @@ def deposit():
     from ..models import Deposits, Currency
     currency_symbols = {row.code: row.symbol for row in db.session.query(Currency.code, Currency.symbol).all()}
 
-    # Use the centralized utility function to get bankroll data
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    # Use BankrollService to get bankroll data
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
     total_net_worth = bankroll_data['total_bankroll']
 
     # Get date range from request arguments

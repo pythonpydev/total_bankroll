@@ -5,17 +5,8 @@ from decimal import Decimal
 from sqlalchemy import func
 from ..achievements import update_user_streak
 from ..models import db, Drawings
-
-# Try to import shared utilities; provide lightweight fallbacks if missing
-try:
-    from ..utils import get_sorted_currencies, get_user_bankroll_data
-except Exception:
-    # Minimal fallbacks so page still renders while you fix the real import
-    def get_sorted_currencies():
-        return ["USD"]
-
-    def get_user_bankroll_data(user_id):
-        return {"total_profit": 0, "total_bankroll": 0}
+from ..services import BankrollService
+from ..utils import get_sorted_currencies
 
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
 
@@ -58,8 +49,10 @@ def add_withdrawal():
     else:
         today = datetime.now().strftime("%Y-%m-%d")
         currencies = get_sorted_currencies()
-        # Use the centralized utility function to get bankroll data
-        bankroll_data = get_user_bankroll_data(current_user.id)
+        
+        # Use BankrollService to get bankroll data
+        service = BankrollService()
+        bankroll_data = service.get_bankroll_breakdown(current_user.id)
         total_profit = bankroll_data['total_profit']
         total_bankroll = bankroll_data['total_bankroll']
         default_currency = current_user.default_currency_code if hasattr(current_user, 'default_currency_code') else 'USD'

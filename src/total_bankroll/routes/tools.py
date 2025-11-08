@@ -8,7 +8,7 @@ import math
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SubmitField, SelectField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError
-from ..utils import get_user_bankroll_data
+from ..services import BankrollService
 from ..recommendations import RecommendationEngine
 import logging
 
@@ -124,7 +124,8 @@ def _get_user_selections(request_args):
 def poker_stakes_page():
     # Get user selections and bankroll
     selections = _get_user_selections(request.args)
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
     
     # Initialize the recommendation engine
@@ -202,7 +203,8 @@ def tournament_stakes_page():
     range_data = engine._calculate_weighted_range(selections, 'tournaments')
     mean_buy_ins = range_data['average_multiple']
 
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
 
     # --- Add new columns to tournament_buy_ins data ---
@@ -393,7 +395,8 @@ def spr_calculator_page():
 def bankroll_goals_page():
     """Renders the Bankroll Goals Calculator page and handles calculations."""
     form = BankrollGoalsForm()
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
     current_bankroll = bankroll_data['total_bankroll']
     result = None
     chart_data = None

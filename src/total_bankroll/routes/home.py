@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_security import current_user
-from ..utils import get_user_bankroll_data
+from ..services import BankrollService
 from ..models import db, Goal
 from datetime import datetime, UTC, timedelta
 import json
@@ -13,7 +13,9 @@ def home():
     if not current_user.is_authenticated:
         return redirect(url_for('about.about'))
 
-    bankroll_data = get_user_bankroll_data(current_user.id)
+    # Use BankrollService instead of utils function
+    service = BankrollService()
+    bankroll_data = service.get_bankroll_breakdown(current_user.id)
 
     # prepare bankroll_history for the chart (fallback if util doesn't provide it)
     bankroll_history = None
