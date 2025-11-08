@@ -9,6 +9,7 @@ flask-bcrypt
 flask-limiter
 flask-mailman
 flask-principal
+flask-talisman
 setuptools==80.9.0
 psycopg2-binary==2.9.9
 python-frontmatter

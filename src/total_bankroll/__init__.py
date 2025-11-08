@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore, current_user
+from flask_talisman import Talisman
 from .models import db, User, Role, OAuth as OAuthModel
 from .vite_asset_helper import init_vite_asset_helper
 from .extensions import bcrypt, limiter, mail, principal, csrf
@@ -36,6 +37,52 @@ def create_app(config_name=None):
     mail.init_app(app)
     principal.init_app(app)
     csrf.init_app(app)
+    
+    # Initialize Flask-Talisman for security headers (production only)
+    if config_name == 'production':
+        # Content Security Policy configuration
+        csp = {
+            'default-src': [
+                "'self'",
+            ],
+            'script-src': [
+                "'self'",
+                "'unsafe-inline'",  # Needed for inline scripts (Google Analytics, etc.)
+                'https://www.googletagmanager.com',
+                'https://cdn.jsdelivr.net',
+                'https://cdnjs.cloudflare.com',
+            ],
+            'style-src': [
+                "'self'",
+                "'unsafe-inline'",  # Needed for inline styles
+                'https://cdn.jsdelivr.net',
+                'https://cdnjs.cloudflare.com',
+                'https://fonts.googleapis.com',
+            ],
+            'font-src': [
+                "'self'",
+                'https://cdn.jsdelivr.net',
+                'https://cdnjs.cloudflare.com',
+                'https://fonts.gstatic.com',
+            ],
+            'img-src': [
+                "'self'",
+                'data:',  # For inline images
+                'https:',  # Allow images from any HTTPS source
+            ],
+            'connect-src': [
+                "'self'",
+            ],
+        }
+        
+        Talisman(
+            app,
+            content_security_policy=csp,
+            content_security_policy_nonce_in=['script-src'],
+            force_https=True,  # Redirect HTTP to HTTPS
+            strict_transport_security=True,  # HSTS header
+            strict_transport_security_max_age=31536000,  # 1 year
+        )
     
     # Initialize Flask-Migrate
     migrate = Migrate(app, db)
