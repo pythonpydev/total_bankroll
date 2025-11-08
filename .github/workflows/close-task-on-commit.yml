@@ -1,0 +1,72 @@
+name: Close Task on Commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  close-tasks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install PyGithub
+      
+      - name: Parse commit message for task IDs
+        id: parse
+        run: |
+          # Get commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Extract TASK-XXXX patterns
+          TASKS=$(echo "$COMMIT_MSG" | grep -oE 'TASK-[0-9]{4}' | sort -u || echo "")
+          
+          if [ -n "$TASKS" ]; then
+            echo "Found tasks: $TASKS"
+            echo "tasks<<EOF" >> $GITHUB_OUTPUT
+            echo "$TASKS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No tasks found in commit message"
+            echo "tasks=" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Close completed tasks
+        if: steps.parse.outputs.tasks != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          
+          # Process each task
+          echo "${{ steps.parse.outputs.tasks }}" | while read -r TASK_ID; do
+            if [ -n "$TASK_ID" ]; then
+              echo "Processing $TASK_ID..."
+              
+              python scripts/close_github_issue.py \
+                --task "$TASK_ID" \
+                --comment "## ✅ Task Completed
+
+**Completed:** $(date -u '+%Y-%m-%d %H:%M UTC')
+**Commit:** $COMMIT_SHA
+
+**Commit Message:**
+\`\`\`
+$COMMIT_MSG
+\`\`\`
+
+This task has been completed and verified. Closing issue automatically." || echo "Warning: Failed to close $TASK_ID"
+            fi
+          done

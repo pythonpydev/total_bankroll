@@ -1,8 +1,8 @@
 {
-  "main.js": {
+  "src/total_bankroll/frontend/main.js": {
     "file": "assets/main-DGU9veUe.js",
     "name": "main",
-    "src": "main.js",
+    "src": "src/total_bankroll/frontend/main.js",
     "isEntry": true
   }
 }

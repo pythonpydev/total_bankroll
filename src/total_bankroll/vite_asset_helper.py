@@ -25,13 +25,21 @@ def vite_asset(filename):
     with open(manifest_path, 'r') as f:
         manifest = json.load(f)
 
-    # The key in the manifest is the original filename relative to the Vite root
-    if filename not in manifest:
-        raise KeyError(f"Asset '{filename}' not found in Vite manifest.json.")
-
-    # The manifest value contains the actual output path
-    output_filename = manifest[filename]['file']
-    return url_for('static', filename=f'assets/{output_filename}')
+    # Try to find the asset in the manifest
+    # First try the exact filename
+    if filename in manifest:
+        output_filename = manifest[filename]['file']
+        return url_for('static', filename=f'assets/{output_filename}')
+    
+    # If not found, try with full path prefix
+    full_path_key = f'src/total_bankroll/frontend/{filename}'
+    if full_path_key in manifest:
+        output_filename = manifest[full_path_key]['file']
+        return url_for('static', filename=f'assets/{output_filename}')
+    
+    # If still not found, raise an error with helpful message
+    available_keys = list(manifest.keys())
+    raise KeyError(f"Asset '{filename}' not found in Vite manifest.json. Available keys: {available_keys}")
 
 def init_vite_asset_helper(app):
     """
