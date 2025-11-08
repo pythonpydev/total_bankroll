@@ -186,3 +186,68 @@ Related to TASK-1002
 **Task Completed:** 2025-11-08  
 **Completion Time:** ~2.5 hours (estimate was 4 hours)  
 **Status:** ✅ Ready for browser testing and deployment
+
+---
+
+## Production Deployment - COMPLETED ✅
+
+**Deployment Date:** 2025-11-08 14:57 UTC  
+**Status:** Successfully deployed to https://stakeeasy.net  
+**Deployed by:** User (pythonpydev on PythonAnywhere)
+
+### Deployment Summary
+
+**Initial Issues Encountered:**
+1. ✅ **"Could not resolve entry module index.html"** - Fixed by removing `root` config
+2. ✅ **"Asset 'main.js' not found in manifest"** - Fixed by updating `vite_asset_helper.py` to handle full path keys
+3. ✅ **Cached bytecode issue** - Resolved by clearing `__pycache__` and `.pyc` files
+
+### Final Deployment Steps Executed
+
+```bash
+cd ~/total_bankroll
+git fetch origin
+git reset --hard origin/main
+find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+find . -name "*.pyc" -delete 2>/dev/null || true
+vite build  # Already done
+# Reloaded web app from dashboard
+```
+
+### Verification
+
+- ✅ Site loads: https://stakeeasy.net
+- ✅ No JavaScript errors in console
+- ✅ JavaScript functionality working (theme toggle, modals, etc.)
+- ✅ Vite-bundled assets loading correctly from `/static/assets/`
+
+### Key Learnings
+
+1. **Python bytecode caching** on PythonAnywhere can prevent code updates from taking effect
+   - Always clear `__pycache__` after pulling updates
+   - Use `git reset --hard` instead of `git pull` for cleaner updates
+
+2. **Vite manifest keys** use full paths when `root` is not set
+   - Solution: Make helper flexible to handle both formats
+   - Better than fighting with Vite configuration
+
+3. **Global npm installation** worked well on PythonAnywhere
+   - No local `node_modules` needed
+   - Simpler deployment process
+
+---
+
+## Task Status: ✅ COMPLETE
+
+All acceptance criteria met:
+- [x] Vite configuration complete
+- [x] Build process working (`npm run build`)
+- [x] Dev server functional (`vite`)
+- [x] Manifest generation verified
+- [x] Flask integration tested
+- [x] **Production deployment successful**
+- [x] Site functionality verified
+
+**Total Time:** ~3 hours (estimated 4 hours)  
+**Commits:** 3 commits (a9ef4bb, 01658bf, d0022dd)
+
