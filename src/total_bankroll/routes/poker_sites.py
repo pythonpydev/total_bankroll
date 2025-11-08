@@ -8,7 +8,7 @@ from wtforms import StringField, DecimalField, SelectField, SubmitField, DateTim
 from wtforms.validators import DataRequired, Length, Optional
 
 from ..models import db, Sites, SiteHistory, Currency
-from ..achievements import update_user_streak
+from ..services import AchievementService
 from ..utils import get_sorted_currencies
 from datetime import datetime, UTC
 
@@ -133,7 +133,11 @@ def update_site(site_id):
         new_history = SiteHistory(site_id=site.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
-        update_user_streak(current_user)
+        
+        # Update achievement streak
+        achievement_service = AchievementService()
+        achievement_service.update_streak(current_user)
+        
         flash('Site amount updated!', 'success')
         return redirect(url_for('poker_sites.poker_sites_page'))
     

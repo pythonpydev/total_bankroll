@@ -8,7 +8,7 @@ from wtforms import StringField, DecimalField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length
 
 from ..models import db, Assets, AssetHistory, Currency
-from ..achievements import update_user_streak
+from ..services import AchievementService
 from ..utils import get_sorted_currencies
 from datetime import datetime
 
@@ -124,7 +124,11 @@ def update_asset(asset_id):
         new_history = AssetHistory(asset_id=asset.id, amount=form.amount.data, currency=currency_code, user_id=current_user.id)
         db.session.add(new_history)
         db.session.commit()
-        update_user_streak(current_user)
+        
+        # Update achievement streak
+        achievement_service = AchievementService()
+        achievement_service.update_streak(current_user)
+        
         flash('Asset amount updated!', 'success')
         return redirect(url_for('assets.assets_page'))
     

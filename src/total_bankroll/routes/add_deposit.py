@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from flask_security import login_required, current_user
-from ..achievements import update_user_streak
+from ..services import AchievementService
 from ..models import db, Deposits, Currency
 from ..utils import get_sorted_currencies
 
@@ -48,7 +48,11 @@ def add_deposit():
         )
         db.session.add(new_deposit)
         db.session.commit()
-        update_user_streak(current_user)
+        
+        # Update achievement streak
+        achievement_service = AchievementService()
+        achievement_service.update_streak(current_user)
+        
         flash("Deposit added successfully!!", "success")
         return redirect(url_for("deposit.deposit"))
     else:

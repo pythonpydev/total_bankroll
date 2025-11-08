@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_security import login_required, current_user
 from sqlalchemy import or_
 from ..models import db, Article, UserReadArticle, Tag
-from ..achievements import check_and_award_achievements
+from ..services import AchievementService
 
 articles_bp = Blueprint('articles', __name__, url_prefix='/strategy/articles')
 
@@ -74,6 +74,10 @@ def mark_as_read(article_id):
         new_read_entry = UserReadArticle(user_id=current_user.id, article_id=article_id)
         db.session.add(new_read_entry)
         db.session.commit()
-        check_and_award_achievements(current_user) # Check for new achievements
+        
+        # Check for achievements
+        achievement_service = AchievementService()
+        achievement_service.check_achievements(current_user)
+        
         flash("You've marked this article as read!", "info")
     return redirect(url_for('articles.view', id=article_id))

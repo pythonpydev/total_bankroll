@@ -7,8 +7,7 @@ from wtforms.validators import DataRequired, NumberRange, ValidationError
 from datetime import datetime, date, UTC
 
 from ..models import db, Goal
-from ..services import BankrollService
-from ..achievements import check_and_award_achievements
+from ..services import BankrollService, AchievementService
 
 goals_bp = Blueprint('goals', __name__, url_prefix='/goals')
 
@@ -79,7 +78,11 @@ def index():
             goal.status = 'completed'
             goal.completed_at = datetime.now(UTC)
             flash(f'Congratulations! You automatically completed the goal: "{goal.name}".', 'success')
-            check_and_award_achievements(current_user)
+            
+            # Check for achievements
+            achievement_service = AchievementService()
+            achievement_service.check_achievements(current_user)
+            
             db.session.commit()
             return redirect(url_for('goals.index'))
 
@@ -113,7 +116,11 @@ def complete_goal(goal_id):
         goal.status = 'completed'
         goal.completed_at = datetime.now(UTC)
         db.session.commit()
-        check_and_award_achievements(current_user)
+        
+        # Check for achievements
+        achievement_service = AchievementService()
+        achievement_service.check_achievements(current_user)
+        
         flash(f'Congratulations! You completed the goal: "{goal.name}".', 'success')
     else:
         flash('Only active goals can be marked as complete.', 'warning')

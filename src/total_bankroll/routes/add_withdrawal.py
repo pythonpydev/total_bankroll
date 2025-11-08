@@ -3,9 +3,8 @@ from flask_security import login_required, current_user
 from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
-from ..achievements import update_user_streak
+from ..services import AchievementService, BankrollService
 from ..models import db, Drawings
-from ..services import BankrollService
 from ..utils import get_sorted_currencies
 
 add_withdrawal_bp = Blueprint("add_withdrawal", __name__)
@@ -43,7 +42,11 @@ def add_withdrawal():
         current_app.logger.debug(f"Adding withdrawal for user_id: {current_user.id}")
         db.session.add(new_drawing)
         db.session.commit()
-        update_user_streak(current_user)
+        
+        # Update achievement streak
+        achievement_service = AchievementService()
+        achievement_service.update_streak(current_user)
+        
         flash("Withdrawal added successfully!", "success")
         return redirect(url_for("withdrawal.withdrawal"))
     else:

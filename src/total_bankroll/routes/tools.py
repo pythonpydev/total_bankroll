@@ -8,8 +8,7 @@ import math
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SubmitField, SelectField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError
-from ..services import BankrollService
-from ..recommendations import RecommendationEngine
+from ..services import BankrollService, RecommendationService
 import logging
 
 # --- Caching for SPR Data ---
@@ -128,19 +127,30 @@ def poker_stakes_page():
     bankroll_data = service.get_bankroll_breakdown(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
     
-    # Initialize the recommendation engine
-    engine = RecommendationEngine()
-    range_data = engine._calculate_weighted_range(selections, 'cash_games')
-    buy_in_multiple = range_data['average_multiple']
-
     # Load cash game stakes data from JSON
     cash_stakes_json_path = os.path.join(current_app.root_path, 'data', 'cash_game_stakes.json')
     with open(cash_stakes_json_path, 'r') as f:
         cash_stakes_data = json.load(f)
     stakes_list = cash_stakes_data['stakes']
-
-    # Calculate all recommendation messages
-    recommendations = engine.get_cash_game_recommendation_data(selections, total_bankroll, stakes_list)
+    
+    # Initialize the recommendation service and get recommendations
+    rec_service = RecommendationService()
+    recommendations = rec_service.get_cash_game_recommendation(
+        total_bankroll=total_bankroll,
+        risk_tolerance=selections.get('risk_tolerance', 'moderate'),
+        skill_level=selections.get('skill_level', 'intermediate'),
+        game_environment=selections.get('game_environment', 'online'),
+        cash_stakes_list=stakes_list
+    )
+    
+    # Calculate buy-in multiple for table display
+    buy_in_multiple = rec_service.calculate_buy_in_multiple(
+        risk_tolerance=selections.get('risk_tolerance', 'moderate'),
+        skill_level=selections.get('skill_level', 'intermediate'),
+        game_environment=selections.get('game_environment', 'online'),
+        game_type='cash'
+    )
+    
     recommended_stake_index = recommendations['recommended_stake_index']
 
     # Reconstruct the table in the list-of-lists format expected by the template
@@ -176,7 +186,7 @@ def poker_stakes_page():
         total_bankroll=total_bankroll,
         cash_stakes_table=cash_stakes_table,
         **recommendations,
-        bankroll_recommendation=range_data['recommendation_string'],
+        bankroll_recommendation=f"{int(buy_in_multiple)} buy-ins recommended",
         # Pass filter values to template
         game_type=request.args.get('game_type', 'nlhe'),
         skill_level=request.args.get('skill_level', 'tough'),
@@ -191,21 +201,25 @@ def tournament_stakes_page():
     selections = _get_user_selections(request.args)
     site_filter = request.args.get('site_filter', 'all')
     
-    # Initialize the recommendation engine
-    engine = RecommendationEngine()
-
     # Load tournament buy-in data from JSON
     json_path = os.path.join(current_app.root_path, 'data', 'tournament_buy_ins.json')
     with open(json_path, 'r') as f:
         tournament_buy_ins = json.load(f)
 
-    # Calculate range and mean buy-ins
-    range_data = engine._calculate_weighted_range(selections, 'tournaments')
-    mean_buy_ins = range_data['average_multiple']
-
-    service = BankrollService()
-    bankroll_data = service.get_bankroll_breakdown(current_user.id)
+    # Initialize services
+    bankroll_service = BankrollService()
+    rec_service = RecommendationService()
+    
+    bankroll_data = bankroll_service.get_bankroll_breakdown(current_user.id)
     total_bankroll = bankroll_data['total_bankroll']
+    
+    # Calculate buy-in multiple
+    mean_buy_ins = rec_service.calculate_buy_in_multiple(
+        risk_tolerance=selections.get('risk_tolerance', 'moderate'),
+        skill_level=selections.get('skill_level', 'intermediate'),
+        game_environment=selections.get('game_environment', 'online'),
+        game_type=selections.get('game_type', 'mtt')
+    )
 
     # --- Add new columns to tournament_buy_ins data ---
     for site_key, site_data in tournament_buy_ins.items():
@@ -241,7 +255,7 @@ def tournament_stakes_page():
     # First, calculate per-site recommendations to determine the recommended stake for each table.
     for site_key, site_data in tournament_buy_ins.items():
         if 'buy_ins' in site_data:
-            # Pass 1: Populate 'buy_in_dec' and build a map for the recommendation engine.
+            # Pass 1: Populate 'buy_in_dec' and build a map for the recommendation service.
             site_buyins_map = {}
             for item in site_data['buy_ins']:
                 buy_in_str = item.get('buy_in')
@@ -256,8 +270,14 @@ def tournament_stakes_page():
                 except (ValueError, InvalidOperation):
                     item['buy_in_dec'] = None
             
-            # Calculate the recommendation for this specific site.
-            site_recommendations = engine.get_tournament_recommendation_data(selections, total_bankroll, site_buyins_map)
+            # Calculate the recommendation for this specific site using service
+            site_recommendations = rec_service.get_tournament_recommendation(
+                total_bankroll=total_bankroll,
+                risk_tolerance=selections.get('risk_tolerance', 'moderate'),
+                skill_level=selections.get('skill_level', 'intermediate'),
+                game_type=selections.get('game_type', 'mtt'),
+                tournament_stakes_map=site_buyins_map
+            )
             site_data['recommendations'] = site_recommendations
             recommended_stake_dec = site_recommendations.get('recommended_tournament_stake_dec')
 
@@ -299,9 +319,13 @@ def tournament_stakes_page():
             if buy_in_dec is not None and buy_in_str is not None and buy_in_dec not in global_buyins_map:
                 global_buyins_map[buy_in_dec] = buy_in_str
 
-    # Calculate recommendations using the new engine
-    global_recommendations = engine.get_tournament_recommendation_data(
-        selections, total_bankroll, global_buyins_map
+    # Calculate global recommendations using the service
+    global_recommendations = rec_service.get_tournament_recommendation(
+        total_bankroll=total_bankroll,
+        risk_tolerance=selections.get('risk_tolerance', 'moderate'),
+        skill_level=selections.get('skill_level', 'intermediate'),
+        game_type=selections.get('game_type', 'mtt'),
+        tournament_stakes_map=global_buyins_map
     )
 
     return render_template('tools/tournament_stakes.html',
@@ -310,7 +334,7 @@ def tournament_stakes_page():
                            skill_level=request.args.get('skill_level', 'tough'),
                            risk_tolerance=request.args.get('risk_tolerance', 'conservative'),
                            game_environment=request.args.get('game_environment', 'online'),
-                           tournament_bankroll_recommendation=range_data['recommendation_string'],
+                           tournament_bankroll_recommendation=f"{int(mean_buy_ins)} buy-ins recommended",
                            **global_recommendations,
                            site_filter=site_filter,
                            tournament_buy_ins=tournament_buy_ins
