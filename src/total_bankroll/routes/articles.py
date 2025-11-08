@@ -3,11 +3,13 @@ from flask_security import login_required, current_user
 from sqlalchemy import or_
 from ..models import db, Article, UserReadArticle, Tag
 from ..services import AchievementService
+from ..extensions import cache
 
 articles_bp = Blueprint('articles', __name__, url_prefix='/strategy/articles')
 
 @articles_bp.route('/')
 @login_required
+@cache.cached(timeout=3600, query_string=True)  # Cache for 1 hour, vary by query params
 def index():
     """Display a list of articles."""
     page = request.args.get('page', 1, type=int)
@@ -44,6 +46,7 @@ def index():
 
 @articles_bp.route('/tag/<string:tag_name>')
 @login_required
+@cache.cached(timeout=3600, query_string=True)  # Cache for 1 hour
 def by_tag(tag_name):
     """Display articles filtered by a specific tag."""
     tag = Tag.query.filter_by(name=tag_name).first_or_404()

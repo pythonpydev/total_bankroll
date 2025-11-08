@@ -17,6 +17,7 @@ from decimal import Decimal
 from datetime import datetime, UTC
 from src.total_bankroll.services.base import BaseService
 from src.total_bankroll.models import Currency
+from src.total_bankroll.extensions import cache
 
 
 class CurrencyService(BaseService):
@@ -31,6 +32,7 @@ class CurrencyService(BaseService):
         """Initialize the CurrencyService."""
         super().__init__()
     
+    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def convert(
         self,
         amount: Decimal,
@@ -67,6 +69,7 @@ class CurrencyService(BaseService):
         # Placeholder - will implement with actual rates
         return amount
     
+    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def get_exchange_rate(self, from_currency: str, to_currency: str) -> Decimal:
         """
         Get the current exchange rate between two currencies.
@@ -95,8 +98,13 @@ class CurrencyService(BaseService):
         # TODO: Implement exchange rate API integration
         # Uses the EXCHANGE_RATE_API_KEY from config
         self._log_info("Updating exchange rates from API")
+        # Clear currency caches when rates are updated
+        cache.delete_memoized(self.convert)
+        cache.delete_memoized(self.get_exchange_rate)
+        cache.delete_memoized(self.get_all_currencies)
         return False
     
+    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def get_all_currencies(self) -> Dict[str, Dict[str, any]]:
         """
         Get information about all supported currencies.

@@ -20,6 +20,7 @@ from src.total_bankroll.models import (
     User, Sites, Assets, Deposits, Drawings,
     SiteHistory, AssetHistory, Currency, db
 )
+from src.total_bankroll.extensions import cache
 
 
 class BankrollService(BaseService):
@@ -34,9 +35,25 @@ class BankrollService(BaseService):
         """Initialize the BankrollService."""
         super().__init__()
     
+    def _invalidate_cache(self, user_id: int):
+        """
+        Invalidate cached bankroll data for a user.
+        
+        Called after any mutation (add/update/delete) to ensure fresh data.
+        
+        Args:
+            user_id: The user's ID
+        """
+        cache.delete_memoized(self.calculate_total_bankroll, self, user_id)
+        cache.delete_memoized(self.get_bankroll_breakdown, self, user_id)
+        self._log_debug(f"Invalidated bankroll cache for user {user_id}")
+    
+    @cache.memoize(timeout=300)  # Cache for 5 minutes
     def calculate_total_bankroll(self, user_id: int, currency_code: str = 'USD') -> Decimal:
         """
         Calculate the total bankroll for a user in the specified currency.
+        
+        Cached for 5 minutes to improve dashboard performance.
         
         Args:
             user_id: The user's ID
@@ -55,6 +72,7 @@ class BankrollService(BaseService):
         data = self.get_bankroll_breakdown(user_id)
         return data['total_bankroll']
     
+    @cache.memoize(timeout=300)  # Cache for 5 minutes
     def get_bankroll_breakdown(self, user_id: int) -> Dict[str, Decimal]:
         """
         Get complete bankroll breakdown for a user.
@@ -296,6 +314,7 @@ class BankrollService(BaseService):
             
             self.add(site)
             if self.commit():
+                self._invalidate_cache(user_id)
                 return site
             return None
         except Exception as e:
@@ -327,7 +346,10 @@ class BankrollService(BaseService):
             if 'display_order' in site_data:
                 site.display_order = site_data['display_order']
             
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(site.user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to update site: {str(e)}")
             self.rollback()
@@ -351,13 +373,18 @@ class BankrollService(BaseService):
                 self._log_error(f"Site {site_id} not found")
                 return False
             
+            user_id = site.user_id
+            
             # Delete associated history first
             db.session.query(SiteHistory)\
                 .filter(SiteHistory.site_id == site_id).delete()
             
             # Delete the site
             self.delete(site)
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to delete site: {str(e)}")
             self.rollback()
@@ -391,6 +418,7 @@ class BankrollService(BaseService):
             
             self.add(asset)
             if self.commit():
+                self._invalidate_cache(user_id)
                 return asset
             return None
         except Exception as e:
@@ -422,7 +450,10 @@ class BankrollService(BaseService):
             if 'display_order' in asset_data:
                 asset.display_order = asset_data['display_order']
             
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(asset.user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to update asset: {str(e)}")
             self.rollback()
@@ -446,13 +477,18 @@ class BankrollService(BaseService):
                 self._log_error(f"Asset {asset_id} not found")
                 return False
             
+            user_id = asset.user_id
+            
             # Delete associated history first
             db.session.query(AssetHistory)\
                 .filter(AssetHistory.asset_id == asset_id).delete()
             
             # Delete the asset
             self.delete(asset)
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to delete asset: {str(e)}")
             self.rollback()
@@ -484,7 +520,10 @@ class BankrollService(BaseService):
             )
             
             self.add(deposit)
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to record deposit: {str(e)}")
             self.rollback()
@@ -516,7 +555,10 @@ class BankrollService(BaseService):
             )
             
             self.add(withdrawal)
-            return self.commit()
+            if self.commit():
+                self._invalidate_cache(user_id)
+                return True
+            return False
         except Exception as e:
             self._log_error(f"Failed to record withdrawal: {str(e)}")
             self.rollback()
