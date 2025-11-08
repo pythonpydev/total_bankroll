@@ -6,8 +6,8 @@ Tests the common functionality provided by BaseService.
 
 import pytest
 from decimal import Decimal
-from total_bankroll.services.base import BaseService
-from total_bankroll.models import db
+from src.total_bankroll.services.base import BaseService
+from src.total_bankroll.models import db
 
 
 class TestService(BaseService):
@@ -68,12 +68,12 @@ class TestBankrollService:
     
     def test_bankroll_service_imports(self):
         """Test that BankrollService can be imported."""
-        from total_bankroll.services import BankrollService
+        from src.total_bankroll.services import BankrollService
         assert BankrollService is not None
     
     def test_bankroll_service_initialization(self, app):
         """Test that BankrollService initializes."""
-        from total_bankroll.services import BankrollService
+        from src.total_bankroll.services import BankrollService
         
         with app.app_context():
             service = BankrollService()
@@ -83,7 +83,7 @@ class TestBankrollService:
     
     def test_calculate_total_bankroll_returns_decimal(self, app):
         """Test that calculate_total_bankroll returns a Decimal."""
-        from total_bankroll.services import BankrollService
+        from src.total_bankroll.services import BankrollService
         
         with app.app_context():
             service = BankrollService()
@@ -96,12 +96,12 @@ class TestCurrencyService:
     
     def test_currency_service_imports(self):
         """Test that CurrencyService can be imported."""
-        from total_bankroll.services import CurrencyService
+        from src.total_bankroll.services import CurrencyService
         assert CurrencyService is not None
     
     def test_currency_service_initialization(self, app):
         """Test that CurrencyService initializes."""
-        from total_bankroll.services import CurrencyService
+        from src.total_bankroll.services import CurrencyService
         
         with app.app_context():
             service = CurrencyService()
@@ -111,7 +111,7 @@ class TestCurrencyService:
     
     def test_convert_same_currency(self, app):
         """Test converting between same currency returns same amount."""
-        from total_bankroll.services import CurrencyService
+        from src.total_bankroll.services import CurrencyService
         
         with app.app_context():
             service = CurrencyService()
@@ -125,12 +125,12 @@ class TestRecommendationService:
     
     def test_recommendation_service_imports(self):
         """Test that RecommendationService can be imported."""
-        from total_bankroll.services import RecommendationService
+        from src.total_bankroll.services import RecommendationService
         assert RecommendationService is not None
     
     def test_recommendation_service_initialization(self, app):
         """Test that RecommendationService initializes."""
-        from total_bankroll.services import RecommendationService
+        from src.total_bankroll.services import RecommendationService
         
         with app.app_context():
             service = RecommendationService()
@@ -144,12 +144,12 @@ class TestAchievementService:
     
     def test_achievement_service_imports(self):
         """Test that AchievementService can be imported."""
-        from total_bankroll.services import AchievementService
+        from src.total_bankroll.services import AchievementService
         assert AchievementService is not None
     
     def test_achievement_service_initialization(self, app):
         """Test that AchievementService initializes."""
-        from total_bankroll.services import AchievementService
+        from src.total_bankroll.services import AchievementService
         
         with app.app_context():
             service = AchievementService()

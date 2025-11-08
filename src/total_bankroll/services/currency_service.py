@@ -15,8 +15,8 @@ in the user's preferred currency.
 from typing import Optional, Dict
 from decimal import Decimal
 from datetime import datetime, UTC
-from total_bankroll.services.base import BaseService
-from total_bankroll.models import Currency
+from src.total_bankroll.services.base import BaseService
+from src.total_bankroll.models import Currency
 
 
 class CurrencyService(BaseService):

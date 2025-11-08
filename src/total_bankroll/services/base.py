@@ -12,7 +12,7 @@ Service Layer Pattern Benefits:
 - Maintainability: Changes to business logic don't require route changes
 
 Usage:
-    from total_bankroll.services.base import BaseService
+    from src.total_bankroll.services.base import BaseService
     
     class MyService(BaseService):
         def my_business_logic(self):
@@ -22,7 +22,7 @@ Usage:
 
 from typing import Optional, Any, Dict, List
 from flask import current_app
-from total_bankroll.models import db
+from src.total_bankroll.models import db
 
 
 class BaseService:

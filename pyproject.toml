@@ -57,8 +57,51 @@ extend-exclude = '''
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src/total_bankroll"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
 
 [project.optional-dependencies]
 test = [
-    "pytest",
+    "pytest>=8.0.0",
+    "pytest-flask>=1.3.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "factory-boy>=3.3.0",
+    "faker>=22.0.0",
 ]
