@@ -9,8 +9,15 @@ def vite_asset(filename):
     In development, it points to the Vite dev server.
     In production, it reads the manifest.json to get the hashed filename.
     """
+    # Check if we're in development mode with Vite dev server running
+    vite_dev_server = os.environ.get('VITE_DEV_SERVER', 'false').lower() == 'true'
+    
+    if vite_dev_server:
+        # In development, point to Vite dev server
+        return f'http://localhost:5173/{filename}'
+    
     # In production, read from manifest.json
-    manifest_path = os.path.join(current_app.static_folder, 'dist', '.vite', 'manifest.json')
+    manifest_path = os.path.join(current_app.static_folder, 'assets', '.vite', 'manifest.json')
     
     if not os.path.exists(manifest_path):
         raise FileNotFoundError(f"Vite manifest.json not found at {manifest_path}. Did you run 'npm run build'?")
@@ -24,7 +31,7 @@ def vite_asset(filename):
 
     # The manifest value contains the actual output path
     output_filename = manifest[filename]['file']
-    return url_for('static', filename=f'dist/{output_filename}')
+    return url_for('static', filename=f'assets/{output_filename}')
 
 def init_vite_asset_helper(app):
     """

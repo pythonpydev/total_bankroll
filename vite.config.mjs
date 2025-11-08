@@ -1,20 +1,30 @@
-import { defineConfig } from 'vite';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-export default defineConfig({
-  root: path.resolve(__dirname, 'src/total_bankroll/templates/core'),
-  base: '/static/dist/',
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
+  root: path.resolve(__dirname, 'src/total_bankroll/frontend'),
+  base: '/static/assets/',
   build: {
-    outDir: path.resolve(__dirname, '../../static/dist'),
-    assetsDir: '',
+    outDir: path.resolve(__dirname, 'src/total_bankroll/static/assets'),
+    emptyOutDir: true,
     manifest: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'src/total_bankroll/templates/core/index.html'),
+        main: path.resolve(__dirname, 'src/total_bankroll/frontend/main.js'),
       },
     },
   },
   server: {
     port: 5173,
+    strictPort: true,
+    cors: true,
   },
-});
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src/total_bankroll/frontend'),
+    },
+  },
+};

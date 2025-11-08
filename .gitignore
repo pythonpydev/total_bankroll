@@ -124,3 +124,8 @@ dmypy.json
 .aider*
 .env.bak
 total_bankroll_dev_backup_*.tar.gz
+
+# Node modules and build artifacts
+node_modules/
+package-lock.json
+.vite/
