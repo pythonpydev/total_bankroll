@@ -1,8 +1,23 @@
 # StakeEasy.net Implementation Task List
 
 **Generated:** 2025-11-05  
+**Last Updated:** 2025-11-08  
 **Source:** Architecture & Technology Stack Plan  
-**Status:** Ready for Implementation  
+**Status:** In Progress - Phase 2 Complete  
+
+---
+
+## ⚠️ IMPORTANT: Task Administration
+
+**This file MUST be updated after EVERY task completion:**
+1. Mark task as completed with ✅ status
+2. Update "actual" effort vs estimated
+3. Add completion date
+4. Link to completion reports in `.specify/memory/`
+5. Update production deployment status if applicable
+6. Mark the next task with ⏭️ **NEXT TASK** indicator
+
+**This is critical for project tracking and should be automated in future workflows.**
 
 ---
 
@@ -228,125 +243,142 @@
 
 ### TASK-1002: Complete Vite Configuration
 - **Priority:** 🟠 P1
-- **Effort:** 4 hours
+- **Effort:** 4 hours (actual: 3 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Implement proper Vite build configuration
 - **Acceptance Criteria:**
-  - [ ] Edit `vite.config.js` with proper configuration
-  - [ ] Set entry point: `src/total_bankroll/frontend/main.js`
-  - [ ] Set output: `src/total_bankroll/static/assets`
-  - [ ] Enable manifest generation
-  - [ ] Configure dev server port: 5173
-  - [ ] Test build: `npm run build`
-  - [ ] Verify manifest.json created
-  - [ ] Test dev server: `npm run dev`
-  - [ ] Update `vite_asset_helper.py` to read manifest
-  - [ ] Test in browser (dev and production modes)
-  - [ ] Commit: "feat(build): Complete Vite configuration"
+  - [x] Edit `vite.config.js` with proper configuration
+  - [x] Set entry point: `src/total_bankroll/frontend/main.js`
+  - [x] Set output: `src/total_bankroll/static/assets`
+  - [x] Enable manifest generation
+  - [x] Configure dev server port: 5173
+  - [x] Test build: `npm run build`
+  - [x] Verify manifest.json created
+  - [x] Test dev server: `npm run dev`
+  - [x] Update `vite_asset_helper.py` to read manifest
+  - [x] Test in browser (dev and production modes)
+  - [x] Commit: "feat(build): Complete Vite configuration"
 - **Related Files:**
-  - `vite.config.js` (edit)
-  - `src/total_bankroll/vite_asset_helper.py` (edit)
+  - `vite.config.mjs` (edited)
+  - `src/total_bankroll/vite_asset_helper.py` (edited)
+  - `.specify/memory/TASK-1002-completion.md` (completion report)
+  - `.specify/memory/TASK-1002-production-deployment.md` (deployment guide)
 - **Dependencies:** None
 - **Reference:** Section 2.8 of plan.md
+- **Production Deployment:** ✅ Deployed and verified (2025-11-08)
 
 ---
 
 ### TASK-1003: Add Database Indexes for Performance
 - **Priority:** 🔴 P0
-- **Effort:** 2 hours
+- **Effort:** 2 hours (actual: 1.5 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Add composite indexes to optimize queries
 - **Acceptance Criteria:**
-  - [ ] Create migration: `flask db migrate -m "Add performance indexes"`
-  - [ ] Add index: `(user_id, recorded_at)` on `site_history`
-  - [ ] Add index: `(user_id, recorded_at)` on `asset_history`
-  - [ ] Add index: `(user_id, date)` on `deposits`
-  - [ ] Add index: `(user_id, date)` on `drawings`
-  - [ ] Review migration SQL
-  - [ ] Test migration locally: `flask db upgrade`
-  - [ ] Test app performance (dashboard load time)
-  - [ ] Rollback test: `flask db downgrade`
-  - [ ] Re-apply: `flask db upgrade`
-  - [ ] Commit migration script
+  - [x] Create migration: `flask db migrate -m "Add performance indexes"`
+  - [x] Add index: `(user_id, recorded_at)` on `site_history`
+  - [x] Add index: `(user_id, recorded_at)` on `asset_history`
+  - [x] Add index: `(user_id, date)` on `deposits`
+  - [x] Add index: `(user_id, date)` on `drawings`
+  - [x] Review migration SQL
+  - [x] Test migration locally: `flask db upgrade`
+  - [x] Test app performance (dashboard load time)
+  - [x] Rollback test: `flask db downgrade`
+  - [x] Re-apply: `flask db upgrade`
+  - [x] Commit migration script
 - **Related Files:**
-  - `migrations/versions/XXXXX_add_performance_indexes.py` (new)
+  - `migrations/versions/1e063a8cc9f8_add_performance_indexes_for_common_.py` (created)
+  - `.specify/memory/TASK-1003-completion.md` (completion report)
+  - `.specify/memory/TASK-1003-production-deployment.md` (deployment guide)
 - **Dependencies:** TASK-0001
 - **Reference:** Section 4.1 of plan.md
+- **Production Deployment:** ✅ Deployed and verified (2025-11-08)
 
 ---
 
 ### TASK-1004: Fix Rate Limiter IP Detection
 - **Priority:** 🔴 P0
-- **Effort:** 1 hour
+- **Effort:** 1 hour (actual: 45 minutes)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Correct IP detection for proxied requests
 - **Acceptance Criteria:**
-  - [ ] Edit `src/total_bankroll/extensions.py`
-  - [ ] Create function to extract real IP from X-Forwarded-For
-  - [ ] Handle comma-separated IP lists
-  - [ ] Fallback to `request.remote_addr`
-  - [ ] Update Limiter initialization
-  - [ ] Test locally (won't see difference)
-  - [ ] Add logging to verify IP extraction
-  - [ ] Deploy to production
-  - [ ] Check logs for correct IP addresses
-  - [ ] Commit: "fix(security): Correct rate limiter IP detection for proxy"
+  - [x] Edit `src/total_bankroll/extensions.py`
+  - [x] Create function to extract real IP from X-Forwarded-For
+  - [x] Handle comma-separated IP lists
+  - [x] Fallback to `request.remote_addr`
+  - [x] Update Limiter initialization
+  - [x] Test locally (won't see difference)
+  - [x] Add logging to verify IP extraction
+  - [x] Deploy to production
+  - [x] Check logs for correct IP addresses
+  - [x] Commit: "fix(security): Correct rate limiter IP detection for proxy"
 - **Related Files:**
-  - `src/total_bankroll/extensions.py` (edit)
+  - `src/total_bankroll/extensions.py` (edited)
+  - `.specify/memory/TASK-1004-completion.md` (completion report)
 - **Dependencies:** None
 - **Reference:** Section 2.7 of plan.md
+- **Production Deployment:** ✅ Deployed and verified (2025-11-08)
 
 ---
 
 ### TASK-1005: Add Security Headers with Flask-Talisman
 - **Priority:** 🟠 P1
-- **Effort:** 2 hours
+- **Effort:** 2 hours (actual: 1 hour)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Install and configure Flask-Talisman for security headers
 - **Acceptance Criteria:**
-  - [ ] Add to `requirements.in`: `Flask-Talisman`
-  - [ ] Run: `pip-compile requirements.in`
-  - [ ] Install: `pip install -r requirements.txt`
-  - [ ] Edit `src/total_bankroll/__init__.py`
-  - [ ] Import and initialize Talisman
-  - [ ] Configure CSP (Content Security Policy)
-  - [ ] Whitelist necessary CDNs (Bootstrap, etc.)
-  - [ ] Test locally: `flask run`
-  - [ ] Check browser console for CSP errors
-  - [ ] Adjust CSP rules as needed
-  - [ ] Verify headers with browser dev tools
-  - [ ] Commit: "feat(security): Add Flask-Talisman for security headers"
+  - [x] Add to `requirements.in`: `Flask-Talisman`
+  - [x] Run: `pip-compile requirements.in`
+  - [x] Install: `pip install -r requirements.txt`
+  - [x] Edit `src/total_bankroll/__init__.py`
+  - [x] Import and initialize Talisman
+  - [x] Configure CSP (Content Security Policy)
+  - [x] Whitelist necessary CDNs (Bootstrap, etc.)
+  - [x] Test locally: `flask run`
+  - [x] Check browser console for CSP errors
+  - [x] Adjust CSP rules as needed
+  - [x] Verify headers with browser dev tools
+  - [x] Commit: "feat(security): Add Flask-Talisman for security headers"
 - **Related Files:**
-  - `requirements.in` (edit)
-  - `requirements.txt` (regenerate)
-  - `src/total_bankroll/__init__.py` (edit)
+  - `requirements.in` (edited)
+  - `requirements.txt` (regenerated)
+  - `src/total_bankroll/__init__.py` (edited)
 - **Dependencies:** None
 - **Reference:** Section 3.3 of plan.md
+- **Production Deployment:** ✅ Deployed and verified (2025-11-08)
 
 ---
 
 ### TASK-1006: Deploy Phase 1 Changes
 - **Priority:** 🔴 P0
-- **Effort:** 1 hour (includes monitoring)
+- **Effort:** 1 hour (actual: 2 hours including monitoring)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Deploy foundation fixes to production
 - **Acceptance Criteria:**
-  - [ ] Run environment parity check: `python scripts/check_env_parity.py`
-  - [ ] Build assets: `npm run build`
-  - [ ] Run tests: `pytest tests/`
-  - [ ] Run linter: `flake8 src/`
-  - [ ] Commit all changes
-  - [ ] Push to GitHub
-  - [ ] Wait for CI/CD to pass
-  - [ ] Use deployment script: `./scripts/deploy.sh`
-  - [ ] Monitor for 30 minutes
-  - [ ] Check error logs
-  - [ ] Test critical paths
-  - [ ] Mark deployment as successful
+  - [x] Run environment parity check: `python scripts/check_env_parity.py`
+  - [x] Build assets: `npm run build`
+  - [x] Run tests: `pytest tests/`
+  - [x] Run linter: `flake8 src/`
+  - [x] Commit all changes
+  - [x] Push to GitHub
+  - [x] Wait for CI/CD to pass
+  - [x] Use deployment script: `./scripts/deploy.sh`
+  - [x] Monitor for 30 minutes
+  - [x] Check error logs
+  - [x] Test critical paths
+  - [x] Mark deployment as successful
 - **Related Files:**
   - All Phase 1 changes
+  - `.specify/memory/TASK-1006-completion.md` (completion report)
 - **Dependencies:** TASK-1001 through TASK-1005, TASK-0003
 - **Reference:** Section 7.2 of plan.md
+- **Production Deployment:** ✅ Completed successfully (2025-11-08)
+- **Key Note:** Deployment automation script created for future deployments
 
 ---
 
@@ -360,135 +392,157 @@
 
 ### TASK-2001: Create Services Directory Structure
 - **Priority:** 🟠 P1
-- **Effort:** 4 hours
+- **Effort:** 4 hours (actual: 2 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Setup service layer architecture
 - **Acceptance Criteria:**
-  - [ ] Create directory: `src/total_bankroll/services/`
-  - [ ] Create: `src/total_bankroll/services/__init__.py`
-  - [ ] Create: `src/total_bankroll/services/base.py` (base service class)
-  - [ ] Create stub files for each service:
+  - [x] Create directory: `src/total_bankroll/services/`
+  - [x] Create: `src/total_bankroll/services/__init__.py`
+  - [x] Create: `src/total_bankroll/services/base.py` (base service class)
+  - [x] Create stub files for each service:
     - `bankroll_service.py`
     - `recommendation_service.py`
     - `achievement_service.py`
     - `currency_service.py`
-  - [ ] Document service layer pattern in docstrings
-  - [ ] Create example service with basic CRUD
-  - [ ] Write unit test for example service
-  - [ ] Commit: "feat(arch): Create service layer structure"
+  - [x] Document service layer pattern in docstrings
+  - [x] Create example service with basic CRUD
+  - [x] Write unit test for example service
+  - [x] Commit: "feat(arch): Create service layer structure"
 - **Related Files:**
   - `src/total_bankroll/services/` (new directory)
   - Multiple new .py files
 - **Dependencies:** TASK-1006 (Phase 1 deployed)
 - **Reference:** Section 3.1 of plan.md
+- **Note:** Completed as part of TASK-2002 implementation
 
 ---
 
 ### TASK-2002: Extract BankrollService
 - **Priority:** 🟠 P1
-- **Effort:** 8 hours
+- **Effort:** 8 hours (actual: 6 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Move bankroll calculation logic to service
 - **Acceptance Criteria:**
-  - [ ] Create: `src/total_bankroll/services/bankroll_service.py`
-  - [ ] Implement: `calculate_total_bankroll(user_id)`
-  - [ ] Implement: `get_bankroll_breakdown(user_id)`
-  - [ ] Implement: `calculate_profit(user_id)`
-  - [ ] Implement: `add_site(user_id, site_data)`
-  - [ ] Implement: `update_site(site_id, site_data)`
-  - [ ] Implement: `delete_site(site_id)`
-  - [ ] Same for assets
-  - [ ] Write unit tests for all methods
-  - [ ] Mock database in tests
-  - [ ] Refactor home route to use service
-  - [ ] Refactor sites route to use service
-  - [ ] Run tests: `pytest tests/`
-  - [ ] Commit: "refactor(bankroll): Extract BankrollService"
+  - [x] Create: `src/total_bankroll/services/bankroll_service.py`
+  - [x] Implement: `calculate_total_bankroll(user_id)`
+  - [x] Implement: `get_bankroll_breakdown(user_id)`
+  - [x] Implement: `calculate_profit(user_id)`
+  - [x] Implement: `add_site(user_id, site_data)`
+  - [x] Implement: `update_site(site_id, site_data)`
+  - [x] Implement: `delete_site(site_id)`
+  - [x] Same for assets
+  - [x] Write unit tests for all methods
+  - [x] Mock database in tests
+  - [x] Refactor home route to use service
+  - [x] Refactor sites route to use service
+  - [x] Run tests: `pytest tests/`
+  - [x] Commit: "refactor(bankroll): Extract BankrollService"
 - **Related Files:**
-  - `src/total_bankroll/services/bankroll_service.py` (new)
-  - `src/total_bankroll/routes/home.py` (edit)
-  - `src/total_bankroll/routes/poker_sites.py` (edit)
-  - `src/total_bankroll/routes/assets.py` (edit)
-  - `tests/unit/test_bankroll_service.py` (new)
+  - `src/total_bankroll/services/bankroll_service.py` (created)
+  - `src/total_bankroll/routes/home.py` (edited)
+  - `src/total_bankroll/routes/poker_sites.py` (edited)
+  - `src/total_bankroll/routes/assets.py` (edited)
+  - `tests/unit/test_bankroll_service.py` (created)
+  - `.specify/memory/TASK-2002-completion.md` (completion report)
 - **Dependencies:** TASK-2001
 - **Reference:** Section 3.1 of plan.md
+- **Note:** Includes comprehensive service with 13 methods, ~90% test coverage
 
 ---
 
 ### TASK-2003: Extract RecommendationService
 - **Priority:** 🟠 P1
-- **Effort:** 6 hours
+- **Effort:** 6 hours (actual: 4 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Move recommendation engine to service
 - **Acceptance Criteria:**
-  - [ ] Review existing: `src/total_bankroll/recommendations.py`
-  - [ ] Create: `src/total_bankroll/services/recommendation_service.py`
-  - [ ] Refactor RecommendationEngine as service
-  - [ ] Improve type hints
-  - [ ] Add docstrings for public methods
-  - [ ] Write unit tests
-  - [ ] Mock data loading
-  - [ ] Test edge cases (zero bankroll, very high bankroll)
-  - [ ] Refactor routes to use service
-  - [ ] Run tests: `pytest tests/`
-  - [ ] Commit: "refactor(recommendations): Extract RecommendationService"
+  - [x] Review existing: `src/total_bankroll/recommendations.py`
+  - [x] Create: `src/total_bankroll/services/recommendation_service.py`
+  - [x] Refactor RecommendationEngine as service
+  - [x] Improve type hints
+  - [x] Add docstrings for public methods
+  - [x] Write unit tests
+  - [x] Mock data loading
+  - [x] Test edge cases (zero bankroll, very high bankroll)
+  - [x] Refactor routes to use service
+  - [x] Run tests: `pytest tests/`
+  - [x] Commit: "refactor(recommendations): Extract RecommendationService"
 - **Related Files:**
-  - `src/total_bankroll/services/recommendation_service.py` (new)
-  - `src/total_bankroll/recommendations.py` (deprecate)
-  - Route files using recommendations (edit)
-  - `tests/unit/test_recommendation_service.py` (new)
+  - `src/total_bankroll/services/recommendation_service.py` (created)
+  - `src/total_bankroll/recommendations.py` (deprecated)
+  - Route files using recommendations (edited)
+  - `tests/unit/test_recommendation_service.py` (created)
 - **Dependencies:** TASK-2001
 - **Reference:** Section 3.1 of plan.md
+- **Note:** Completed as part of TASK-2002, ~95% test coverage
 
 ---
 
 ### TASK-2004: Extract AchievementService
 - **Priority:** 🟡 P2
-- **Effort:** 6 hours
+- **Effort:** 6 hours (actual: 4 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Move achievement tracking to service
 - **Acceptance Criteria:**
-  - [ ] Create: `src/total_bankroll/services/achievement_service.py`
-  - [ ] Implement: `check_achievements(user_id)`
-  - [ ] Implement: `unlock_achievement(user_id, achievement_key)`
-  - [ ] Implement: `get_user_achievements(user_id)`
-  - [ ] Implement: `get_progress(user_id, achievement_key)`
-  - [ ] Write unit tests
-  - [ ] Refactor achievement routes to use service
-  - [ ] Test achievement unlocking flow
-  - [ ] Run tests: `pytest tests/`
-  - [ ] Commit: "refactor(achievements): Extract AchievementService"
+  - [x] Create: `src/total_bankroll/services/achievement_service.py`
+  - [x] Implement: `check_achievements(user_id)`
+  - [x] Implement: `unlock_achievement(user_id, achievement_key)`
+  - [x] Implement: `get_user_achievements(user_id)`
+  - [x] Implement: `get_progress(user_id, achievement_key)`
+  - [x] Write unit tests
+  - [x] Refactor achievement routes to use service
+  - [x] Test achievement unlocking flow
+  - [x] Run tests: `pytest tests/`
+  - [x] Commit: "refactor(achievements): Extract AchievementService"
 - **Related Files:**
-  - `src/total_bankroll/services/achievement_service.py` (new)
-  - `src/total_bankroll/routes/achievements.py` (edit)
-  - `tests/unit/test_achievement_service.py` (new)
+  - `src/total_bankroll/services/achievement_service.py` (created)
+  - `src/total_bankroll/routes/achievements.py` (edited)
+  - `tests/unit/test_achievement_service.py` (created)
 - **Dependencies:** TASK-2001
 - **Reference:** Section 3.1 of plan.md
+- **Note:** Completed as part of TASK-2002, ~90% test coverage
 
 ---
 
 ### TASK-2005: Update Tests for Services
 - **Priority:** 🟠 P1
-- **Effort:** 8 hours
+- **Effort:** 8 hours (actual: 5.5 hours)
 - **Assignee:** Developer
+- **Status:** ✅ **COMPLETED** (2025-11-08)
 - **Description:** Comprehensive test coverage for service layer
 - **Acceptance Criteria:**
-  - [ ] Update `tests/conftest.py` with service fixtures
-  - [ ] Add factory fixtures (Factory Boy)
-  - [ ] Write integration tests for each service
-  - [ ] Test service interactions
-  - [ ] Test error handling
-  - [ ] Test edge cases
-  - [ ] Aim for >90% coverage on services
-  - [ ] Run: `pytest tests/ --cov=src/total_bankroll/services --cov-report=html`
-  - [ ] Review coverage report
-  - [ ] Add missing tests
-  - [ ] Commit: "test(services): Comprehensive service layer tests"
+  - [x] Update `tests/conftest.py` with service fixtures
+  - [x] Add factory fixtures (Factory Boy)
+  - [x] Write integration tests for each service
+  - [x] Test service interactions
+  - [x] Test error handling
+  - [x] Test edge cases
+  - [x] Aim for >90% coverage on services
+  - [x] Run: `pytest tests/ --cov=src/total_bankroll/services --cov-report=html`
+  - [x] Review coverage report
+  - [x] Add missing tests
+  - [x] Commit: "test(services): Comprehensive service layer tests"
 - **Related Files:**
-  - `tests/conftest.py` (edit)
-  - Multiple test files (new/edit)
+  - `tests/conftest.py` (edited)
+  - `tests/factories.py` (created)
+  - `tests/services/test_bankroll_service.py` (created - 390+ lines)
+  - `tests/services/test_recommendation_service.py` (created - 380+ lines)
+  - `tests/services/test_achievement_service.py` (created - 400+ lines)
+  - `tests/services/test_service_suite.py` (created - 340+ lines)
+  - `pyproject.toml` (updated with test configuration)
+  - `.specify/memory/TASK-2005_COMPLETION_REPORT.md` (completion report)
+  - `.specify/memory/TASK-2005_FINAL_SUMMARY.md` (final summary)
 - **Dependencies:** TASK-2002, TASK-2003, TASK-2004
 - **Reference:** Section 4.2 of plan.md
+- **Test Coverage Achieved:**
+  - BankrollService: ~90% (31 test cases)
+  - RecommendationService: ~95% (22 test cases)
+  - AchievementService: ~90% (28 test cases)
+  - Overall: 85-90% coverage, 81 total test cases
 
 ---
 
@@ -496,6 +550,7 @@
 - **Priority:** 🟠 P1
 - **Effort:** 1 hour
 - **Assignee:** Developer
+- **Status:** ⏭️ **NEXT TASK** - Ready for deployment
 - **Description:** Deploy service layer refactoring
 - **Acceptance Criteria:**
   - [ ] Run environment parity check
@@ -513,6 +568,7 @@
   - All Phase 2 changes
 - **Dependencies:** TASK-2005
 - **Reference:** Section 7.2 of plan.md
+- **Note:** All Phase 2 tasks (TASK-2001 through TASK-2005) are complete and tested locally. Ready for production deployment.
 
 ---
 
