@@ -5,7 +5,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  root: path.resolve(__dirname, 'src/total_bankroll/frontend'),
+  // Don't set root when using library mode with JS entry
   base: '/static/assets/',
   build: {
     outDir: path.resolve(__dirname, 'src/total_bankroll/static/assets'),
