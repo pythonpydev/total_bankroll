@@ -621,7 +621,7 @@
 - **Priority:** 🟠 P1
 - **Effort:** 6 hours (actual: 2 hours)
 - **Assignee:** Developer
-- **Status:** ✅ **COMPLETED** (2025-11-08)
+- **Status:** ✅ **COMPLETED** (2025-11-08) | ✅ **DEPLOYED** (2025-11-08)
 - **Description:** Add caching layer to application
 - **Acceptance Criteria:**
   - [x] Add to `requirements.in`: `Flask-Caching` *(Already done in TASK-3001)*
@@ -638,12 +638,13 @@
   - `src/total_bankroll/services/bankroll_service.py` (edited - added caching)
   - `src/total_bankroll/services/currency_service.py` (edited - added caching)
   - `src/total_bankroll/routes/articles.py` (edited - added route caching)
-  - `test_caching.py` (created - verification tests)
+  - `test_caching.py` (created - verification tests, removed from repo)
   - `.specify/memory/TASK-3002-COMPLETION.md` (completion report)
+  - `.specify/memory/TASK-3002-DEPLOYMENT-GUIDE.md` (deployment guide)
 - **Dependencies:** TASK-3001
 - **Reference:** Section 3.2 of plan.md
 - **Performance Impact:** ~90% reduction in dashboard load time, near-instant currency conversions
-- **Production Deployment:** Ready for deployment (SimpleCache backend)
+- **Production Deployment:** ✅ Deployed and verified (2025-11-08) - Cache working correctly
 
 ---
 

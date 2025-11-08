@@ -44,11 +44,10 @@ class BankrollService(BaseService):
         Args:
             user_id: The user's ID
         """
-        cache.delete_memoized(self.calculate_total_bankroll, self, user_id)
-        cache.delete_memoized(self.get_bankroll_breakdown, self, user_id)
+        cache.delete(f'bankroll_total_{user_id}')
+        cache.delete(f'bankroll_breakdown_{user_id}')
         self._log_debug(f"Invalidated bankroll cache for user {user_id}")
     
-    @cache.memoize(timeout=300)  # Cache for 5 minutes
     def calculate_total_bankroll(self, user_id: int, currency_code: str = 'USD') -> Decimal:
         """
         Calculate the total bankroll for a user in the specified currency.
@@ -67,12 +66,21 @@ class BankrollService(BaseService):
             >>> total = service.calculate_total_bankroll(user_id=1)
             >>> print(f"Total: ${total}")
         """
+        # Check cache first
+        cache_key = f'bankroll_total_{user_id}'
+        cached_value = cache.get(cache_key)
+        if cached_value is not None:
+            return cached_value
+        
         self._log_debug(f"Calculating total bankroll for user {user_id}")
         
         data = self.get_bankroll_breakdown(user_id)
-        return data['total_bankroll']
+        result = data['total_bankroll']
+        
+        # Cache the result
+        cache.set(cache_key, result, timeout=300)
+        return result
     
-    @cache.memoize(timeout=300)  # Cache for 5 minutes
     def get_bankroll_breakdown(self, user_id: int) -> Dict[str, Decimal]:
         """
         Get complete bankroll breakdown for a user.
@@ -100,6 +108,12 @@ class BankrollService(BaseService):
             >>> data = service.get_bankroll_breakdown(user_id=1)
             >>> print(f"Profit: ${data['total_profit']}")
         """
+        # Check cache first
+        cache_key = f'bankroll_breakdown_{user_id}'
+        cached_value = cache.get(cache_key)
+        if cached_value is not None:
+            return cached_value
+        
         self._log_debug(f"Getting bankroll breakdown for user {user_id}")
         
         # Subquery to rank site history records for each site
@@ -163,7 +177,7 @@ class BankrollService(BaseService):
         total_bankroll = current_poker_total + current_asset_total
         total_profit = total_bankroll - total_deposits + total_withdrawals
 
-        return {
+        result = {
             'current_poker_total': current_poker_total,
             'previous_poker_total': previous_poker_total,
             'current_asset_total': current_asset_total,
@@ -173,6 +187,10 @@ class BankrollService(BaseService):
             'total_bankroll': total_bankroll,
             'total_profit': total_profit,
         }
+        
+        # Cache the result
+        cache.set(cache_key, result, timeout=300)
+        return result
     
     def get_site_balances(self, user_id: int) -> List[Dict[str, Any]]:
         """

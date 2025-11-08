@@ -32,7 +32,6 @@ class CurrencyService(BaseService):
         """Initialize the CurrencyService."""
         super().__init__()
     
-    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def convert(
         self,
         amount: Decimal,
@@ -59,17 +58,26 @@ class CurrencyService(BaseService):
             ... )
             >>> print(f"€{euros}")
         """
+        # Check cache first
+        cache_key = f'currency_convert_{from_currency}_{to_currency}_{amount}'
+        cached_value = cache.get(cache_key)
+        if cached_value is not None:
+            return cached_value
+        
         # TODO: Implement currency conversion
         # Uses exchange rates from Currency model
         self._log_debug(f"Converting {amount} {from_currency} to {to_currency}")
         
         if from_currency == to_currency:
-            return amount
+            result = amount
+        else:
+            # Placeholder - will implement with actual rates
+            result = amount
         
-        # Placeholder - will implement with actual rates
-        return amount
+        # Cache the result
+        cache.set(cache_key, result, timeout=86400)
+        return result
     
-    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def get_exchange_rate(self, from_currency: str, to_currency: str) -> Decimal:
         """
         Get the current exchange rate between two currencies.
@@ -81,9 +89,19 @@ class CurrencyService(BaseService):
         Returns:
             Decimal: Exchange rate (1 from_currency = X to_currency)
         """
+        # Check cache first
+        cache_key = f'currency_rate_{from_currency}_{to_currency}'
+        cached_value = cache.get(cache_key)
+        if cached_value is not None:
+            return cached_value
+        
         # TODO: Implement rate retrieval from database
         self._log_debug(f"Getting rate for {from_currency} to {to_currency}")
-        return Decimal('1.0')
+        result = Decimal('1.0')
+        
+        # Cache the result
+        cache.set(cache_key, result, timeout=86400)
+        return result
     
     def update_exchange_rates(self) -> bool:
         """
@@ -99,12 +117,10 @@ class CurrencyService(BaseService):
         # Uses the EXCHANGE_RATE_API_KEY from config
         self._log_info("Updating exchange rates from API")
         # Clear currency caches when rates are updated
-        cache.delete_memoized(self.convert)
-        cache.delete_memoized(self.get_exchange_rate)
-        cache.delete_memoized(self.get_all_currencies)
+        # Use pattern matching to clear all currency-related caches
+        cache.clear()  # For SimpleCache, clear all (no pattern matching support)
         return False
     
-    @cache.memoize(timeout=86400)  # Cache for 24 hours
     def get_all_currencies(self) -> Dict[str, Dict[str, any]]:
         """
         Get information about all supported currencies.
@@ -115,9 +131,19 @@ class CurrencyService(BaseService):
                 - symbol: Currency symbol
                 - rate: Exchange rate to USD
         """
+        # Check cache first
+        cache_key = 'currency_all_currencies'
+        cached_value = cache.get(cache_key)
+        if cached_value is not None:
+            return cached_value
+        
         # TODO: Implement currency list retrieval
         self._log_debug("Getting all currencies")
-        return {}
+        result = {}
+        
+        # Cache the result
+        cache.set(cache_key, result, timeout=86400)
+        return result
     
     def format_amount(
         self,
