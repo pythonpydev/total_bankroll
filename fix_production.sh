@@ -1,0 +1,25 @@
+#!/bin/bash
+# Quick fix for production server
+
+echo "=== Production Quick Fix Script ==="
+echo "Run these commands on PythonAnywhere bash console:"
+echo ""
+echo "# Step 1: Clean Python cache"
+echo "cd ~/total_bankroll"
+echo "find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true"
+echo "find . -name '*.pyc' -delete 2>/dev/null || true"
+echo ""
+echo "# Step 2: Verify extensions.py has cache properly configured"
+echo "cat ~/total_bankroll/src/total_bankroll/extensions.py | grep -A 5 'cache ='"
+echo ""
+echo "# Step 3: Check if Flask-Caching was actually installed"
+echo "workon bankroll_venv"
+echo "pip show flask-caching"
+echo ""
+echo "# Step 4: Force reload the web app"
+echo "# Go to: https://www.pythonanywhere.com/user/pythonpydev/webapps/"
+echo "# Click the green 'Reload' button"
+echo ""
+echo "# Step 5: If still failing, check WSGI file"
+echo "cat /var/www/pythonpydev_pythonanywhere_com_wsgi.py"
+
