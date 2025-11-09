@@ -10,25 +10,29 @@ echo "=========================================="
 echo "TASK-3002 Production .env Emergency Fix"
 echo "=========================================="
 
-# Step 1: Backup current .env
-echo "1. Backing up current .env..."
-cp ~/.env ~/.env.corrupted_backup_$(date +%Y%m%d_%H%M%S)
+# Step 1: Change to project directory
+echo "1. Navigating to project directory..."
+cd ~/total_bankroll
+echo "   ✓ In $(pwd)"
+
+# Step 2: Backup current .env
+echo "2. Backing up current .env..."
+cp .env .env.corrupted_backup_$(date +%Y%m%d_%H%M%S)
 echo "   ✓ Backup created"
 
-# Step 2: Remove the corrupted CHROME_BINARY_PATH line(s)
-echo "2. Removing corrupted CHROME_BINARY_PATH..."
-cd ~/total_bankroll
+# Step 3: Remove the corrupted CHROME_BINARY_PATH line(s)
+echo "3. Removing corrupted CHROME_BINARY_PATH..."
 sed -i '/^CHROME_BINARY_PATH/d' .env
 sed -i '/^hrome$/d' .env  # Remove the orphaned "hrome" line
 echo "   ✓ Corrupted lines removed"
 
-# Step 3: Remove duplicate CACHE_TYPE if exists
-echo "3. Removing duplicate entries..."
+# Step 4: Remove duplicate CACHE_TYPE if exists
+echo "4. Removing duplicate entries..."
 awk '!seen[$0]++ || /^[A-Z_]+=/' .env > .env.tmp && mv .env.tmp .env
 echo "   ✓ Duplicates removed"
 
-# Step 4: Verify last 10 lines
-echo "4. Verifying .env file (last 10 lines):"
+# Step 5: Verify last 10 lines
+echo "5. Verifying .env file (last 10 lines):"
 tail -10 .env
 
 echo ""
