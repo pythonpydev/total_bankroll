@@ -15,12 +15,12 @@ from typing import Optional, Dict, List, Any
 from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
-from src.total_bankroll.services.base import BaseService
-from src.total_bankroll.models import (
+from .base import BaseService
+from ..models import (
     User, Sites, Assets, Deposits, Drawings,
     SiteHistory, AssetHistory, Currency, db
 )
-from src.total_bankroll.extensions import cache
+from ..extensions import cache
 
 
 class BankrollService(BaseService):

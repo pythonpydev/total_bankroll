@@ -13,8 +13,8 @@ This service manages the gamification features of the application.
 from typing import Dict, Any, List, Optional
 from datetime import date, timedelta
 from flask import flash
-from src.total_bankroll.services.base import BaseService
-from src.total_bankroll.models import db, User, Achievement, UserAchievement
+from .base import BaseService
+from ..models import db, User, Achievement, UserAchievement
 
 
 # Define all achievements in a central dictionary for easy management.
@@ -118,7 +118,7 @@ class AchievementService(BaseService):
         
         # Get bankroll data if not provided
         if bankroll_data is None:
-            from src.total_bankroll.services import BankrollService
+            from ..services import BankrollService
             bankroll_service = BankrollService()
             bankroll_data = bankroll_service.get_bankroll_breakdown(user.id)
         
@@ -313,7 +313,7 @@ class AchievementService(BaseService):
         elif achievement_key == 'THE_TECHNICIAN':
             current = min(len(user.tool_usages), 1)  # Binary: used or not
         elif 'BANKROLL' in achievement_key:
-            from src.total_bankroll.services import BankrollService
+            from ..services import BankrollService
             bankroll_service = BankrollService()
             bankroll_data = bankroll_service.get_bankroll_breakdown(user_id)
             current = float(bankroll_data.get('total_bankroll', 0))

@@ -14,7 +14,7 @@ Available Services:
     - CurrencyService: Manages currency conversions and rates
 
 Usage:
-    from src.total_bankroll.services import BankrollService
+    from ..services import BankrollService
     
     service = BankrollService()
     total = service.calculate_total_bankroll(user_id=1)

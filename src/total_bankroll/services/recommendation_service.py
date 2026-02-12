@@ -17,7 +17,7 @@ import json
 from typing import Dict, Any, Optional, Tuple, List
 from decimal import Decimal
 from flask import current_app
-from src.total_bankroll.services.base import BaseService
+from .base import BaseService
 
 
 def _format_stake_string(stake_row: Dict[str, Any]) -> str:
