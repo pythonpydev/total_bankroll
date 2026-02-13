@@ -22,9 +22,11 @@
         <thead>
             <tr>
                 <th scope="col">Name</th>
+                <th scope="col">Starting (USD)</th>
                 <th scope="col">Current Amount</th>
                 <th scope="col">Current (USD)</th>
-                <th scope="col">Change (USD)</th>
+                <th scope="col">Recent Change (USD)</th>
+                <th scope="col">Overall Change (USD)</th>
                 <th scope="col">Actions</th>
             </tr>
         </thead>
@@ -32,6 +34,7 @@
             {% for item in items %}
             <tr>
                 <td>{{ item.name }}</td>
+                <td>${{ "%.2f" | format(item.starting_amount_usd) }}</td>
                 <td>{{ item.currency_symbol }}{{ "%.2f" | format(item.current_amount) }} {{ item.currency }}</td>
                 <td>${{ "%.2f" | format(item.current_amount_usd) }}</td>
                 {% if item.previous_amount_usd is not none %}
@@ -42,6 +45,10 @@
                 {% else %}
                     <td>N/A</td>
                 {% endif %}
+                    {% set overall = item.current_amount_usd - item.starting_amount_usd %}
+                    <td class="{% if overall > 0 %}change-positive{% elif overall < 0 %}change-negative{% else %}change-zero{% endif %}">
+                        ${{ "%.2f" | format(overall) }}
+                    </td>
                 <td>
                     <div class="btn-group" role="group">
                         {% if item_type == 'site' %}

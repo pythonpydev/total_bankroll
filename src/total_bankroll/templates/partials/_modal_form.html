@@ -3,7 +3,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <form id="modalForm" action="" method="post">
+    <form id="modalForm" action="{{ action_url }}" method="post">
         {{ form.hidden_tag() }} {# Renders CSRF token and other hidden fields #}
         {% for field in form if field.widget.input_type != 'hidden' and field.name != 'submit' %}
             <div class="mb-3">

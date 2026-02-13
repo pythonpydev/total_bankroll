@@ -44,14 +44,27 @@ def assets_page():
     current_history = aliased(history_ranked)
     previous_history = aliased(history_ranked)
 
+    # Subquery to get the first (chronologically earliest) history record per asset
+    first_history_ranked = db.session.query(
+        AssetHistory,
+        func.row_number().over(
+            partition_by=AssetHistory.asset_id,
+            order_by=AssetHistory.recorded_at.asc()
+        ).label('rn')
+    ).filter(AssetHistory.user_id == current_user.id).subquery()
+    first_history = aliased(first_history_ranked)
+
     assets_query = db.session.query(
         Assets,
         current_history.c.amount.label('current_amount'),
         current_history.c.currency.label('current_currency_code'),
         previous_history.c.amount.label('previous_amount'),
         previous_history.c.currency.label('previous_currency_code'),
+        first_history.c.amount.label('starting_amount'),
+        first_history.c.currency.label('starting_currency_code'),
     ).outerjoin(current_history, (Assets.id == current_history.c.asset_id) & (current_history.c.rn == 1))\
      .outerjoin(previous_history, (Assets.id == previous_history.c.asset_id) & (previous_history.c.rn == 2))\
+     .outerjoin(first_history, (Assets.id == first_history.c.asset_id) & (first_history.c.rn == 1))\
      .filter(Assets.user_id == current_user.id)\
      .order_by(Assets.display_order)
 
@@ -63,12 +76,14 @@ def assets_page():
     # Pre-fetch all currencies to avoid querying in a loop
     all_currencies = {c.code: c for c in db.session.query(Currency).all()}
 
-    for asset, current_amount, current_currency_code, previous_amount, previous_currency_code in assets_query:
+    for asset, current_amount, current_currency_code, previous_amount, previous_currency_code, starting_amount, starting_currency_code in assets_query:
         curr_currency_obj = all_currencies.get(current_currency_code)
         prev_currency_obj = all_currencies.get(previous_currency_code)
+        start_currency_obj = all_currencies.get(starting_currency_code)
 
         current_amount_usd = (current_amount / curr_currency_obj.rate) if current_amount and curr_currency_obj else Decimal('0.0')
         previous_amount_usd = (previous_amount / prev_currency_obj.rate) if previous_amount and prev_currency_obj else None
+        starting_amount_usd = (starting_amount / start_currency_obj.rate) if starting_amount and start_currency_obj else Decimal('0.0')
 
         total_current += current_amount_usd
         total_previous += previous_amount_usd if previous_amount_usd is not None else 0
@@ -77,7 +92,8 @@ def assets_page():
             'id': asset.id, 'name': asset.name, 'currency': current_currency_code,
             'currency_symbol': curr_currency_obj.symbol if curr_currency_obj else '',
             'current_amount': current_amount or Decimal('0.0'), 'current_amount_usd': current_amount_usd,
-            'previous_amount_usd': previous_amount_usd
+            'previous_amount_usd': previous_amount_usd,
+            'starting_amount_usd': starting_amount_usd,
         })
 
     return render_template("info/assets.html", assets=assets_with_data, total_current=total_current, total_previous=total_previous)

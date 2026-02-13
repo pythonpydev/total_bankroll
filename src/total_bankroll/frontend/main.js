@@ -50,9 +50,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Find any form within the newly injected content
                     const form = modalContent.querySelector('form');
                     if (form) {
-                        // If the form in the template does NOT have an action,
+                        // If the form in the template does NOT have an action (or it's empty),
                         // set it to the URL we fetched from. This is for simple forms.
-                        if (!form.hasAttribute('action')) {
+                        if (!form.getAttribute('action')) {
                             form.setAttribute('action', url);
                         }
 
