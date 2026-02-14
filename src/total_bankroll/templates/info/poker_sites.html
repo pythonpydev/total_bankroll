@@ -28,6 +28,47 @@
             </div>
         </div>
 
+        <!-- Bankroll Strategy -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-12">
+                <h3 class="text-center mt-0">Bankroll Strategy</h3>
+                <hr class="divider" />
+                <p class="text-center text-muted mb-4">Based on your total bankroll of <strong>${{ "%.2f" | format(total_current) }}</strong>, here are your recommended cash game stakes for different risk profiles.</p>
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th># Big Blinds</th>
+                                <th>Current Stakes</th>
+                                <th>Moving Up ($)</th>
+                                <th>Next Level</th>
+                                <th>$ To Move Up</th>
+                                <th>Dropping Down ($)</th>
+                                <th>Previous Level</th>
+                                <th>$ To Previous</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in strategy_rows %}
+                            <tr>
+                                <td>{{ row.profile }}</td>
+                                <td>{{ row.num_bb }}</td>
+                                <td><strong>{{ row.current_stakes }}</strong></td>
+                                <td>{% if row.moving_up is not none %}${{ "%.2f" | format(row.moving_up) }}{% else %}—{% endif %}</td>
+                                <td>{{ row.next_stakes }}</td>
+                                <td class="{% if row.to_move_up is not none and row.to_move_up > 0 %}change-negative{% elif row.to_move_up is not none %}change-positive{% endif %}">{% if row.to_move_up is not none %}${{ "%.2f" | format(row.to_move_up) }}{% else %}—{% endif %}</td>
+                                <td>{% if row.dropping_down is not none %}${{ "%.2f" | format(row.dropping_down) }}{% else %}—{% endif %}</td>
+                                <td>{{ row.prev_stakes }}</td>
+                                <td class="{% if row.to_prev is not none and row.to_prev > 0 %}change-positive{% elif row.to_prev is not none %}change-negative{% endif %}">{% if row.to_prev is not none %}${{ "%.2f" | format(row.to_prev) }}{% else %}—{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 {% endblock %}

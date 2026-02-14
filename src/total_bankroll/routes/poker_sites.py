@@ -11,6 +11,7 @@ from ..models import db, Sites, SiteHistory, Currency
 from ..services import AchievementService
 from ..utils import get_sorted_currencies
 from datetime import datetime, UTC
+import json, os
 
 poker_sites_bp = Blueprint("poker_sites", __name__)
 
@@ -107,7 +108,82 @@ def poker_sites_page():
             'starting_amount_usd': starting_amount_usd,
         })
 
-    return render_template("info/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous, total_starting=total_starting)
+    # --- Bankroll Strategy Calculation ---
+    PROFILES = [
+        ('Aggressive', 30),
+        ('Solid Reg', 50),
+        ('Serious Grinder', 75),
+        ('Cautious', 100),
+        ('NIT', 200),
+    ]
+
+    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'cash_game_stakes.json')
+    with open(data_path) as f:
+        stakes_data = json.load(f)['stakes']
+
+    # Parse max_buy_in strings to Decimal, sorted ascending
+    stakes_list = []
+    for s in stakes_data:
+        bb_label = s['small_blind'].replace('$', '') + '/' + s['big_blind'].replace('$', '')
+        max_bi = Decimal(s['max_buy_in'].replace('$', '').replace(',', ''))
+        stakes_list.append({'blinds': bb_label, 'max_buy_in': max_bi})
+    stakes_list.sort(key=lambda x: x['max_buy_in'])
+
+    strategy_rows = []
+    for profile_name, num_bb in PROFILES:
+        bankroll = total_current
+        effective_buy_ins = bankroll / Decimal(num_bb) if num_bb else Decimal('0')
+
+        # Current stakes: highest level where max_buy_in <= effective_buy_ins
+        current_idx = -1
+        for i, s in enumerate(stakes_list):
+            if s['max_buy_in'] <= effective_buy_ins:
+                current_idx = i
+        
+        if current_idx >= 0:
+            current_stakes = stakes_list[current_idx]['blinds']
+        else:
+            current_stakes = 'Broke!'
+
+        # Next level (moving up)
+        if current_idx < len(stakes_list) - 1:
+            next_idx = current_idx + 1
+            next_stakes = stakes_list[next_idx]['blinds']
+            moving_up = stakes_list[next_idx]['max_buy_in'] * Decimal(num_bb)
+            to_move_up = moving_up - bankroll
+        else:
+            next_stakes = 'Maxed'
+            moving_up = None
+            to_move_up = None
+
+        # Previous level (dropping down)
+        if current_idx > 0:
+            prev_idx = current_idx - 1
+            prev_stakes = stakes_list[prev_idx]['blinds']
+            dropping_down = stakes_list[prev_idx]['max_buy_in'] * Decimal(num_bb)
+            to_prev = bankroll - dropping_down
+        elif current_idx == 0:
+            prev_stakes = 'N/A'
+            dropping_down = None
+            to_prev = None
+        else:
+            prev_stakes = 'N/A'
+            dropping_down = None
+            to_prev = None
+
+        strategy_rows.append({
+            'profile': profile_name,
+            'num_bb': num_bb,
+            'current_stakes': current_stakes,
+            'moving_up': moving_up,
+            'next_stakes': next_stakes,
+            'to_move_up': to_move_up,
+            'dropping_down': dropping_down,
+            'prev_stakes': prev_stakes,
+            'to_prev': to_prev,
+        })
+
+    return render_template("info/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous, total_starting=total_starting, strategy_rows=strategy_rows)
 
 @poker_sites_bp.route("/add_site", methods=['GET', 'POST'])
 @login_required

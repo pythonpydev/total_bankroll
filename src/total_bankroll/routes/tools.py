@@ -182,7 +182,7 @@ def poker_stakes_page():
         ])
 
     return render_template(
-        'tools/poker_stakes.html',
+        'info/poker_stakes.html',
         total_bankroll=total_bankroll,
         cash_stakes_table=cash_stakes_table,
         **recommendations,
@@ -328,7 +328,7 @@ def tournament_stakes_page():
         tournament_stakes_map=global_buyins_map
     )
 
-    return render_template('tools/tournament_stakes.html',
+    return render_template('info/tournament_stakes.html',
                            total_bankroll=total_bankroll,
                            game_type=request.args.get('game_type', 'nlhe'),
                            skill_level=request.args.get('skill_level', 'tough'),
@@ -485,7 +485,7 @@ def bankroll_goals_page():
                     result = (f"To grow your bankroll from ${current_bankroll:,.2f} to ${target_bankroll:,.2f} in {timeframe_months} months, "
                               f"you will need to achieve an average monthly profit of ${required_profit:,.2f}.")
 
-    return render_template('tools/bankroll_goals.html',
+    return render_template('info/bankroll_goals.html',
                            form=form,
                            current_bankroll=current_bankroll,
                            result=result,
@@ -525,4 +525,4 @@ def plo_hand_strength_evaluator_page():
 @login_required
 def plo_hand_range_page():
     """Renders the PLO Hand Range Visualizer page."""
-    return render_template('tools/plo_hand_range.html')
+    return render_template('info/plo_hand_range.html')

@@ -12,6 +12,7 @@
     { "id": 10, "small_blind": "$10.00", "big_blind": "$20.00", "min_buy_in": "$800.00", "max_buy_in": "$2,000.00" },
     { "id": 11, "small_blind": "$25.00", "big_blind": "$50.00", "min_buy_in": "$2,000.00", "max_buy_in": "$5,000.00" },
     { "id": 12, "small_blind": "$50.00", "big_blind": "$100.00", "min_buy_in": "$4,000.00", "max_buy_in": "$10,000.00" },
-    { "id": 13, "small_blind": "$100.00", "big_blind": "$200.00", "min_buy_in": "$8,000.00", "max_buy_in": "$20,000.00" }
+    { "id": 13, "small_blind": "$100.00", "big_blind": "$200.00", "min_buy_in": "$8,000.00", "max_buy_in": "$20,000.00" },
+    { "id": 14, "small_blind": "$200.00", "big_blind": "$400.00", "min_buy_in": "$16,000.00", "max_buy_in": "$40,000.00" }
   ]
 }
