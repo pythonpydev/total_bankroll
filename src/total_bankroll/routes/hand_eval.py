@@ -112,10 +112,13 @@ class HandProperties(TypedDict):
     is_single_suited: bool
     suited_ranks: Dict[str, List[int]]
     max_streak: int
+    max_gapped_streak: int
+    total_gaps: int
     is_broadway_streak: bool
     broadway_cards: List[int]
     danglers: int
     unique_ranks: List[int]
+    has_three_flush: bool
 
 def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
     """
@@ -146,7 +149,9 @@ def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
     properties['suited_ranks'] = suited_ranks
 
     unique_ranks = sorted(list(set(ranks)), reverse=True)
-    max_streak = 0
+
+    # Connectivity: count max streak of consecutive ranks (gap=1)
+    max_streak = 1
     if len(unique_ranks) > 1:
         current_streak = 1
         for i in range(1, len(unique_ranks)):
@@ -157,6 +162,25 @@ def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
                 current_streak = 1
         max_streak = max(max_streak, current_streak)
     properties['max_streak'] = max_streak
+
+    # Gapped connectivity: count max streak allowing gaps of 1 or 2 (e.g., 8-6-4)
+    max_gapped_streak = 1
+    if len(unique_ranks) > 1:
+        current_gapped = 1
+        for i in range(1, len(unique_ranks)):
+            gap = unique_ranks[i-1] - unique_ranks[i]
+            if 1 <= gap <= 2:
+                current_gapped += 1
+            else:
+                max_gapped_streak = max(max_gapped_streak, current_gapped)
+                current_gapped = 1
+        max_gapped_streak = max(max_gapped_streak, current_gapped)
+    properties['max_gapped_streak'] = max_gapped_streak
+
+    # Total gap sum between all adjacent unique ranks (lower = better connected)
+    total_gaps = sum(unique_ranks[i-1] - unique_ranks[i] for i in range(1, len(unique_ranks)))
+    properties['total_gaps'] = total_gaps
+
     properties['unique_ranks'] = unique_ranks
 
     # Broadway properties
@@ -166,7 +190,7 @@ def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
         for i in range(1, len(unique_ranks))
     )
 
-    # Dangler calculation
+    # Dangler calculation: a card is a dangler if its closest neighbour is > 3 ranks away
     danglers = 0
     if len(ranks) == 4:
         for i in range(4):
@@ -176,29 +200,35 @@ def _get_hand_properties(ranks: List[int], suits: List[str]) -> HandProperties:
                 danglers += 1
     properties['danglers'] = danglers
 
+    # Three-to-a-flush: any suit with 3+ cards
+    properties['has_three_flush'] = max(properties['suit_counts'].values()) >= 3
+
     return properties
 
 def _score_pairs(props: HandProperties, ranks_str: str) -> tuple[float, list]:
     score, breakdown = 0.0, []
     if props['quads']:
+        # Quads are terrible in PLO (only 2 combos, no flush/straight potential)
         for rank in props['quads']:
-            points = round((rank + 1) * 10, 1)
+            points = round((rank + 1) * 1.5, 1)
             score += points
-            breakdown.append((f"Quads of {ranks_str[rank]}s", f"+{points}"))
+            breakdown.append((f"Quads of {ranks_str[rank]}s (poor PLO hand)", f"+{points}"))
     elif props['trips']:
+        # Trips are also weak — one card is dead, limits combinations
         for rank in props['trips']:
-            points = round((rank + 1) * 4, 1)
+            points = round((rank + 1) * 2.5, 1)
             score += points
             breakdown.append((f"Trips of {ranks_str[rank]}s", f"+{points}"))
     elif props['pairs']:
         for rank in sorted(props['pairs'], reverse=True):
             pair_rank_name = ranks_str[rank]
-            if rank >= ranks_str.index('Q'):
-                points, tier_name = round((rank + 1) * 3.5 + 10, 1), "Premium"
-            elif rank >= ranks_str.index('7'):
-                points, tier_name = round((rank + 1) * 2.5 + 5, 1), "Mid"
-            else:
-                points, tier_name = round((rank + 1) * 1.5, 1), "Low"
+            # Rebalanced: AA=35, KK=30, QQ=27, JJ=17.5, TT=15, 99=12.5... 22=3
+            if rank >= ranks_str.index('Q'):     # QQ, KK, AA
+                points, tier_name = round((rank + 1) * 2.5 + 2.5, 1), "Premium"
+            elif rank >= ranks_str.index('7'):   # 77-JJ
+                points, tier_name = round((rank + 1) * 1.5 + 2, 1), "Mid"
+            else:                                 # 22-66
+                points, tier_name = round((rank + 1) * 1.0, 1), "Low"
             score += points
             breakdown.append((f"{tier_name} Pair of {pair_rank_name}s", f"+{points}"))
         if len(props['pairs']) == 2:
@@ -214,14 +244,49 @@ def _score_pairs(props: HandProperties, ranks_str: str) -> tuple[float, list]:
 def _score_suitedness(props: HandProperties, ranks_str: str) -> tuple[float, list]:
     score, breakdown = 0.0, []
     ace_rank = ranks_str.index('A')
+
     if props['is_double_suited']:
-        score += 25
-        breakdown.append(("Double-Suited", "+25"))
+        # Double-suited is valuable, but scale based on how connected the suited cards are
+        base = 20
+        # Check if either suited pair is actually connected (gap <= 2)
+        connected_suits = 0
+        for suit, suit_ranks_list in props['suited_ranks'].items():
+            if len(suit_ranks_list) == 2:
+                gap = abs(suit_ranks_list[0] - suit_ranks_list[1])
+                if gap <= 3:
+                    connected_suits += 1
+        if connected_suits == 2:
+            base = 25  # Both suited pairs connected — full value
+            breakdown.append(("Double-Suited (connected)", f"+{base}"))
+        elif connected_suits == 1:
+            base = 20  # One connected, one not
+            breakdown.append(("Double-Suited (partial)", f"+{base}"))
+        else:
+            base = 15  # Neither suited pair connects — reduced value
+            breakdown.append(("Double-Suited (unconnected)", f"+{base}"))
+        score += base
+
+        # Nut suit bonus
         for suit_ranks in props['suited_ranks'].values():
             if len(suit_ranks) >= 2 and ace_rank in suit_ranks:
                 score += 5
                 breakdown.append(("Nut Suit Bonus", "+5"))
                 break
+
+    elif props.get('has_three_flush'):
+        # Three to a flush — very strong in PLO
+        three_suit = [s for s, c in props['suit_counts'].items() if c >= 3][0]
+        three_suit_ranks = sorted(props['suited_ranks'][three_suit], reverse=True)
+        base = 15
+        score += base
+        breakdown.append(("Three to a Flush", f"+{base}"))
+        if ace_rank in three_suit_ranks:
+            score += 8
+            breakdown.append(("Nut Three-Flush Bonus", "+8"))
+        elif three_suit_ranks[0] >= ranks_str.index('K'):
+            score += 4
+            breakdown.append(("High Three-Flush Bonus", "+4"))
+
     elif props['is_single_suited']:
         score += 10
         breakdown.append(("Single-Suited", "+10"))
@@ -229,29 +294,61 @@ def _score_suitedness(props: HandProperties, ranks_str: str) -> tuple[float, lis
         if ace_rank in props['suited_ranks'].get(main_suit, []):
             score += 5
             breakdown.append(("Nut Suit Bonus", "+5"))
-    else: # Rainbow
+
+    else:  # Rainbow
         score -= 10
         breakdown.append(("Rainbow Penalty", "-10"))
+
     return score, breakdown
 
 def _score_connectivity(props: HandProperties, ranks: List[int], ranks_str: str) -> tuple[float, list]:
     score, breakdown = 0.0, []
     ace_rank = ranks_str.index('A')
+
+    # Primary connectivity: consecutive ranks (gap=1)
     if props['max_streak'] >= 4:
         score += 25
         breakdown.append(("Full Rundown (4-card streak)", "+25"))
     elif props['max_streak'] == 3:
         score += 15
-        breakdown.append(("Strong Partial Rundown (3-card streak)", "+15"))
+        breakdown.append(("Strong Rundown (3-card streak)", "+15"))
     elif props['max_streak'] == 2:
         score += 5
         breakdown.append(("Basic Connectors (2-card streak)", "+5"))
 
+    # Gapped connectivity bonus: reward gapped rundowns (e.g., 8-6-4, T-8-6)
+    # Only award if the gapped streak is better than what we already scored
+    gapped = props.get('max_gapped_streak', 1)
+    if gapped > props['max_streak']:
+        if gapped >= 4:
+            bonus = 15  # Full gapped rundown (e.g., T-8-6-4) — strong but not as good as connected
+            breakdown.append(("Full Gapped Rundown (4 cards, gaps ≤ 2)", f"+{bonus}"))
+        elif gapped == 3:
+            bonus = 8   # 3-card gapped rundown (e.g., 8-6-4)
+            breakdown.append(("Gapped Rundown (3 cards, gaps ≤ 2)", f"+{bonus}"))
+        else:
+            bonus = 0
+        score += bonus
+
+    # Overall hand spread penalty: if the total gap between top and bottom rank is huge,
+    # the hand is disjointed regardless of local connectivity
+    total_gaps = props.get('total_gaps', 0)
+    unique_count = len(props['unique_ranks'])
+    if unique_count >= 3 and total_gaps > 0:
+        # Average gap between adjacent unique ranks
+        avg_gap = total_gaps / (unique_count - 1)
+        if avg_gap > 4:
+            penalty = round((avg_gap - 4) * 3, 1)
+            score -= penalty
+            breakdown.append((f"Spread Penalty (avg gap {avg_gap:.1f})", f"-{penalty}"))
+
+    # Wheel potential
     low_ranks = [r for r in ranks if r <= ranks_str.index('5')]
     if ace_rank in ranks and len(low_ranks) >= 2:
         bonus = 5 * len(low_ranks)
         score += bonus
         breakdown.append((f"Wheel Potential ({len(low_ranks)+1} low cards w/ A)", f"+{bonus}"))
+
     return score, breakdown
 
 def _score_bonuses_and_penalties(props: HandProperties, ranks: List[int], ranks_str: str) -> tuple[float, list]:
@@ -326,13 +423,14 @@ def evaluate_hand_strength(hand_string: str) -> tuple[int, str, list, float]:
     score_breakdown = [item for s, b in score_components for item in b]
 
     # 3. Assign Tier based on final score
-    if total_score >= 80:
+    # Thresholds tuned so ~4% Elite, ~8% Premium, ~12% Strong, ~26% Playable, ~50% Trash
+    if total_score >= 65:
         return 1, "Elite - A top-tier hand with immense nut potential, combining high pairs, suitedness, and connectivity.", score_breakdown, total_score
-    elif total_score >= 65:
+    elif total_score >= 50:
         return 2, "Premium - A very strong hand with excellent coordination, often featuring suited high pairs or powerful rundowns.", score_breakdown, total_score
-    elif total_score >= 45:
+    elif total_score >= 40:
         return 3, "Strong - A solid, profitable hand with good suited and/or connected components. Playable in most positions.", score_breakdown, total_score
-    elif total_score >= 25:
+    elif total_score >= 28:
         return 4, "Playable - A speculative hand that relies on position and hitting a favorable flop. Best played in late position or multi-way pots.", score_breakdown, total_score
     else:
         return 5, "Trash/Marginal - A weak hand with poor coordination. Lacks significant pair, suit, or straight potential and should usually be folded.", score_breakdown, total_score
@@ -395,7 +493,7 @@ def tables():
         content_html = "<p>Sorry, the article content is currently unavailable.</p>"
         title, subtitle = "Article Not Found", ""
     
-    return render_template('articles/article_content.html', title=title, subtitle=subtitle, content=content_html)
+    return render_template('articles/plo_hand_strength_article.html', title=title, subtitle=subtitle, content=content_html)
 
 @hand_eval_bp.route('/plo_hand_form')
 def plo_hand_form():
@@ -403,7 +501,7 @@ def plo_hand_form():
     button_form = ButtonPositionForm()
     hand_form = HandForm()
     button_position = session.get('button_position', 1)  # Default to 1
-    return render_template('tools/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
+    return render_template('forms/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
 @hand_eval_bp.route('/switch_button_position', methods=['POST'])
 def switch_button_position():
@@ -431,7 +529,7 @@ def submit_form():
         session['form_data'] = form_data
         return redirect(url_for('hand_eval.submit_form'))  # Redirect to GET to show details
 
-    return render_template('tools/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
+    return render_template('forms/plo_hand_form.html', title='PLO Hand Form', button_position=button_position, button_form=button_form, hand_form=hand_form)
 
 @hand_eval_bp.route('/hand_evaluation')
 def hand_evaluation():
@@ -558,7 +656,7 @@ def plo_hand_rankings():
             return jsonify({'error': 'Internal server error'}), 500
 
     # GET: Render the template
-    return render_template('tools/plo_hand_rankings.html', title='PLO Hand Rankings')
+    return render_template('info/plo_hand_rankings.html', title='PLO Hand Rankings')
 
 @hand_eval_bp.route('/plo-range-data', methods=['GET'])
 def plo_range_data():
@@ -653,7 +751,6 @@ def plo_hand_strength_quiz():
             return redirect(url_for('hand_eval.plo_hand_strength_quiz'))
 
         questions = []
-        all_tier_keys = list(TIER_MAP.keys())
 
         # Use pandas.sample for efficient random selection
         sampled_hands = df.sample(n=min(num_questions, len(df)))
@@ -661,19 +758,14 @@ def plo_hand_strength_quiz():
         for hand_str, hand_data in sampled_hands.iterrows():
             correct_tier = hand_data['Tier']
 
-            # Generate 3 unique incorrect tiers
-            incorrect_tiers = random.sample([t for t in all_tier_keys if t != correct_tier], 3)
-            
-            # Combine correct and incorrect answers
-            all_answer_tiers = [correct_tier] + incorrect_tiers
+            # Always show all 5 tiers as answer options
+            all_answer_tiers = list(TIER_MAP.keys())
 
             # Create the (value, label) tuples for the form
             answers = []
             for tier in all_answer_tiers:
                 label = f"{tier} - {TIER_MAP.get(tier, 'Unknown')}"
                 answers.append((str(tier), label))
-
-            random.shuffle(answers)
 
             questions.append({
                 'question': hand_str, # The hand string is the question
@@ -690,7 +782,7 @@ def plo_hand_strength_quiz():
         return redirect(url_for('hand_eval.quiz'))
     
     # If it's a GET request or validation fails, render the form page
-    return render_template('quiz/start_quiz.html', title='PLO Hand Strength Quiz', form=form, action_url=url_for('hand_eval.plo_hand_strength_quiz'))
+    return render_template('quiz/plo_hand_strength_quiz.html', title='PLO Hand Strength Quiz', form=form, action_url=url_for('hand_eval.plo_hand_strength_quiz'))
 
 
 class HudStatsQuizForm(FlaskForm):
@@ -757,7 +849,7 @@ def hud_stats_quiz():
         return redirect(url_for('hand_eval.quiz'))
     
     # If it's a GET request or validation fails, render the form page
-    return render_template('quiz/start_quiz.html', title='HUD Stats Quiz', form=form, action_url=url_for('hand_eval.hud_stats_quiz'))
+    return render_template('quiz/hud_stats_quiz.html', title='HUD Stats Quiz', form=form, action_url=url_for('hand_eval.hud_stats_quiz'))
 
 
 
@@ -934,12 +1026,12 @@ def hud_player_type_guide():
         current_app.logger.error(f"Unexpected error loading HUD data: {e}")
         flash('Error loading HUD data.', 'danger')
         data = {"player_types": [], "stats": []}
-    return render_template('tools/hud_player_type.html', data=data)
+    return render_template('info/hud_player_type.html', data=data)
 
 @hand_eval_bp.route('/spr-strategy')
 def spr_strategy():
     """Renders the SPR strategy guide page."""
-    return render_template('articles/article_content.html', title='SPR Strategy Guide')
+    return render_template('articles/spr_strategy.html', title='SPR Strategy Guide')
 
 @hand_eval_bp.route('/plo-hand-strength-article')
 def plo_hand_strength_article():
@@ -958,8 +1050,8 @@ def plo_hand_strength_article():
         content_html = "<p>Sorry, the article content is currently unavailable.</p>"
     
     current_app.logger.debug(f"Attempting to render: articles/plo_hand_strength_article.html with content length {len(content_html)}")
-    return render_template('articles/article_content.html', title='PLO Starting Hand Strength', content=content_html)
+    return render_template('articles/plo_hand_strength_article.html', title='PLO Starting Hand Strength', content=content_html)
 @hand_eval_bp.route('/player-color-scheme-guide')
 def player_color_scheme_guide():
     """Renders the player color scheme guide page."""
-    return render_template('tools/player_color_scheme.html', title='Player Color Scheme Guide')
+    return render_template('info/player_color_scheme.html', title='Player Color Scheme Guide')

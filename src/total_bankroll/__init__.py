@@ -101,7 +101,8 @@ def create_app(config_name=None):
         home_bp, about_bp, help_bp, legal_bp, auth_bp, settings_bp,
         poker_sites_bp, assets_bp, deposit_bp, withdrawal_bp,
         add_deposit_bp, add_withdrawal_bp, charts_bp, goals_bp,
-        achievements_bp, articles_bp, tools_bp, hand_eval_bp, common_bp
+        achievements_bp, articles_bp, tools_bp, hand_eval_bp, common_bp,
+        import_db_bp
     )
     app.register_blueprint(home_bp)
     app.register_blueprint(about_bp)
@@ -122,6 +123,7 @@ def create_app(config_name=None):
     app.register_blueprint(tools_bp)
     app.register_blueprint(hand_eval_bp)
     app.register_blueprint(common_bp)
+    app.register_blueprint(import_db_bp)
 
     # Initialize Vite asset helper
     init_vite_asset_helper(app)

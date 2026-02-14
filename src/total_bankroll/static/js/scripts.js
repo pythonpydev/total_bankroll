@@ -41,6 +41,7 @@ window.addEventListener('DOMContentLoaded', event => {
     );
     responsiveNavItems.map(function (responsiveNavItem) {
         responsiveNavItem.addEventListener('click', () => {
+            if (responsiveNavItem.closest('#theme-toggle') || responsiveNavItem.id === 'theme-toggle') return;
             if (window.getComputedStyle(navbarToggler).display !== 'none') {
                 navbarToggler.click();
             }

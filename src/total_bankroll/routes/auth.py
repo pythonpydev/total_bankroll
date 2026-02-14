@@ -164,12 +164,12 @@ def register():
         token = generate_token(user.email)
         confirm_url = url_for('auth.confirm_email', token=token, _external=True)
         msg = Message(
-            'Confirm Your Email',
-            recipients=[user.email],
+            subject='Confirm Your Email',
+            to=[user.email],
             body=f"Please click the link to confirm your email: {confirm_url}\nThe link expires in 1 hour."
         )
         try:
-            mail.send(msg)
+            msg.send()
             logger.debug(f"Confirmation email sent to {user.email}")
             flash('Registration successful! Please check your email to verify your account.', 'success')
         except Exception as e:
@@ -224,12 +224,13 @@ def forgot_password():
             token = generate_token(user.email)
             reset_url = url_for('auth.reset_password', token=token, _external=True)
             msg = Message(
-                'Reset Your Password',
-                recipients=[user.email],
-                html=render_template('security/reset_password_email.html', reset_url=reset_url)
+                subject='Reset Your Password',
+                to=[user.email],
+                body=render_template('security/reset_password_email.html', reset_url=reset_url)
             )
+            msg.content_subtype = 'html'
             try:
-                mail.send(msg)
+                msg.send()
                 logger.debug(f"Password reset email sent to {user.email}")
                 flash('A password reset link has been sent to your email.', 'success')
             except Exception as e:

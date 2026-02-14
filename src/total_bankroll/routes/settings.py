@@ -426,12 +426,12 @@ def update_email():
         token = generate_token(new_email)
         confirm_url = url_for('settings.confirm_new_email', token=token, _external=True)
         msg = Message(
-            'Confirm Your New Email',
-            recipients=[new_email],
+            subject='Confirm Your New Email',
+            to=[new_email],
             body=f"Please click the link to confirm your email: {confirm_url}\nThis link expires in 1 hour."
         )
         try:
-            mail.send(msg)
+            msg.send()
             flash('A confirmation email has been sent to your new email address. Please verify to update.', 'info')
         except Exception as e:
             flash(f'Failed to send confirmation email: {e}', 'danger')

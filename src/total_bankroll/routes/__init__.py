@@ -28,3 +28,4 @@ from .tools import tools_bp
 from .hand_eval import hand_eval_bp
 from .common import common_bp
 from .reset_db import reset_db_bp
+from .import_db import import_db_bp

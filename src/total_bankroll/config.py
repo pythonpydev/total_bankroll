@@ -27,7 +27,9 @@ class Config:
     SECURITY_RECOVERABLE = True
     SECURITY_CHANGEABLE = True
     SECURITY_UNAUTHORIZED_VIEW = '/'
+    SECURITY_BLUEPRINT_NAME = 'auth'  # Must match auth_bp name since register_blueprint=False
     SECURITY_OAUTH_ENABLE = False  # Disable OAuth integration to bypass OAuthGlue
+    MAIL_BACKEND = os.getenv('MAIL_BACKEND', 'smtp')
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'true').lower() in ['true', '1', 't']

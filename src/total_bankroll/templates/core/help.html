@@ -4,62 +4,218 @@
 {% block content %}
 {{ page_header('Help & FAQs', 'Find answers to common questions and learn how to use StakeEasy.net effectively.') }}
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h2 class="text-center"><i class="bi bi-person-workspace"></i> The Scenario</h2>
-                    <hr>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item lead">When you first join a <span class="text-poker-site">poker site</span>, you will initially <span class="text-deposit">deposit</span> cash, for example, $50.</li>
-                        <li class="list-group-item lead">At this point your <span class="text-bankroll">total bankroll</span> is $50 and your <span class="text-profit">profit</span> is $0.</li>
-                        <li class="list-group-item lead">After playing for a while, your latest <span class="text-poker-site">poker site</span> balance is $200.</li>
-                        <li class="list-group-item lead">Now, your <span class="text-bankroll">total bankroll</span> is $200 and your net <span class="text-profit">profit</span> is now $150.</li>
-                        <li class="list-group-item lead">At this point you decide to move $50 from the <span class="text-poker-site">poker site</span> and invest it in Bitcoin.</li>
-                        <li class="list-group-item lead">Now, your cash on <span class="text-poker-site">poker sites</span> is $150, your <span class="text-asset">assets</span> are $50, your net <span class="text-profit">profit</span> is still $150, and your total <span class="text-deposit">deposits</span> are $50.</li>
-                        <li class="list-group-item lead">You play a while longer, and now have $350 on the <span class="text-poker-site">poker site</span> (you are now <span class="text-profit">profiting</span> $350).</li>
-                        <li class="list-group-item lead">You then decide to <span class="text-withdrawal">withdraw</span> $100 to buy some groceries.</li>
-                        <li class="list-group-item lead">At this point you have $250 on the <span class="text-poker-site">poker site</span>, $50 in <span class="text-asset">assets</span> (Bitcoin), after making an initial <span class="text-deposit">deposit</span> of $50 and <span class="text-withdrawal">withdrawing</span> $100. Your <span class="text-bankroll">total bankroll</span> is $300, and your <span class="text-profit">profit</span> is $350.</li>
-                    </ul>
+<section class="page-section" id="help-content">
+    <div class="container">
+
+        {# ── Section 1: The Scenario ── #}
+        <h2 class="text-center mt-0"><i class="bi bi-person-workspace me-2"></i>The Scenario</h2>
+        <hr class="divider" />
+        <div class="row justify-content-center mb-3">
+            <div class="col-lg-10">
+                <p class="lead text-center text-muted mb-4">Follow this example to see how StakeEasy.net tracks your poker finances.</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">1</span>
+                            <h5 class="card-title mb-0">First Deposit</h5>
+                        </div>
+                        <p class="card-text">You join a <span class="text-poker-site">poker site</span> and <span class="text-deposit">deposit</span> $50. Your <span class="text-bankroll">total bankroll</span> is <strong>$50</strong> and your <span class="text-profit">profit</span> is <strong>$0</strong>.</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h2 class="text-center"><i class="bi bi-calculator"></i> The Calculation</h2>
-                    <hr>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item lead">Using the previous scenario, the formula used on StakeEasy.net to calculate your <span class="text-bankroll">bankroll</span> is as follows:</li>
-                        <li class="list-group-item lead"><span class="text-bankroll">Total Bankroll</span> = Amount on Poker Sites + <span class="text-asset">Assets</span></li>
-                        <li class="list-group-item lead"><span class="text-profit">Profit</span> = <span class="text-poker-site">Amount on Poker Sites</span> + <span class="text-asset">Assets</span> - <span class="text-deposit">Deposits</span> + <span class="text-withdrawal">Withdrawals</span></li>
-                        <li class="list-group-item lead"><span class="text-bankroll">Total Bankroll</span> = $250 + $50 = $300</li>
-                        <li class="list-group-item lead"><span class="text-profit">Profit</span> = $250 + $50 - $50 + $100 = $350</li>
-                    </ul>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">2</span>
+                            <h5 class="card-title mb-0">Winning Sessions</h5>
+                        </div>
+                        <p class="card-text">After playing, your <span class="text-poker-site">site</span> balance grows to $200. Your <span class="text-bankroll">bankroll</span> is <strong>$200</strong> and your <span class="text-profit">profit</span> is <strong>$150</strong>.</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="text-center"><i class="bi bi-joystick"></i> How you use StakeEasy.net</h2>
-                    <hr>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item lead">When you begin on your poker journey using a <span class="text-bankroll">bankroll</span> management strategy, you will likely set aside a sum of money that you can afford to lose.</li>
-                        <li class="list-group-item lead">To represent this on StakeEasy.net, go to the <span class="text-deposit">deposits</span> page, and add a <span class="text-deposit">deposit</span> for the amount you have set aside.</li>
-                        <li class="list-group-item lead">Then, when you choose which <span class="text-poker-site">site</span> or <span class="text-poker-site">sites</span> you want to play on, go to the <span class="text-poker-site">poker sites</span> page, and add the <span class="text-poker-site">site(s)</span>, set their name, currency and the amount you have bought in for. Now you're ready to play!</li>
-                        <li class="list-group-item lead">After every session, or at regular intervals, update the amount on each <span class="text-poker-site">poker site</span>.</li>
-                        <li class="list-group-item lead">If for whatever reason you go bust, go through the same process again, e.g. add a <span class="text-deposit">deposit</span> and either add a new <span class="text-poker-site">poker site</span> or update the amount on the existing <span class="text-poker-site">site</span> you play on.</li>
-                        <li class="list-group-item lead">Eventually, you may wish to <span class="text-withdrawal">withdraw</span> money from your poker <span class="text-bankroll">bankroll</span> to spend on other things, leisure, family etc. or you may wish to set aside part of the <span class="text-bankroll">bankroll</span> into other investments we call <span class="text-asset">assets</span>.</li>
-                        <li class="list-group-item lead">For example, you may decide that you don't use all of the money on your <span class="text-poker-site">poker sites</span>, or you just want to set some aside but keep it in your overall poker <span class="text-bankroll">bankroll</span>, for you to use at a later date if you decide.</li>
-                        <li class="list-group-item lead"><span class="text-asset">Assets</span> could include cash (useful for live cash games and tournaments), crypto-currency (e.g. Bitcoin, Ethereum), stocks and shares, gold, silver etc.</li>
-                        <li class="list-group-item lead">To do this, simply update the amount on the <span class="text-poker-site">poker site(s)</span>, then go to the <span class="text-asset">assets</span> page and add a new <span class="text-asset">asset</span>, for example Bitcoin and the amount you are investing.</li>
-                        <li class="list-group-item lead">StakeEasy.net will calculate your <span class="text-bankroll">total bankroll</span> (or net worth), your <span class="text-profit">profit</span> / loss and convert everything in to US dollars ($) to make comparisons easier as some of the <span class="text-poker-site">sites</span> and <span class="text-asset">assets</span> may be invested in different currencies.</li>
-                        <li class="list-group-item lead">StakeEasy.net automatically updates with the latest currency exchange rates so your $ values should be accurate.</li>
-                        <li class="list-group-item lead">Finally, from the StakeEasy.net team, we wish you good luck at the tables!</li>
-                    </ul>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">3</span>
+                            <h5 class="card-title mb-0">Invest in an Asset</h5>
+                        </div>
+                        <p class="card-text">You move $50 into Bitcoin. Now: <span class="text-poker-site">sites</span> = $150, <span class="text-asset">assets</span> = $50, <span class="text-profit">profit</span> = <strong>$150</strong>, <span class="text-deposit">deposits</span> = $50.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">4</span>
+                            <h5 class="card-title mb-0">Keep Grinding</h5>
+                        </div>
+                        <p class="card-text">You play more and run your <span class="text-poker-site">site</span> balance up to $350. You are now <span class="text-profit">profiting</span> <strong>$350</strong> in total.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">5</span>
+                            <h5 class="card-title mb-0">Make a Withdrawal</h5>
+                        </div>
+                        <p class="card-text">You <span class="text-withdrawal">withdraw</span> $100 for groceries. Your <span class="text-poker-site">site</span> balance drops to $250.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary rounded-circle me-3 p-2" style="width:36px;height:36px;line-height:20px;font-size:1rem;">6</span>
+                            <h5 class="card-title mb-0">Final Position</h5>
+                        </div>
+                        <p class="card-text"><span class="text-poker-site">Sites</span>: $250 + <span class="text-asset">Assets</span>: $50 = <span class="text-bankroll">Bankroll</span>: <strong>$300</strong>. Your <span class="text-profit">profit</span> is <strong>$350</strong>.</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        {# ── Section 2: The Calculation ── #}
+        <h2 class="text-center mt-0"><i class="bi bi-calculator me-2"></i>The Calculation</h2>
+        <hr class="divider" />
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <p class="lead text-center text-muted mb-4">StakeEasy.net uses two simple formulas to track your finances.</p>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body text-center py-4">
+                        <h5 class="mb-3"><i class="bi bi-wallet2 me-2 text-primary"></i>Bankroll Formula</h5>
+                        <p class="fs-5 mb-2">
+                            <span class="text-bankroll">Total Bankroll</span> = <span class="text-poker-site">Poker Sites</span> + <span class="text-asset">Assets</span>
+                        </p>
+                        <p class="text-muted mb-0">
+                            <span class="text-bankroll">$300</span> = <span class="text-poker-site">$250</span> + <span class="text-asset">$50</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-4">
+                        <h5 class="mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Profit Formula</h5>
+                        <p class="fs-5 mb-2">
+                            <span class="text-profit">Profit</span> = <span class="text-poker-site">Poker Sites</span> + <span class="text-asset">Assets</span> &minus; <span class="text-deposit">Deposits</span> + <span class="text-withdrawal">Withdrawals</span>
+                        </p>
+                        <p class="text-muted mb-0">
+                            <span class="text-profit">$350</span> = <span class="text-poker-site">$250</span> + <span class="text-asset">$50</span> &minus; <span class="text-deposit">$50</span> + <span class="text-withdrawal">$100</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Section 3: How To Use ── #}
+        <h2 class="text-center mt-0"><i class="bi bi-joystick me-2"></i>How to Use StakeEasy.net</h2>
+        <hr class="divider" />
+        <div class="row justify-content-center mb-3">
+            <div class="col-lg-10">
+                <p class="lead text-center text-muted mb-4">A step-by-step guide to managing your poker bankroll.</p>
+            </div>
+        </div>
+
+        {# Timeline-style steps #}
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-cash-stack fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Record Your Starting Bankroll</h5>
+                        <p class="text-muted mb-0">Set aside a sum you can afford to lose. Go to the <span class="text-deposit">Deposits</span> page and add a <span class="text-deposit">deposit</span> for that amount.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-plus-circle fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Add Your Poker Sites</h5>
+                        <p class="text-muted mb-0">Go to the <span class="text-poker-site">Poker Sites</span> page and add each <span class="text-poker-site">site</span> you play on — set its name, currency, and the amount you've bought in for.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-arrow-repeat fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Update Regularly</h5>
+                        <p class="text-muted mb-0">After every session, or at regular intervals, update the balance on each <span class="text-poker-site">poker site</span>. StakeEasy.net keeps a history of every change.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-box-arrow-up fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Record Withdrawals</h5>
+                        <p class="text-muted mb-0">When you take money out for personal spending, add a <span class="text-withdrawal">withdrawal</span>. Your <span class="text-profit">profit</span> stays accurate because the formula accounts for it.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-safe fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Track Your Assets</h5>
+                        <p class="text-muted mb-0">Set aside part of your bankroll into investments — cash, crypto, gold, silver, stocks. Add them on the <span class="text-asset">Assets</span> page and they'll count towards your <span class="text-bankroll">total bankroll</span>.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-currency-exchange fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Multi-Currency — Handled Automatically</h5>
+                        <p class="text-muted mb-0">Play in GBP, EUR, or any currency — StakeEasy.net converts everything to USD using live exchange rates so your totals are always accurate.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="bi bi-heart fs-5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Good Luck at the Tables!</h5>
+                        <p class="text-muted mb-0">That's it — if you go bust, just deposit again and keep going. StakeEasy.net will track it all. From the team, we wish you the best of luck!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
+</section>
 {% endblock %}
