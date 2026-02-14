@@ -13,31 +13,6 @@
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generalModal" data-url="{{ url_for('poker_sites.add_site') }}">Add New Site</button>
             </div>
             <div class="col-lg-12">{{ render_item_table(poker_sites, 'site') }}</div>
-
-            <div class="col-lg-6 offset-lg-3">
-                <div class="table-responsive mt-5">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th scope="col" colspan="2" class="text-center">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Total Current:</td>
-                                <td>${{ "%.2f" | format(total_current) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Previous:</td>
-                                <td>${{ "%.2f" | format(total_previous) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Change:</td>
-                                <td class="{% if (total_current - total_previous) > 0 %}change-positive{% elif (total_current - total_previous) < 0 %}change-negative{% else %}change-zero{% endif %}">${{ "%.2f" | format(total_current - total_previous) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
         </div>
         </div>
 

@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from sqlalchemy import func
 from flask_security import login_required, current_user
-from ..services import AchievementService
+from ..services import AchievementService, BankrollService
 from ..models import db, Deposits, Currency
 from ..utils import get_sorted_currencies
 
@@ -48,6 +48,10 @@ def add_deposit():
         )
         db.session.add(new_deposit)
         db.session.commit()
+        
+        # Invalidate bankroll cache so dashboard reflects new deposit
+        bankroll_service = BankrollService()
+        bankroll_service._invalidate_cache(current_user.id)
         
         # Update achievement streak
         achievement_service = AchievementService()

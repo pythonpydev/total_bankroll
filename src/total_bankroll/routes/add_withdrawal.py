@@ -43,6 +43,10 @@ def add_withdrawal():
         db.session.add(new_drawing)
         db.session.commit()
         
+        # Invalidate bankroll cache so dashboard reflects new withdrawal
+        bankroll_service = BankrollService()
+        bankroll_service._invalidate_cache(current_user.id)
+        
         # Update achievement streak
         achievement_service = AchievementService()
         achievement_service.update_streak(current_user)

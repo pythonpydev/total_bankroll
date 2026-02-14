@@ -6117,6 +6117,10 @@
     }.table-custom tbody tr:last-of-type {
     border-bottom: 2px solid #0d6efd;
 
+    }.table-custom tfoot tr {
+    background-color: #343a40;
+    color: #fff;
+    border-top: 2px solid #0d6efd
     }:root {
     --dark-bg-0: #121212;
 
@@ -6827,6 +6831,9 @@
     }body.dark-mode .table-custom tbody tr:hover {
     background-color: #2e2e2e
     }body.dark-mode .table-custom tbody td {
+    color: var(--dark-text-0)
+    }body.dark-mode .table-custom tfoot tr {
+    background-color: var(--dark-bg-2);
     color: var(--dark-text-0)
     }body.dark-mode .table > :not(caption) > * > * {
     box-shadow: none !important

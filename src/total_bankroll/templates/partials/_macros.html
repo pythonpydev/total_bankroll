@@ -25,6 +25,8 @@
                 <th scope="col">Starting (USD)</th>
                 <th scope="col">Current Amount</th>
                 <th scope="col">Current (USD)</th>
+                <th scope="col">Previous Amount</th>
+                <th scope="col">Previous (USD)</th>
                 <th scope="col">Recent Change (USD)</th>
                 <th scope="col">Overall Change (USD)</th>
                 <th scope="col">Actions</th>
@@ -37,13 +39,20 @@
                 <td>${{ "%.2f" | format(item.starting_amount_usd) }}</td>
                 <td>{{ item.currency_symbol }}{{ "%.2f" | format(item.current_amount) }} {{ item.currency }}</td>
                 <td>${{ "%.2f" | format(item.current_amount_usd) }}</td>
-                {% if item.previous_amount_usd is not none %}
+                {% if item.previous_amount is not none and item.previous_amount != item.current_amount %}
+                    <td>{{ item.previous_currency_symbol }}{{ "%.2f" | format(item.previous_amount) }} {{ item.previous_currency_code }}</td>
+                    <td>${{ "%.2f" | format(item.previous_amount_usd) }}</td>
+                {% else %}
+                    <td>{{ item.currency_symbol }}{{ "%.2f" | format(item.current_amount) }} {{ item.currency }}</td>
+                    <td>${{ "%.2f" | format(item.current_amount_usd) }}</td>
+                {% endif %}
+                {% if item.previous_amount is not none and item.previous_amount != item.current_amount %}
                     {% set change = item.current_amount_usd - item.previous_amount_usd %}
                     <td class="{% if change > 0 %}change-positive{% elif change < 0 %}change-negative{% else %}change-zero{% endif %}">
                         ${{ "%.2f" | format(change) }}
                     </td>
                 {% else %}
-                    <td>N/A</td>
+                    <td class="change-zero">$0.00</td>
                 {% endif %}
                     {% set overall = item.current_amount_usd - item.starting_amount_usd %}
                     <td class="{% if overall > 0 %}change-positive{% elif overall < 0 %}change-negative{% else %}change-zero{% endif %}">
@@ -73,6 +82,35 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="fw-bold">
+                <td>Total</td>
+                {% set ns = namespace(sum_starting=0, sum_current_usd=0, sum_previous_usd=0, sum_recent=0, sum_overall=0) %}
+                {% for item in items %}
+                    {% set ns.sum_starting = ns.sum_starting + item.starting_amount_usd %}
+                    {% set ns.sum_current_usd = ns.sum_current_usd + item.current_amount_usd %}
+                    {% if item.previous_amount_usd is not none and item.previous_amount != item.current_amount %}
+                        {% set ns.sum_previous_usd = ns.sum_previous_usd + item.previous_amount_usd %}
+                        {% set ns.sum_recent = ns.sum_recent + (item.current_amount_usd - item.previous_amount_usd) %}
+                    {% else %}
+                        {% set ns.sum_previous_usd = ns.sum_previous_usd + item.current_amount_usd %}
+                    {% endif %}
+                    {% set ns.sum_overall = ns.sum_overall + (item.current_amount_usd - item.starting_amount_usd) %}
+                {% endfor %}
+                <td>${{ "%.2f" | format(ns.sum_starting) }}</td>
+                <td></td>
+                <td>${{ "%.2f" | format(ns.sum_current_usd) }}</td>
+                <td></td>
+                <td>${{ "%.2f" | format(ns.sum_previous_usd) }}</td>
+                <td class="{% if ns.sum_recent > 0 %}change-positive{% elif ns.sum_recent < 0 %}change-negative{% else %}change-zero{% endif %}">
+                    ${{ "%.2f" | format(ns.sum_recent) }}
+                </td>
+                <td class="{% if ns.sum_overall > 0 %}change-positive{% elif ns.sum_overall < 0 %}change-negative{% else %}change-zero{% endif %}">
+                    ${{ "%.2f" | format(ns.sum_overall) }}
+                </td>
+                <td></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 {% endmacro %}

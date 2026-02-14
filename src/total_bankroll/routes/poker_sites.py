@@ -78,6 +78,7 @@ def poker_sites_page():
     sites_with_data = []
     total_current = Decimal('0.0')
     total_previous = Decimal('0.0')
+    total_starting = Decimal('0.0')
 
     # Pre-fetch all currencies to avoid querying in a loop
     all_currencies = {c.code: c for c in db.session.query(Currency).all()}
@@ -92,17 +93,21 @@ def poker_sites_page():
         starting_amount_usd = (starting_amount / start_currency_obj.rate) if starting_amount and start_currency_obj else Decimal('0.0')
 
         total_current += current_amount_usd
-        total_previous += previous_amount_usd if previous_amount_usd is not None else 0
+        total_previous += previous_amount_usd if previous_amount_usd is not None else current_amount_usd
+        total_starting += starting_amount_usd
 
         sites_with_data.append({
             'id': site.id, 'name': site.name, 'currency': current_currency_code,
             'currency_symbol': curr_currency_obj.symbol if curr_currency_obj else '',
             'current_amount': current_amount or Decimal('0.0'), 'current_amount_usd': current_amount_usd,
+            'previous_amount': previous_amount,
+            'previous_currency_symbol': prev_currency_obj.symbol if prev_currency_obj else '',
+            'previous_currency_code': previous_currency_code,
             'previous_amount_usd': previous_amount_usd,
             'starting_amount_usd': starting_amount_usd,
         })
 
-    return render_template("info/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous)
+    return render_template("info/poker_sites.html", poker_sites=sites_with_data, total_current=total_current, total_previous=total_previous, total_starting=total_starting)
 
 @poker_sites_bp.route("/add_site", methods=['GET', 'POST'])
 @login_required
